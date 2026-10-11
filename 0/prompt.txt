@@ -1,0 +1,96 @@
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-6873@c55766703c (new) ...
+[w2] CVE-2026-48587@c55766703c: published AFFECTED NONE https://github.com/iamdflame/django/pull/10  $0.123441</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bm7na9tti</task-id>
+<tool-use-id>toolu_01EszSvgMTcDa4PNYqh8QPVf</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/bm7na9tti.output</output-file>
+<status>completed</status>
+<summary>Background command "Stop workers w0 and w2 after their current events" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-7666@c55766703c (new) ...
+[w1] CVE-2026-15307@7d75c0b928 (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-35192@17b93fa081 (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-5766@17b93fa081 (new) ...
+[w2] CVE-2026-5766@17b93fa081: published AFFECTED NONE https://github.com/iamdflame/django/pull/12  $0.0</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-6907@17b93fa081 (new) ...
+[w0] CVE-2026-35192@17b93fa081: published AFFECTED NONE https://github.com/iamdflame/django/pull/11  $0.0</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-35193@c55766703c (new) ...
+[w2] CVE-2026-6907@17b93fa081: published AFFECTED NONE https://github.com/iamdflame/django/pull/13  $0.0</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-6873@c55766703c (new) ...
+[w1] CVE-2026-15307@7d75c0b928: waiting_human AFFECTED NONE  https://github.com/iamdflame/heirloom/issues/6 $0.0</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w1] CVE-2026-7666@c55766703c (new) ...
+[w0] CVE-2026-35193@c55766703c: evidence UNPROVEN NON_DISCRIMINATING https://github.com/iamdflame/heirloom/issues/5  $0.068096</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-8404@c55766703c (new) ...
+[w2] CVE-2026-6873@c55766703c: published AFFECTED NONE https://github.com/iamdflame/django/pull/14  $0.193774</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-48588@c93a9e3c88 (new) ...
+[w1] CVE-2026-7666@c55766703c: evidence UNPROVEN PROBE_ERROR https://github.com/iamdflame/heirloom/issues/7  $0.02959</event>
+</task-notification>
