@@ -144,6 +144,7 @@ from heirloom.lines import commands as line_commands  # noqa: E402  (Thread B: d
 
 app.add_typer(line_commands.distro_app, name="distro")
 app.command("matrix")(line_commands.matrix_cmd)
+app.command("new-probe")(line_commands.new_probe_cmd)
 
 
 def main() -> None:

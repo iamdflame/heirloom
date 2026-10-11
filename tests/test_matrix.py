@@ -139,3 +139,16 @@ def test_summary_cross_checks_distro_patched_cells() -> None:
         ("A", True),
         ("B", False),
     ]
+
+
+def test_each_probe_gets_the_verdict_of_its_own_calibration(tmp_path: Path) -> None:
+    path = tmp_path / "retries.sqlite"
+    ledger = Ledger(path)
+    record(ledger, "CVE-1", "bt", "1" * 64, um="PASS", verdict="UNPROVEN")  # porter try 1
+    record(ledger, "CVE-1", "bt", "2" * 64, verdict="AFFECTED")  # retry with feedback
+    ledger.close()
+    found, _ = ledger_probes(path)
+    assert [(s.sha[0], s.c1, s.line_verdict) for s in found] == [
+        ("1", False, "UNPROVEN"),
+        ("2", True, "AFFECTED"),
+    ]

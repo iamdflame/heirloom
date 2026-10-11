@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 from pathlib import Path
 from typing import Annotated
@@ -35,6 +36,27 @@ def distro_build(names: Annotated[list[str], typer.Argument(metavar="NAME...")])
 
 def _split(text: str) -> list[str]:
     return [x.strip() for x in text.split(",") if x.strip()]
+
+
+def new_probe_cmd(
+    cves: Annotated[list[str], typer.Argument(metavar="CVE...")],
+    line: Annotated[str, typer.Option(help="Tag of the eval line the porter reads.")] = "4.2.30",
+    max_usd: Annotated[float, typer.Option(help="Model spend cap per CVE × line.")] = 0.45,
+    out: Annotated[Path | None, typer.Option(help="Append the results to this JSON.")] = None,
+) -> None:
+    """Porter + calibration only (no ADAPT) for CVEs that have no calibrated probe."""
+    s = dataclasses.replace(config.load(), max_usd_per_cve=max_usd)
+    spec = matrix.line_spec(s, line, DISTRO_RECORD)
+    if spec.kind != "eval":
+        raise typer.BadParameter("the porter reads an eval line (a tag), never a distro tree")
+    results = []
+    for cve in cves:
+        r = matrix.new_probe(s, cve, spec)
+        results.append(r)
+        typer.echo(f"{cve} on {line}: {r['verdict']} {r['reason'] or ''} ${r['ledger_cost_usd']}")
+    if out is not None:
+        old = json.loads(out.read_text()) if out.exists() else []
+        out.write_text(json.dumps([*old, *results], indent=2) + "\n")
 
 
 def matrix_cmd(

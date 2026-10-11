@@ -11,6 +11,9 @@ Probe sources, in order of preference:
    runs satisfy C1 — first those whose own line came out calibrated, newest first;
 2. hand-written probes the brief prescribes (``heirloom.lines.handwritten``),
    labelled as such in every record.
+
+``heirloom new-probe`` (:func:`new_probe`) is the one path here that calls a model:
+the independent porter plus calibration on an eval line, capped per CVE, no ADAPT.
 """
 
 from __future__ import annotations
@@ -32,8 +35,10 @@ from heirloom.integrations.neatlogs import Telemetry
 from heirloom.ledger import Ledger, canonical_hash
 from heirloom.lines import distro
 from heirloom.lines.handwritten import HANDWRITTEN
+from heirloom.models.router import BudgetExceeded
 from heirloom.pipeline import calibrate, locate
-from heirloom.pipeline.context import Ctx
+from heirloom.pipeline import probe as porter
+from heirloom.pipeline.context import Ctx, StageFailed
 from heirloom.pipeline.fixes import fixes_of
 from heirloom.pipeline.presence import Evidence, Gate, c1_discrimination
 from heirloom.pipeline.run import lock, new_run_id
@@ -86,22 +91,36 @@ def ledger_probes(path: Path) -> tuple[list[ProbeSource], dict[str, dict[str, An
             out = json.loads(r["output_json"] or "{}")
             if out.get("probe"):
                 refs[(r["cve"], out["probe"])] = out
-        verdicts: dict[tuple[str, str], dict[str, Any]] = {}
+        verdicts: dict[tuple[str, str], list[tuple[float, dict[str, Any]]]] = {}
         for r in conn.execute(
-            "SELECT cve, line, output_json FROM stages "
-            "WHERE stage='presence' AND status='done' ORDER BY finished_at"
+            "SELECT cve, line, started_at, output_json FROM stages "
+            "WHERE stage='presence' AND status='done' ORDER BY started_at"
         ):
-            verdicts[(r["cve"], r["line"])] = json.loads(r["output_json"] or "{}")
+            out = json.loads(r["output_json"] or "{}")
+            verdicts.setdefault((r["cve"], r["line"]), []).append((r["started_at"], out))
+        rows = list(
+            conn.execute(
+                "SELECT cve, line, run_id, started_at, finished_at, output_json FROM stages "
+                "WHERE stage='probe' AND status='done' ORDER BY started_at"
+            )
+        )
         sources: list[ProbeSource] = []
         files: dict[str, dict[str, Any]] = {}
-        for r in conn.execute(
-            "SELECT cve, line, run_id, finished_at, output_json FROM stages "
-            "WHERE stage='probe' AND status='done' ORDER BY finished_at"
-        ):
+        for i, r in enumerate(rows):
             probe = json.loads(r["output_json"] or "{}")
             if not probe.get("files") or not probe.get("sha"):
                 continue
-            pres = verdicts.get((r["cve"], r["line"]), {})
+            # This probe's verdict: the last PRESENCE between it and the next probe.
+            nxt = next(
+                (x["started_at"] for x in rows[i + 1 :] if (x["cve"], x["line"]) == tuple(r)[:2]),
+                float("inf"),
+            )
+            mine = [
+                out
+                for at, out in verdicts.get((r["cve"], r["line"]), [])
+                if r["finished_at"] <= at < nxt
+            ]
+            pres = mine[-1] if mine else {}
             sources.append(
                 ProbeSource(
                     cve=r["cve"],
@@ -285,6 +304,61 @@ def run_cell(
         "evidence_runs": evidence,  # runs that executed the (possibly cached) stages
         "cost_usd": cost,
         "seconds": round(time.monotonic() - started, 1),
+    }
+
+
+def new_probe(s: Settings, cve: str, spec: LineSpec) -> dict[str, Any]:
+    """Make a calibrated probe where none exists: LOCATE → C0 → PROBE (the independent
+    porter, with the pipeline's two feedback retries) → CALIBRATE → PRESENCE, then stop.
+
+    The same stages as ``run.pipeline()`` up to PRESENCE, without ADAPT (kept here so
+    the shared pipeline module stays untouched). Model spend is capped per CVE × line
+    by ``s.max_usd_per_cve`` (the router refuses calls past it).
+    """
+    with lock(s.work / "locks" / f"{cve}-{spec.name}.lock"):
+        ledger = Ledger(s.ledger_path)
+        run_id = new_run_id()
+        ledger.start_run(run_id, cve, spec.name, json.dumps(spec.to_json()))
+        ctx = Ctx(s, ledger, Telemetry(), spec, cve, spec.name, run_id, f"probe-{run_id}")
+        pres: dict[str, Any] = {"verdict": "UNPROVEN", "reason": "PROBE_ERROR", "detail": ""}
+        attempts: list[dict[str, Any]] = []
+        status = "failed"
+        try:
+            with guard.publishing(spec):
+                loc = locate.run(ctx)
+                c0 = calibrate.run_c0(ctx, loc)
+                feedback: str | None = None
+                for _ in range(3):
+                    try:
+                        pr = porter.run(ctx, loc, c0, feedback)
+                    except (StageFailed, BudgetExceeded) as exc:
+                        pres = {**pres, "detail": f"{type(exc).__name__}: {exc}"}
+                        break
+                    cal = calibrate.run(ctx, loc, pr)
+                    pres = calibrate.run_presence(ctx, cal)
+                    attempts.append(
+                        {"probe": pr["sha"], "verdict": pres["verdict"], "reason": pres["reason"]}
+                    )
+                    if not cal.get("feedback"):
+                        break
+                    feedback = cal["feedback"]
+            status = "done"
+        finally:
+            ledger.finish_run(run_id, status)
+            cost = ledger.cost_total(cve, spec.name)
+            ledger.close()
+            trees = ctx.dir / "trees"
+            for t in sorted(trees.iterdir()) if trees.exists() else []:
+                remove_worktree(s.django_repo, t)
+    return {
+        "cve": cve,
+        "line": spec.name,
+        "run_id": run_id,
+        "verdict": pres["verdict"],
+        "reason": pres.get("reason"),
+        "detail": pres.get("detail", ""),
+        "attempts": attempts,
+        "ledger_cost_usd": round(cost, 6),
     }
 
 
