@@ -1,0 +1,5 @@
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[Monitor expired after 10m with 13 events delivered. Re-arm it if you still need the watch.]</event>
+</task-notification>
