@@ -218,9 +218,9 @@ This session was tracked by Entire from the start: `entire session current` show
 - `entire status`: `● Enabled · branch main`, active session `f5117257-5211-42ae-823c-32aa228a28d9`.
 - `entire checkpoint list`: 3 on main. They are this session's temporary checkpoint (`f5117257-521`, latest 09:50) plus the B1 and B2 link checkpoints `01M4M7HFXFT5DBGHYNDES4J73Y` and `01M4MDN1QK7ZJ4B793F1XPZQ9W`.
 
-### 2026-10-11 (session B4, in progress) · §11 fixes, campaign replay
+### 2026-10-11 (session B4) · §11 fixes, E2 campaign replay, matrix, read API
 
-Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless; `entire session current` showed it active (not the old f5117257 conversation). Results are filled in at the end of the session.
+Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless at 20:43 UTC. `entire session current` showed it active (not the old f5117257 conversation). Every number below comes from `evals/results_live.json`, `evals/matrix.json`, `evals/results.json`, `evals/detections*.json` or `evals/recovery_b4.json`.
 
 **Decisions (headless; recorded as made)**
 - **Provider-reported cost:** OpenRouter calls send `usage: {include: true}` and record `usage.cost`; `claude -p` records `total_cost_usd`. A check on 2026-10-11 found `claude -p` on OpenRouter reported $0.10849875 and the OpenRouter key's billed usage rose by exactly that amount (≈60 s later), so it counts as provider-reported there. Gateway-era costs stay flagged `cost_estimated`. The overflow cap uses the larger of our records and the key's billed `usage` (`GET /api/v1/key`), which also covers killed calls whose cost we never saw.
@@ -233,21 +233,144 @@ Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless; `entire sessio
 - **CVE-2026-87975** is recorded as `skipped / ALREADY_PUBLISHED` (PR #9). It gets no new run and no new PR.
 - **Disk:** removed the E1 backtest worktrees (6.8 GB of `work/cve/*-bt-*/trees`); logs and ledger rows are kept.
 - **Parallelism:** 3 worker processes share the Django clone. Git lock contention is retried, and artifacts publishing takes a lock.
+- **Matrix scope:** I re-ran only the 19 post-EOL CVEs × 3 lines, one process per line. The 14 Feb–Apr CVEs keep their B3 cells, labelled `carried_from`. A full 99-cell re-run would not fit the 30-minute box, and those CVEs gained no new probe.
+- **Stacking:** if 87890's dependency (15307) waits on a question, 87890 is blocked rather than evaluated on the bare line. Its backport would then sit on top of a branch that does not exist yet. The dependency is noted on question #6.
+- **Leakage guard:** the B3 merge had silently dropped `ef0e7fb`'s exemption for fix lines that the upstream test diff also shows. It was restored after it refused CVE-2026-35193's porter over `patch_vary_headers,`.
+- **New question kind `UPSTREAM_TEST_CHANGE`:** this applies when a backport passes the probe and edits no test, yet the only new failures are 4.2 tests that upstream rewrote in the same fix commit. Re-adapting cannot fix that without diverging from upstream, so ADAPT stops and DECIDE asks once. Options: `publish-evidence` (default), `adopt-upstream-tests` (the orchestrator, never the adapter, applies upstream's own hunks to those test files and verifies again), or `skip`. The path that applies `adopt-upstream-tests` is implemented, but it has not run, since nobody has answered yet.
+- **Restarts:** I stopped and restarted the campaign workers four times to deploy harness fixes found by the run itself. Every restart resumed from the ledger, so finished stages were never redone and nothing was published twice.
+
+**§11 quick fixes (≈15 min)**
+- **(a) Cost:** see Decisions. The router now skips a known-exhausted gateway key, and `claude -p` on OpenRouter uses OpenRouter's model slugs (`anthropic/claude-sonnet-4.6`).
+- **(b) Thread coverage:** I re-ran the CVE-2026-3902 E1 pair. Reach was recomputed (new ledger attempts) and is **unchanged: UNPROVEN (NO_REACH)** on both the positive and the fixed twin. The probe executes `ASGIRequest.__init__` (33 body lines) but never calls `AsyncRequestFactory.generic`, so this is a probe-design gap, not a threading one. The E1 v2 summary is unchanged: 27 cases, 16 decided, accuracy 93.8%, **false NOT_AFFECTED 0**, 9 UNPROVEN. README table re-rendered; its cost note now separates provider-reported from estimated cases (14 v2 cases are estimates).
+- **(c) Detections:**
+  - Created the five §5 detections (runOn `span_name heirloom.flag.<predicate>`, condition `status = OK`) and deleted the two S4 test detections.
+  - A v1-style flag span (`evals/emit_flag_sample.py`: CVE-2026-1285 "not affected" without calibration, in a throwaway ledger) produced **a neatlogs hit after 90 s** on `not_affected_without_calibration` (`evals/detections_flag_check.json`, trace `cf03051e54fc0325304db42ddf2f1823`).
+  - At 21:54 UTC (`evals/detections.json`), neatlogs vs the local mirror:
+
+    | Detection | neatlogs hits | local mirror |
+    |---|---:|---:|
+    | `claim_without_span` | 13 | 13 |
+    | `probe_never_reached_region` | 4 | 9 |
+    | `not_affected_without_calibration` | 1 (the v1 sample) | 0 |
+    | `fix_applied_where_probe_passed` | 0 | 0 |
+    | `test_edited_after_red` | 0 | 0 |
+
+    `claim_without_span` caught a real bug: 9 PRs were created while the C2/V1 claims pointed at a log name that no longer exists. Those claims were struck automatically; after the fix and a re-render, the PRs show 0 unlinked claims. `probe_never_reached_region` fires on CVE-2026-53878's absent-symbol proof, where reach is undefined: a false positive of that predicate.
+
+**E2 campaign replay** (`heirloom campaign --line 4.2 --replay --workers 3 --cap 18 --id b4-replay`; `evals/results_live.json`)
+- **Plan:**
+  - 6 archive commits → 19 new advisories + 1 follow-up (CVE-2026-15830 + `1eafa1a8` at `904349fcbe`).
+  - Story CVEs first.
+  - `git blame` on CVE-2026-87890's U⁻ links it to CVE-2026-15307's `115ffd04`, with no hand-written link.
+- **Outcome per CVE** (19):
+
+| CVE | Outcome | Verdict | Link | $ (ledger) | min |
+|---|---|---|---|---:|---:|
+| CVE-2026-15307 | waiting_human | AFFECTED | [issue #6](https://github.com/iamdflame/heirloom/issues/6) | 0.50 | 12.57 |
+| CVE-2026-87890 | blocked | PENDING (DEPENDENCY on 15307) | — | 0.00 | 0.0 |
+| CVE-2026-15830 | evidence | UNPROVEN (NO_REACH) | [issue #4](https://github.com/iamdflame/heirloom/issues/4) | 0.87 | 5.87 |
+| CVE-2026-53878 | evidence | NOT_AFFECTED_PROVEN | [issue #3](https://github.com/iamdflame/heirloom/issues/3) | 0.00 | 1.87 |
+| CVE-2026-35192 | published | AFFECTED | [PR #11](https://github.com/iamdflame/django/pull/11) | 0.11 | 11.26 |
+| CVE-2026-5766 | published | AFFECTED | [PR #12](https://github.com/iamdflame/django/pull/12) | 0.14 | 9.0 |
+| CVE-2026-6907 | published | AFFECTED | [PR #13](https://github.com/iamdflame/django/pull/13) | 0.09 | 7.63 |
+| CVE-2026-35193 | evidence | UNPROVEN (NON_DISCRIMINATING) | [issue #5](https://github.com/iamdflame/heirloom/issues/5) | 0.07 | 1.39 |
+| CVE-2026-48587 | published | AFFECTED | [PR #10](https://github.com/iamdflame/django/pull/10) | 0.12 | 5.01 |
+| CVE-2026-6873 | published | AFFECTED | [PR #14](https://github.com/iamdflame/django/pull/14) | 0.19 | 4.45 |
+| CVE-2026-7666 | evidence | UNPROVEN (PROBE_ERROR) | [issue #7](https://github.com/iamdflame/heirloom/issues/7) | 0.20 | 4.68 |
+| CVE-2026-8404 | published | AFFECTED | [PR #16](https://github.com/iamdflame/django/pull/16) | 0.11 | 4.87 |
+| CVE-2026-48588 | published | AFFECTED | [PR #17](https://github.com/iamdflame/django/pull/17) | 0.11 | 4.88 |
+| CVE-2026-53877 | published | AFFECTED | [PR #15](https://github.com/iamdflame/django/pull/15) | 0.13 | 2.84 |
+| CVE-2026-15337 | evidence | UNPROVEN (NON_DISCRIMINATING) | [issue #8](https://github.com/iamdflame/heirloom/issues/8) | 0.12 | 1.7 |
+| CVE-2026-15920 | published | AFFECTED | [PR #18](https://github.com/iamdflame/django/pull/18) | 0.23 | 2.41 |
+| CVE-2026-77050 | evidence | UNPROVEN (PROBE_ERROR) | [issue #9](https://github.com/iamdflame/heirloom/issues/9) | 0.11 | 1.88 |
+| CVE-2026-84429 | waiting_human | AFFECTED | [issue #6](https://github.com/iamdflame/heirloom/issues/6) | 0.35 | 3.04 |
+| CVE-2026-87975 | skipped | AFFECTED (ALREADY_PUBLISHED) | [PR #9](https://github.com/iamdflame/django/pull/9) | — | — |
+
+- **Totals:**
+  - **Verdicts:** 12 AFFECTED, 1 NOT_AFFECTED_PROVEN, 5 UNPROVEN, 1 PENDING (blocked).
+  - **Publications:**
+    - 9 new PRs (#10–#18);
+    - 6 evidence issues (#3, #4, #5, #7, #8, #9);
+    - **1 question (#6)**, which is waited on by 15307 and 84429; 87890 is blocked on it.
+  - **Escalation:** 7 escalated (2 questions + 5 UNPROVEN), rate **36.8%**.
+  - **Cost and time:** ledger model cost $3.45; wall time over all runs 85.3 min (3 workers in parallel).
+- **Overflow (provider-reported):**
+  - The campaign spent **$4.22 of its $18 cap**. Its overflow total started at $3.86, and the OpenRouter key's billed usage was $8.09 at the end.
+  - The ledger records $3.45; the ≈$0.77 gap is spend that interrupted calls never reported. That is why the cap uses the billed figure.
+  - Before the campaign, this session spent $0.11 on a `claude -p` connectivity check.
+- **Ask-once in practice:**
+  - **15307:** the porter's Haiku probe failed the gates and Sonnet's probe passed: AFFECTED.
+    - Its first adaptation added `DisallowedRasterLookup` as upstream did and passed the probe.
+    - It then broke `test_all_gis_lookups_with_rasters`, `test_dwithin_gis_lookup_output_with_rasters`, `test_lhs_with_index_rhs_without_index` and `test_lookup_value_error`, all four rewritten by upstream in `115ffd04`. That opened question #6.
+  - **84429** later hit the same kind (`utils_tests.test_http.ParseHeaderParameterTests.test_rfc2231_wrong_title`, rewritten by its upstream fix). DECIDE found #6 by its marker and asked nothing new.
+  - **87890** is blocked on #6 by its blame dependency. Its stacked PR (base `heirloom/cve-2026-15307-4.2`) and the comment on 15307's PR happen only once 15307 is published.
+- **Follow-up:** 15830's first fix was UNPROVEN (NO_REACH), so there was no branch to fast-forward. Its follow-up event re-evaluated the whole fix at `904349fcbe` (still NO_REACH) and updated evidence issue #4 in place. The fast-forward path (stacked line, `done_fixes`, PR comment) is implemented but did not run.
+- **Recovery** (`evals/recovery_b4.json`):
+  - CVE-2026-35192's worker was SIGTERMed mid-ADAPT (`adapt #1 failed: SystemExit: 143`; the killed `claude -p` never reported its cost) to deploy a fix.
+  - `campaign --continue` resumed the same run `20261011T210815Z-e826` from the ledger: adapt #2 ($0.106), verify, behaviour, decide, commit, push, artifacts.
+  - A later harness bug failed `publish.pr` after the push. The next pass reconciled into exactly one PR (#11).
+  - Traces: killed attempt `00000b0f2ae0082898a888d7ec8eea0d`, resumed run `b4459b250cdec7a84bf1023b0275cdf7`.
+- **Bugs the campaign found (all fixed, with tests):**
+  1. Marker issues looked up through the lagging search index.
+  2. Reused probes missing the porter's record (`KeyError` in the PR claims).
+  3. The lost leakage-guard exemption.
+  4. Haiku's invalid probes never escalating to Sonnet (CVE-2026-7666).
+  5. Deletion-only test hunks not counted as changed tests.
+  6. Claim links to renamed calibration logs.
+  7. A reused probe citing the wrong origin run.
+
+**Matrix** (`evals/matrix.json`, 99 cells, $0 model spend)
+- **Coverage:** the 19 post-EOL CVEs × 4.2.30 / debian-trixie / ubuntu-noble were re-run with the campaign's new probes (57 cells, one process per line, about 2 min each). The 14 Feb–Apr CVEs' 42 cells are carried over from the B3 matrix and labelled `carried_from: 2026-10-11T14:19:06Z`.
+- **Setup:** the distro branches were fetched into the main clone from Thread B's clone (same SHAs as `evals/distro_lines.json`).
+- **Verdicts by line:**
+  - 4.2.30: 14 AFFECTED, 7 NOT_AFFECTED_PROVEN, 6 UNPROVEN, 6 without a probe.
+  - debian-trixie: 18 / 4 / 5 / 6.
+  - ubuntu-noble: 9 / 11 / 7 / 6.
+- **Post-EOL CVEs:**
+  - **Coverage:** 15 of the 19 now have a calibrated probe. There is none for 7666, 35193, 15337 or 77050.
+  - **ubuntu-noble cross-check:** of the 5 post-EOL CVEs Ubuntu fixed, 4 are NOT_AFFECTED_PROVEN on noble (5766, 35192, 6907, 8404). 15307 is UNPROVEN (NO_REACH) there, while AFFECTED on 4.2.30 and trixie.
+  - **Distro-patched cells overall:** 10 of 15 meet the NOT_AFFECTED_PROVEN expectation.
+
+**Read API (§10.6)**
+- `heirloom serve` (FastAPI, read-only, JSON only) answers `/`, `/matrix`, `/campaign`, `/backtest`, `/cve/{id}` (404 for unknown ids), `/line/{id}`, `/runs` and `/events`. It was started on port 8077, queried, and stopped.
+- `heirloom export --out site/data/` wrote 43 files (2.8 MB). Checked: no secret values in them.
+
+**Tests that actually ran**
+- pytest: **181 passed** (new: test_campaign 7, test_api 2, test_coverage_threads 3, plus additions to test_overflow, test_detections, test_decide, test_probe_rules and test_publish_guard). ruff check, ruff format --check (heirloom, tests) and mypy --strict: clean (64 files).
+- Django `runtests.py` runs inside the pipeline, every one asserting `django.__file__` inside its worktree:
+  - the E1 3902 pair's calibration on L;
+  - every campaign CVE's C0 (where the upstream tests exist), calibration 3× on U⁻/U⁺/L, VERIFY baselines and after-runs for the touched labels (e.g. `gis_tests` on PostGIS for 15307), and BEHAVIOUR for the published ones;
+  - 57 matrix cells.
+
+**Entire**
+- `entire status`: `● Enabled · branch main · Checkpoints sync to: origin`; active session `225b7a56-c495-4dd8-b388-71381b6416ff`.
+- `entire checkpoint list`: 21 checkpoints on main by 21:54 UTC. Every B4 commit carries an `Entire-Checkpoint` trailer (e.g. `0be06ff` → `01M4PBNQ7NQQAXAZADG1G2B7HH`, `50c2330` → `01M4PFB2C18E3HT0EY4RQ5MHDJ`).
+- Runtime checkpoints: each campaign backport commit on the fork carries its `claude -p` session's checkpoint (e.g. PR #11: `01M4PCTVJ7PVT3G8S56D54RWW9`, ref pushed to `iamdflame/django`).
 
 ## Demo
 
 ## Known limitations and next steps
 
-- **Budget:** the LiteLLM key is exhausted ($20.35 of $20 until 2026-11-01). Overflow has used $3.76 of the $25 cap. Heirloom's recorded costs undercount the gateway's billing by about 2×; reconcile per request (LiteLLM spend logs) before trusting any $ figure.
+- **Waiting on a human (B4):** question [#6](https://github.com/iamdflame/heirloom/issues/6) (`UPSTREAM_TEST_CHANGE`) holds CVE-2026-15307 and CVE-2026-84429; CVE-2026-87890 is blocked behind 15307. Answer with `/heirloom answer <option>`, then run `heirloom campaign --line 4.2 --replay --id b4-replay --continue`. That stores the precedent, re-queues the three, and (for `adopt-upstream-tests`) runs the adoption path, which has not run yet.
+- **Budget:**
+  - The LiteLLM key is exhausted ($20.35 of $20 until 2026-11-01).
+  - Overflow: the OpenRouter key's billed usage is $8.09 of the $25 cap (the B4 campaign spent $4.22 of its $18 cap).
+  - Costs recorded before §11 (LiteLLM gateway) are estimates and lower bounds. OpenRouter-era costs are provider-reported.
 - **neatlogs:**
-  - The attribute field spelling for custom span attributes is unknown; confirm it in the UI's detection editor, then run `NEATLOGS_ATTR_FIELD=… heirloom detections --create --delete-s4`.
+  - Detections run on flag span names because no custom-attribute spelling has ever matched.
+  - `probe_never_reached_region` fires on absent-symbol NOT_AFFECTED_PROVEN, where reach is undefined: a false positive of the predicate.
   - `NEATLOGS_TRACE_URL` (the real deep-link format) is still unset.
 - **Calibration gaps:**
   - A mitigation-asserting probe (CVE-2025-27556) passes every gate.
-  - 5 positives are UNPROVEN, 3 of them NO_REACH on fixes with several call sites; the porter needs a per-call-site test hint.
-  - CVE-2026-15307 needs a probe that does not override a fix symbol.
-- **13 post-EOL CVEs have no calibrated probe yet;** E2 campaign replay (§10.5) is not started.
-- **Not done:** `docs/outreach/` drafts (§10.7) and the read API (§10.6).
-- **Housekeeping:** record the cost of a killed `claude -p` attempt (cost_unknown). Install `gettext` (needs approval) to un-skip i18n extraction tests.
+  - **NO_REACH:**
+    - NO_REACH when the fix spans backend-specific code that cannot run here (CVE-2026-15830 touches the MySQL/Oracle/SpatiaLite converters; tests run on PostGIS).
+    - E1 positives with several call sites (CVE-2026-3902: `AsyncRequestFactory.generic` never called).
+  - **No calibrated probe:**
+    - CVE-2026-7666's fix is in the SMTP backend, and probes may not open sockets; a local SMTP fixture would be a design change.
+    - CVE-2026-77050's porter probes ERROR on U⁺ (S1 needed a tracemalloc probe).
+    - CVE-2026-35193 and CVE-2026-15337: the probes do not discriminate.
+- **Not run yet:** the follow-up fast-forward and the stacked PR (both depend on a published first fix).
+- **Not done:** the `docs/outreach/` drafts (§10.7, planned for B5).
+- **Housekeeping:** install `gettext` (needs approval) to un-skip i18n extraction tests.
 
 ## Submission
