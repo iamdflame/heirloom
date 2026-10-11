@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-11T20:55:34Z",
+  "detection": {
+    "name": "not_affected_without_calibration",
+    "id": "d984dff2-1abc-4ee4-99dd-fc556f074d5b"
+  },
+  "trace_id": "cf03051e54fc0325304db42ddf2f1823",
+  "run_id": "20261011T205400Z-v1sample",
+  "local_mirror_hits": [
+    "not_affected_without_calibration"
+  ],
+  "neatlogs_hits_before": 0,
+  "neatlogs_hits_after": 1,
+  "seconds_waited": 90,
+  "confirmed": true
+}
