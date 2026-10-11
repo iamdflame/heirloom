@@ -29,11 +29,12 @@ from heirloom import guard
 from heirloom.config import LineSpec, Settings, runtime_line
 from heirloom.git_ops import remove_worktree, rev_parse
 from heirloom.integrations.neatlogs import Telemetry
-from heirloom.ledger import Ledger
+from heirloom.ledger import Ledger, canonical_hash
 from heirloom.lines import distro
 from heirloom.lines.handwritten import HANDWRITTEN
 from heirloom.pipeline import calibrate, locate
 from heirloom.pipeline.context import Ctx
+from heirloom.pipeline.fixes import fixes_of
 from heirloom.pipeline.presence import Evidence, Gate, c1_discrimination
 from heirloom.pipeline.run import lock, new_run_id
 from heirloom.sources.django_security import load
@@ -181,8 +182,22 @@ def default_cves(s: Settings, since: date = date(2026, 2, 1)) -> list[str]:
 
 
 def _runs(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
-    keep = ("outcome", "failing_ids", "skipped_ids", "details", "harness_errors", "reason")
+    keep = (
+        "outcome", "failing_ids", "skipped_ids", "details", "harness_errors", "reason",
+        "seconds", "log",
+    )  # fmt: skip
     return [{k: r.get(k) for k in keep} for r in rows]
+
+
+def _evidence_run(ledger: Ledger, cve: str, line: str, stage: str, inputs: Any) -> str | None:
+    """The run that executed a stage whose (possibly cached) output this cell used."""
+    h = canonical_hash(inputs)
+    rows = [
+        r
+        for r in ledger.stages(cve, line)
+        if r.key.stage == stage and r.status == "done" and r.input_hash == h
+    ]
+    return rows[0].run_id if rows else None
 
 
 def run_cell(
@@ -210,9 +225,31 @@ def run_cell(
                 cal: dict[str, Any] = {**ref, **lo, "probe": probe["sha"]}
                 pres = calibrate.run_presence(ctx, cal)
             status = "done"
+            fixes = fixes_of(loc)
+            scope = calibrate.ref_scope(loc)
+            evidence = {
+                "reference": _evidence_run(
+                    ledger,
+                    cve,
+                    scope,
+                    "calibrate.reference",
+                    {"probe": probe["sha"], "fixes": fixes},
+                ),
+                "on_line": _evidence_run(
+                    ledger,
+                    cve,
+                    spec.name,
+                    "calibrate",
+                    {"probe": probe["sha"], "fixes": fixes, "tip": loc["tip"]},
+                ),
+            }
+            cost = sum(
+                r.cost_usd
+                for r in [*ledger.stages(cve, spec.name), *ledger.stages(cve, scope)]
+                if r.run_id in (run_id, evidence["reference"], evidence["on_line"])
+            )
         finally:
             ledger.finish_run(run_id, status)
-            cost = sum(r.cost_usd for r in ledger.stages(cve, spec.name) if r.run_id == run_id)
             ledger.close()
             trees = ctx.dir / "trees"
             for t in sorted(trees.iterdir()) if trees.exists() else []:
@@ -245,6 +282,7 @@ def run_cell(
         "absent": lo.get("absent"),
         "distro_patches": patches,
         "run_id": run_id,
+        "evidence_runs": evidence,  # runs that executed the (possibly cached) stages
         "cost_usd": cost,
         "seconds": round(time.monotonic() - started, 1),
     }
