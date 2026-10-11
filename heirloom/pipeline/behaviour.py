@@ -2,13 +2,59 @@
 
 from __future__ import annotations
 
+import ast
 import subprocess
+from pathlib import Path
 from typing import Any
 
-from heirloom.git_ops import git
+from heirloom.git_ops import git, show_file
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.pipeline.context import Ctx
 from heirloom.pipeline.fixes import fix_diff, fixes_of
+
+VERSION = 2  # bump when the comparison changes, so cached results are recomputed
+
+
+def message_constants(source: str) -> set[str]:
+    """User-visible message strings in a module: string constants (implicit
+    concatenation already joined by ast), excluding docstrings, with a space and
+    at least 12 characters."""
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return set()
+    docstrings: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef):
+            first = node.body[0] if node.body else None
+            if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant):
+                docstrings.add(id(first.value))
+    return {
+        n.value
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Constant)
+        and isinstance(n.value, str)
+        and id(n) not in docstrings
+        and len(n.value) >= 12
+        and " " in n.value
+    }
+
+
+def missing_messages(
+    repo: Path, fixes: list[str], paths: list[str], backport_tree: Path
+) -> list[dict[str, str]]:
+    """Messages the upstream fix introduces that the backported files do not contain."""
+    out: list[dict[str, str]] = []
+    for path in paths:
+        if not path.endswith(".py"):
+            continue
+        before = message_constants(show_file(repo, f"{fixes[0]}^", path) or "")
+        after = message_constants(show_file(repo, fixes[-1], path) or "")
+        mine = backport_tree / path
+        have = message_constants(mine.read_text()) if mine.exists() else set()
+        for msg in sorted(after - before - have):
+            out.append({"test": f"message in {path}", "upstream": msg, "backport": "absent"})
+    return out
 
 
 def _exc_kind(detail: str) -> str:
@@ -63,6 +109,9 @@ def run(
                         "backport": f"{b.outcome} {b.detail}".strip(),
                     }
                 )
+        # Upstream tests often cannot run on the old line (diverged test files); a
+        # changed user-visible message is still an observable difference.
+        diffs += missing_messages(ctx.repo, fixes_of(loc), loc["fix_files"], beh)
         span.set("behaviour_same", not diffs)
         span.set("behaviour_compared", len(compared))
         return {
@@ -75,5 +124,7 @@ def run(
         }
 
     return ctx.stage(
-        "behaviour", {"patch": adapt["patch_sha"], "probe": probe["sha"], "fix": loc["fix"]}, body
+        "behaviour",
+        {"patch": adapt["patch_sha"], "probe": probe["sha"], "fix": loc["fix"], "v": VERSION},
+        body,
     )

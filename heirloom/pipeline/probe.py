@@ -57,6 +57,24 @@ def fix_added_lines(ctx: Ctx, fixes: list[str]) -> list[str]:
     return out
 
 
+L_SOURCE_HEADER = "## Django 4.2 source of the affected modules"
+FEEDBACK_HEADER = "\n## Feedback on your previous probe"
+
+
+def leak_surface(prompt: str) -> str:
+    """The prompt minus the line's own source and test models.
+
+    Those sections come from the vulnerable tree L, which predates the fix, so they
+    cannot leak it; generic lines there (``except FileExistsError:``) only caused
+    false alarms. The advisory, the upstream test diff and any feedback are checked.
+    """
+    start = prompt.find(L_SOURCE_HEADER)
+    if start < 0:
+        return prompt
+    end = prompt.find(FEEDBACK_HEADER, start)
+    return prompt[:start] + (prompt[end:] if end >= 0 else "")
+
+
 def assert_no_leak(prompt: str, added: list[str]) -> int:
     """Raise if any line the fix introduces appears as a whole line of the prompt."""
     lines = {_norm(x) for x in prompt.splitlines()}
@@ -193,7 +211,7 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
         problems: list[str] = []
         for n in range(3):
             prompt = build_prompt(ctx, loc, c0, attempt_feedback)
-            checked = assert_no_leak(prompt, added)
+            checked = assert_no_leak(leak_surface(prompt), added)
             tag = hashlib.sha256((attempt_feedback or "").encode()).hexdigest()[:8]
             ctx.log("probe", f"prompt-{tag}-{n}.md").write_text(prompt)
             res = router.complete(

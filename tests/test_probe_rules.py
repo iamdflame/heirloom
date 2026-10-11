@@ -1,6 +1,13 @@
 import pytest
 
-from heirloom.pipeline.probe import LeakageError, assert_no_leak, parse_blocks, validate
+from heirloom.pipeline.probe import (
+    L_SOURCE_HEADER,
+    LeakageError,
+    assert_no_leak,
+    leak_surface,
+    parse_blocks,
+    validate,
+)
 
 APP = "hl_cve_2026_87975"
 MODELS = (
@@ -60,3 +67,16 @@ def test_leakage_guard_ignores_a_prefix_of_an_unchanged_line() -> None:
     added = ["FORBIDDEN_ALIAS_PATTERN = _lazy_re_compile("]
     l_source = 'FORBIDDEN_ALIAS_PATTERN = _lazy_re_compile(r"[\'`\\"\\]\\[;\\s]|#|--")\n'
     assert assert_no_leak(l_source, added) == 1
+
+
+def test_leak_surface_skips_l_source_but_keeps_feedback() -> None:
+    added = ["except FileExistsError:"]
+    prompt = (
+        "## Advisory\ntext\n"
+        f"{L_SOURCE_HEADER}\n```python\ntry:\n    pass\nexcept FileExistsError:\n```\n"
+        "## Upstream test models (Django 4.2)\n(none)\n"
+    )
+    assert assert_no_leak(leak_surface(prompt), added) == 1
+    leaky = prompt + "\n## Feedback on your previous probe\nexcept FileExistsError:\n"
+    with pytest.raises(LeakageError):
+        assert_no_leak(leak_surface(leaky), added)

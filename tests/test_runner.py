@@ -147,6 +147,18 @@ def test_subtest_failures_count_per_subtest() -> None:
     assert res.failing_ids == {T1}
 
 
+def test_bracketed_subtest_messages_are_parsed() -> None:
+    """Python 3.12 prints subTest(msg) as `FAIL: test_x (id) [msg]`; msg can be anything."""
+    sections = [
+        section("FAIL", T1, "AssertionError: a").replace(f"({T1})", f'({T1}) [x" from t; --]'),
+        section("FAIL", T1, "AssertionError: b").replace(f"({T1})", f"({T1}) [name\x1b]"),
+    ]
+    out = synth([f"test_one ({T1}) ... FAIL"], sections, 1, "FAILED (failures=2)")
+    res = classify(out, returncode=1)
+    assert res.outcome == "FAIL"
+    assert res.failing_ids == {T1}
+
+
 def test_import_failure_of_probe_app_is_error() -> None:
     failed = "unittest.loader._FailedTest.hl_cve_x"
     out = synth(

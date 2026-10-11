@@ -35,7 +35,9 @@ _STATUS = r"(?P<status>ok|FAIL|ERROR|skipped(?: .*)?|expected failure|unexpected
 STATUS_LINE = re.compile(rf"^{_ID} \.\.\. {_STATUS}$")
 ID_ONLY_LINE = re.compile(rf"^{_ID}$")
 TRAILING_STATUS = re.compile(rf"^.* \.\.\. {_STATUS}$")
-SECTION = re.compile(rf"^(?P<kind>FAIL|ERROR): {_ID}(?: \((?P<sub>.*)\))?$")
+# Prefix match: subtests add " (k=v)" or " [msg]" after the id, and a subTest message
+# may contain arbitrary text (even control characters), so nothing after the id counts.
+SECTION = re.compile(rf"^(?P<kind>FAIL|ERROR): {_ID}(?=$| )")
 RAN = re.compile(r"^Ran (?P<n>\d+) tests? in [\d.]+s$")
 SUMMARY = re.compile(r"^(?P<word>OK|FAILED)(?: \((?P<counts>[^)]*)\))?$")
 ASSERTION = re.compile(r"^(?:[\w.]+\.)?\w*AssertionError\b")

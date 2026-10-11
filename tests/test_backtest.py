@@ -77,3 +77,38 @@ def test_eval_adapter_tree_holds_only_the_line_tip(tmp_path: Path) -> None:
     assert git(tree, "rev-parse", "HEAD").strip() == tip
     assert not git_ok(tree, "cat-file", "-e", "f75f8f3597")
     assert git(tree, "rev-parse", "--git-common-dir").strip() == ".git"  # not a worktree
+
+
+def test_message_constants_join_implicit_concatenation_and_skip_docstrings() -> None:
+    from heirloom.pipeline.behaviour import message_constants
+
+    src = (
+        '"""Module docstring with spaces."""\n'
+        "def f(alias):\n"
+        '    """Function docstring here."""\n'
+        "    raise ValueError(\n"
+        '        "Column aliases cannot contain whitespace characters, hashes, "\n'
+        '        "control characters, quotation marks."\n'
+        "    )\n"
+    )
+    assert message_constants(src) == {
+        "Column aliases cannot contain whitespace characters, hashes, "
+        "control characters, quotation marks."
+    }
+
+
+@needs_repo
+def test_missing_upstream_message_is_a_behaviour_diff(tmp_path: Path) -> None:
+    """CVE-2026-1287: upstream adds 'control characters' to the alias error message."""
+    from heirloom.pipeline.behaviour import missing_messages
+
+    path = "django/db/models/sql/query.py"
+    tree = tmp_path / "tree"
+    (tree / path).parent.mkdir(parents=True)
+    old = git(DJANGO, "show", f"b40cfc6052:{path}")  # 4.2 before the fellows' fix
+    (tree / path).write_text(old)
+    diffs = missing_messages(DJANGO, ["3e68ccdc11"], [path], tree)
+    assert any("control characters" in d["upstream"] for d in diffs)
+    fellows = git(DJANGO, "show", f"f75f8f3597:{path}")  # the fellows' 4.2 fix
+    (tree / path).write_text(fellows)
+    assert missing_messages(DJANGO, ["3e68ccdc11"], [path], tree) == []

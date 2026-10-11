@@ -19,6 +19,7 @@ from heirloom.pipeline.context import Ctx, StageFailed
 from heirloom.pipeline.fixes import fix_diff, fixes_of
 
 MAX_HISTORY_CHARS = 6000
+PROMPT_VERSION = 2  # part of the stage inputs: a prompt change re-runs ADAPT
 
 
 def sanitized(ctx: Ctx) -> bool:
@@ -117,6 +118,8 @@ Upstream fixed {ctx.cve} on the 5.2 branch with the commit below. Rebuild the sa
 for 4.2 using this codebase's idioms (4.2 lacks some 5.x helpers; do not add them).
 
 Rules:
+- Keep the fix's observable behaviour identical to upstream: the same exception types
+  and the same user-visible messages (copy new or changed message strings verbatim).
 - Edit only files under django/. Do not create, edit or delete anything under tests/.
 - Do not commit or push.
 - The failing probe is tests/{ctx.app}. Check with:
@@ -196,4 +199,5 @@ def run(
             "raw": str(res.raw_path),
         }
 
-    return ctx.stage("adapt", {"fix": loc["fix"], "probe": probe["sha"], "hint": hint}, body)
+    inputs = {"fix": loc["fix"], "probe": probe["sha"], "hint": hint, "prompt": PROMPT_VERSION}
+    return ctx.stage("adapt", inputs, body)
