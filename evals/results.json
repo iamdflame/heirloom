@@ -606,6 +606,101 @@
         "correct": true,
         "at": "2026-10-11T09:43:30Z"
       }
+    },
+    "v1": {
+      "CVE-2025-13473:positive": {
+        "cve": "CVE-2025-13473",
+        "kind": "positive",
+        "tip": "a28c3c739564ccc2aabc7b20211f54d838c7b582",
+        "truth": "AFFECTED",
+        "fellows_fix": "6dc23508f3395e1254c315084c7334ef81c4c09a",
+        "line": "bt-pos-a28c3c7395",
+        "pipeline": "v1",
+        "verdict": "AFFECTED",
+        "reason": "NONE",
+        "own_upstream_tests": "PASS",
+        "conflicts": [
+          "docs/releases/5.2.11.txt"
+        ],
+        "escalated": false,
+        "cost_usd": 0.0,
+        "cost_unknown": false,
+        "minutes": 0.02,
+        "fellows_test_passes": true,
+        "fellows_test_detail": "PASS OK (1 tests)",
+        "correct": true,
+        "at": "2026-10-11T09:45:55Z"
+      },
+      "CVE-2025-14550:positive": {
+        "cve": "CVE-2025-14550",
+        "kind": "positive",
+        "tip": "6dc23508f3395e1254c315084c7334ef81c4c09a",
+        "truth": "AFFECTED",
+        "fellows_fix": "f578acc8c54530fffabd52d2db654c8669b011af",
+        "line": "bt-pos-6dc23508f3",
+        "pipeline": "v1",
+        "verdict": "AFFECTED",
+        "reason": "NONE",
+        "own_upstream_tests": null,
+        "conflicts": [
+          "django/core/handlers/asgi.py",
+          "docs/releases/5.2.11.txt",
+          "tests/asgi/tests.py"
+        ],
+        "escalated": false,
+        "cost_usd": 0.1394,
+        "cost_unknown": false,
+        "minutes": 0.77,
+        "fellows_test_passes": true,
+        "fellows_test_detail": "PASS OK (1 tests)",
+        "correct": true,
+        "at": "2026-10-11T09:46:43Z"
+      },
+      "CVE-2026-1207:positive": {
+        "cve": "CVE-2026-1207",
+        "kind": "positive",
+        "tip": "f578acc8c54530fffabd52d2db654c8669b011af",
+        "truth": "AFFECTED",
+        "fellows_fix": "a14363102d98fa29b8cced578eb3a0fadaa5bcb7",
+        "line": "bt-pos-f578acc8c5",
+        "pipeline": "v1",
+        "verdict": "AFFECTED",
+        "reason": "NONE",
+        "own_upstream_tests": "ERROR",
+        "conflicts": [
+          "docs/releases/5.2.11.txt"
+        ],
+        "escalated": false,
+        "cost_usd": 0.0,
+        "cost_unknown": false,
+        "minutes": 0.03,
+        "fellows_test_passes": true,
+        "fellows_test_detail": "PASS OK (2 tests)",
+        "correct": true,
+        "at": "2026-10-11T09:46:50Z"
+      },
+      "CVE-2026-1285:positive": {
+        "cve": "CVE-2026-1285",
+        "kind": "positive",
+        "tip": "a14363102d98fa29b8cced578eb3a0fadaa5bcb7",
+        "truth": "AFFECTED",
+        "fellows_fix": "b40cfc6052ced26dcd8166a58ea6f841d0d2cac8",
+        "line": "bt-pos-a14363102d",
+        "pipeline": "v1",
+        "verdict": "NOT_AFFECTED",
+        "reason": "NONE",
+        "own_upstream_tests": "FAIL",
+        "conflicts": [
+          "django/utils/text.py",
+          "docs/releases/5.2.11.txt"
+        ],
+        "escalated": false,
+        "cost_usd": 0.0949,
+        "cost_unknown": false,
+        "minutes": 0.68,
+        "correct": false,
+        "at": "2026-10-11T09:47:30Z"
+      }
     }
   },
   "summary": {
@@ -622,6 +717,20 @@
       "usd_total": 3.5906,
       "cost_unknown_cases": 0,
       "minutes_per_case": 1.0
+    },
+    "v1": {
+      "cases": 4,
+      "decided": 4,
+      "verdict_accuracy": 0.75,
+      "false_not_affected": 1,
+      "false_affected": 0,
+      "unproven": 0,
+      "escalation_rate": 0.0,
+      "fellows_test_pass": "3/4",
+      "usd_per_case": 0.0586,
+      "usd_total": 0.2343,
+      "cost_unknown_cases": 0,
+      "minutes_per_case": 0.38
     }
   }
 }

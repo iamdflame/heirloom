@@ -293,6 +293,7 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
             1 for r in rows if r["truth"] == "NOT_AFFECTED" and r["verdict"] == "AFFECTED"
         ),
         "unproven": sum(1 for r in rows if r["verdict"] == "UNPROVEN"),
+        "errors": sum(1 for r in rows if r["verdict"] == "ERROR"),
         "escalation_rate": round(sum(bool(r.get("escalated")) for r in rows) / len(rows), 3)
         if rows
         else None,
