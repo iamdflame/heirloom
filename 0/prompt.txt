@@ -1,0 +1,38 @@
+<task-notification>
+<task-id>buh1l5oly</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-84429@3b7ae042ce (new) ...
+[w1] CVE-2026-77050@3b7ae042ce: evidence UNPROVEN PROBE_ERROR https://github.com/iamdflame/heirloom/issues/9  $0.110328</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>buh1l5oly</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w1] CVE-2026-87975@3b7ae042ce (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>buh1l5oly</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w1] CVE-2026-87975@3b7ae042ce: skipped AFFECTED ALREADY_PUBLISHED https://github.com/iamdflame/django/pull/9  $0</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>buh1l5oly</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-15920@7d75c0b928: published AFFECTED NONE https://github.com/iamdflame/django/pull/18  $0.227877</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>buh1l5oly</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[Monitor expired after 10m with 7 events delivered. Re-arm it if you still need the watch.]</event>
+</task-notification>
