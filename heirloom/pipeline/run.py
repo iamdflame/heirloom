@@ -186,6 +186,26 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
             dec = {**dec, "decision": "publish-fix", "matched_upstream": True}
         else:
             dec = {**dec, "decision": "publish-evidence", "matched_upstream": False}
+    adopted: list[str] = []
+    if dec["decision"] == "adopt-upstream-tests" and ad is not None and pr_ is not None and cal:
+        # The stored answer: carry upstream's own test changes, verify, then decide again.
+        ver2 = verify.adopt_upstream_tests(ctx, loc, pr_, cal, ad, ver or {})
+        if ver2["ok"]:
+            ver, adopted = ver2, list(ver2["adopted_tests"])
+            beh = behaviour.run(ctx, loc, pr_, ad)
+            prec = dec.get("precedent")
+            dec = decide.run(ctx, pres, ver, beh)
+            if dec["decision"] == "publish-fix":
+                dec = {
+                    **dec,
+                    "precedent": prec,
+                    "note": f"Per precedent {(prec or {}).get('id', '?')}, this backport also "
+                    "carries upstream's own changes to "
+                    + ", ".join(f"`{f}`" for f in adopted)
+                    + ", because the fix deliberately changes what those 4.2 tests asserted.",
+                }
+        else:
+            dec = {**dec, "decision": "publish-evidence", "adopt_failed": ver2.get("hint")}
     base = Result(
         status="",
         cve=ctx.cve,
@@ -226,7 +246,7 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
         base.status, base.issue_url = "evidence", str(ev["url"])
         return base
 
-    committed = publish.commit(ctx, loc, pr_, pres, ad["patch_sha"])
+    committed = publish.commit(ctx, loc, pr_, pres, ad["patch_sha"], adopted=adopted)
     pushed = publish.push(ctx, committed)
     art = publish.artifacts(ctx, {"remote_sha": pushed["remote_sha"]})
     subject = publish._message(ctx, loc, pres).splitlines()[0]

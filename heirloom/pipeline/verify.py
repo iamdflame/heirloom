@@ -139,3 +139,95 @@ def upstream_test_change(ver: dict[str, Any] | None, loc: dict[str, Any]) -> lis
     changed = set(loc.get("upstream_test_ids") or [])
     failures: list[str] = list(ver["new_failures"])
     return failures if all(t in changed for t in failures) else []
+
+
+def test_files_of(loc: dict[str, Any], test_ids: list[str]) -> list[str]:
+    """The upstream test files that define these test ids."""
+    out = set()
+    for f in loc.get("test_files") or []:
+        module = f.removeprefix("tests/").removesuffix(".py").replace("/", ".")
+        if any(t.startswith(module + ".") for t in test_ids):
+            out.add(f)
+    return sorted(out)
+
+
+def adopt_upstream_tests(
+    ctx: Ctx,
+    loc: dict[str, Any],
+    probe: dict[str, Any],
+    cal: dict[str, Any],
+    adapt: dict[str, Any],
+    ver: dict[str, Any],
+) -> dict[str, Any]:
+    """VERIFY again after the orchestrator applies upstream's own changes to the test files
+    whose tests the fix breaks (a human chose ``adopt-upstream-tests``). The adapter never
+    edits tests; these hunks come verbatim from the upstream fix commits."""
+    from heirloom.pipeline.fixes import fix_diff, fixes_of
+
+    files = test_files_of(loc, list(ver.get("upstream_test_change") or []))
+    test_patch = fix_diff(ctx.repo, fixes_of(loc), *files, context=3) if files else ""
+
+    def body(span: StageSpan) -> dict[str, Any]:
+        if not test_patch:
+            return {"ok": False, "files": files, "hint": "no upstream test hunks to adopt"}
+        tree = lfix(ctx, loc["base"], probe["files"], adapt["patch"])
+        applied = git_ok_apply(tree, test_patch)
+        if not applied:
+            return {"ok": False, "files": files, "hint": "upstream test hunks do not apply to 4.2"}
+        labels = labels_for(ctx, loc)
+        base = baseline(ctx, loc, labels)
+        runner = ctx.runner()
+        tag = adapt["patch_sha"][:8]
+        after_probe = [
+            runner.run(tree, [ctx.app], log_path=ctx.log("verify", tag, f"adopted-probe-{i}.log"))
+            for i in range(3)
+        ]
+        after = runner.run(tree, labels, log_path=ctx.log("verify", tag, "labels-adopted.log"))
+        bad = {"FAIL", "ERROR", "TIMEOUT"}
+        now = outcomes(after)
+        base_tests: dict[str, str] = base["tests"]
+        new_failures = sorted(
+            t for t, o in now.items() if o in bad and base_tests.get(t) not in bad
+        )
+        new_skips = sorted(t for t, o in now.items() if o == "SKIP" and base_tests.get(t) != "SKIP")
+        after_pass = all(r.outcome == "PASS" for r in after_probe)
+        ok = after_pass and not new_failures and not new_skips
+        span.set("verify_ok", ok)
+        span.set("adopted_test_files", ",".join(files))
+        return {
+            **ver,
+            "ok": ok,
+            "files": files,
+            "adopted_tests": files,
+            "test_patch_sha": hashlib.sha256(test_patch.encode()).hexdigest(),
+            "probe_after": [r.outcome for r in after_probe],
+            "labels_summary": after.summary,
+            "tests_compared": len(now),
+            "new_failures": new_failures,
+            "new_skips": new_skips,
+            "upstream_test_change": [],
+            "hint": None
+            if ok
+            else f"after adopting {files}: new failures {new_failures[:20]}, "
+            f"new skips {new_skips[:20]}, probe {[r.outcome for r in after_probe]}",
+        }
+
+    inputs = {
+        "patch": adapt["patch_sha"],
+        "probe": probe["sha"],
+        "tests": hashlib.sha256(test_patch.encode()).hexdigest(),
+    }
+    return ctx.stage("verify.adopted", inputs, body)
+
+
+def git_ok_apply(tree: Path, patch: str) -> bool:
+    """Apply a patch with a 3-way merge; False if it does not apply cleanly."""
+    import subprocess
+
+    proc = subprocess.run(
+        ["git", "-C", str(tree), "apply", "--3way", "--whitespace=nowarn", "-"],
+        input=patch,
+        capture_output=True,
+        text=True,
+    )
+    return proc.returncode == 0 and "<<<<<<<" not in git(tree, "diff")

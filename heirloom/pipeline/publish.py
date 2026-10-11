@@ -61,19 +61,40 @@ def _committed(ctx: Ctx, loc: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def commit(
-    ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any], pres: dict[str, Any], patch_sha: str
+    ctx: Ctx,
+    loc: dict[str, Any],
+    probe: dict[str, Any],
+    pres: dict[str, Any],
+    patch_sha: str,
+    *,
+    adopted: list[str] | None = None,
 ) -> dict[str, Any]:
+    """Commit the verified fix and the probe. ``adopted``: upstream test files a human
+    precedent allows (adopt-upstream-tests); any other edit to an existing test refuses."""
+    allowed = set(adopted or [])
+
     def body(span: StageSpan) -> dict[str, Any]:
         done = _committed(ctx, loc)
         if done:
             return done
         tree = ctx.tree_path("Lfix")
-        git(tree, "add", "-A", "--", "django/", f"tests/{ctx.app}/")
+        git(tree, "add", "-A", "--", "django/", f"tests/{ctx.app}/", *sorted(allowed))
         staged = git(tree, "diff", "--cached", "--name-only").split()
-        if any(p.startswith("tests/") and not p.startswith(f"tests/{ctx.app}/") for p in staged):
+        if any(
+            p.startswith("tests/") and not p.startswith(f"tests/{ctx.app}/") and p not in allowed
+            for p in staged
+        ):
             raise StageFailed(f"refusing to commit edits to existing tests: {staged}")
         msg = ctx.log("publish", "commit-message.txt")
-        msg.write_text(_message(ctx, loc, pres))
+        text = _message(ctx, loc, pres)
+        if allowed:
+            text = text.replace(
+                f"{KEY_TRAILER}:",
+                "Adopts upstream's own changes to: " + ", ".join(sorted(allowed)) + "\n"
+                f"{KEY_TRAILER}:",
+                1,
+            )
+        msg.write_text(text)
         git(tree, "commit", "-q", "-F", str(msg))
         sha = git(tree, "rev-parse", "HEAD").strip()
         checkpoint = entire.checkpoint_of_head(tree)
@@ -81,9 +102,12 @@ def commit(
         span.set("checkpoint", checkpoint or "NONE")
         return {"sha": sha, "checkpoint": checkpoint}
 
+    inputs: dict[str, Any] = {"patch": patch_sha, "probe": probe["sha"], "base": loc["base"]}
+    if allowed:
+        inputs["adopted"] = sorted(allowed)
     return ctx.stage(
         "publish.commit",
-        {"patch": patch_sha, "probe": probe["sha"], "base": loc["base"]},
+        inputs,
         body,
         effect=True,
         reconcile=lambda: _committed(ctx, loc),

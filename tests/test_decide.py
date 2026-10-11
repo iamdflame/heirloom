@@ -56,3 +56,16 @@ def test_failures_only_in_tests_upstream_rewrote_are_a_choice_not_an_adapt_failu
     assert upstream_test_change({**ver, "probe_after": ["FAIL"] * 3}, loc) == []
     assert upstream_test_change({**ver, "tests_edited_after_red": True}, loc) == []
     assert classify(pres, ver, None) == "ADAPT_FAILED"
+
+
+def test_adopted_test_files_are_the_upstream_files_defining_the_failing_tests() -> None:
+    from heirloom.pipeline.verify import test_files_of
+
+    loc = {
+        "test_files": [
+            "tests/gis_tests/geoapp/tests.py",
+            "tests/gis_tests/rasterapp/test_rasterfield.py",
+        ]
+    }
+    ids = ["gis_tests.rasterapp.test_rasterfield.RasterFieldTest.test_lookup_value_error"]
+    assert test_files_of(loc, ids) == ["tests/gis_tests/rasterapp/test_rasterfield.py"]
