@@ -117,6 +117,26 @@ def _diffs(beh: dict[str, Any] | None, ver: dict[str, Any] | None) -> list[str]:
     return lines
 
 
+def evidence_lines(ctx: Ctx, marker: str) -> list[str]:
+    """Links a person needs to decide: upstream commits, run artifacts, the trace."""
+    from heirloom.integrations.neatlogs import trace_url
+    from heirloom.pipeline import publish
+
+    loc = ctx.out.get("locate") or {}
+    art = publish.artifacts(ctx, {"question": marker})
+    lines = [
+        f"- upstream fix: [`{f[:10]}`](https://github.com/django/django/commit/{f})"
+        for f in loc.get("fixes", [])
+    ]
+    lines.append(f"- run `{ctx.run_id}` artifacts (ledger, probe, VERIFY and BEHAVIOUR logs): "
+                 f"{art['base']}")  # fmt: skip
+    ref = ctx.spans.get("verify") or ctx.spans.get("presence")
+    if ref is not None:
+        url = trace_url(ctx.s.neatlogs_trace_url, ref.trace_id, ref.span_id)
+        lines.append(f"- neatlogs trace `{ref.trace_id}`" + (f": {url}" if url else ""))
+    return lines
+
+
 def ask(
     ctx: Ctx,
     kind: str,
@@ -138,6 +158,7 @@ def ask(
             return existing
         options = OPTIONS.get(kind, DEFAULT_OPTIONS)
         diffs = _diffs(beh, ver)
+        evidence = evidence_lines(ctx, marker)
         text = "\n".join(
             [
                 f"Heirloom needs a decision for **{ctx.cve}** on Django {ctx.line}: `{kind}`.",
@@ -147,6 +168,9 @@ def ask(
                 "",
                 *(["What differs between upstream and the verified backport:", *diffs, ""]
                   if diffs else []),
+                "Evidence:",
+                *evidence,
+                "",
                 "Options (answer with a comment `/heirloom answer <option>`):",
                 *[
                     f"- `{o}`" + (" (default)" if i == 0 else "") + f": {EXPLAIN.get(o, '')}"

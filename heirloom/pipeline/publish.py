@@ -294,6 +294,11 @@ def _first_log(ctx: Ctx, base: str, *parts: str) -> str:
     return ""
 
 
+def _l_log(loc: dict[str, Any], i: int) -> str:
+    """The i-th probe run on the line tip (calibrate.on_line names logs by tip)."""
+    return f"L-{loc['tip'][:10]}-{i}.log"
+
+
 def _probe_claim(probe: dict[str, Any]) -> str:
     checked = probe.get("fix_lines_checked", "?")
     text = (
@@ -360,14 +365,14 @@ def claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
             "C2",
             f"Probe runs on {ctx.line} with no ERROR or SKIP",
             _span(ctx, "calibrate"),
-            (Link("L run", _first_log(ctx, base, "calibrate", tag, "L-0.log")),),
+            (Link("L run", _first_log(ctx, base, "calibrate", tag, _l_log(loc, 0))),),
         ),
         Claim("C3", f"Coverage on {ctx.line} reaches {reach}", _span(ctx, "calibrate"), (ledger,)),
         Claim(
             "V1",
             f"Verdict {pres['verdict']}: {pres['detail']}",
             _span(ctx, "presence"),
-            (Link("L run", _first_log(ctx, base, "calibrate", tag, "L-1.log")), ledger),
+            (Link("L run", _first_log(ctx, base, "calibrate", tag, _l_log(loc, 1))), ledger),
         ),
         Claim(
             "A1",
@@ -513,7 +518,8 @@ def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
 
     return ctx.stage(
         "publish.pr",
-        {"sha": d["commit"]["sha"], "artifacts": art["commit"]},
+        # body 2: C2/V1 link the tip-named calibration logs (were struck as unlinked)
+        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 2},
         body,
         effect=True,
         reconcile=reconcile,

@@ -195,3 +195,29 @@ def test_reuse_mode_skips_the_porter_and_never_retries(
         "UNPROVEN",
         "PROBE_ERROR",
     )
+
+
+def test_an_invalid_cheap_probe_escalates_to_the_stronger_model(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, no_subprocess: list[list[str]]
+) -> None:
+    from heirloom.pipeline.context import StageFailed
+
+    spec = NON_PUBLISHING[0]
+    models: list[str | None] = []
+
+    def porter(ctx: Ctx, loc: Any, c0: Any, fb: Any, model: str | None = None) -> Any:
+        models.append(model)
+        if len(models) == 1:
+            raise StageFailed("porter produced no valid probe: ['tests.py:4: unexpected import']")
+        return {"sha": "p", "files": {}}
+
+    monkeypatch.setattr(locate, "run", lambda ctx: LOC)
+    monkeypatch.setattr(calibrate, "run_c0", lambda ctx, loc: {"structural": False})
+    monkeypatch.setattr(probe, "run", porter)
+    monkeypatch.setattr(calibrate, "run", lambda ctx, loc, pr: {"feedback": None})
+    unproven = {"verdict": "UNPROVEN", "reason": "NO_REACH", "detail": "", "gates": {}}
+    monkeypatch.setattr(calibrate, "run_presence", lambda ctx, cal: unproven)
+    ctx = make_ctx(tmp_path, spec)
+    with guard.publishing(spec):
+        run.pipeline(ctx)
+    assert models == [ctx.s.porter_first_model, ctx.s.probe_model]

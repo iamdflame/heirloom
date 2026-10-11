@@ -121,6 +121,10 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
                 pr_ = probe.run(ctx, loc, c0, feedback, model=model)
         except (StageFailed, probe.LeakageError) as exc:
             pres = _probe_error(str(exc))
+            if isinstance(exc, StageFailed) and reuse_probe is None and model != models[-1]:
+                # The cheaper model wrote no valid probe: the stronger one gets a turn.
+                feedback = f"Your previous probes were rejected before running: {exc}"
+                continue
             break
         except BudgetExceeded as exc:
             budget_hit = str(exc)
