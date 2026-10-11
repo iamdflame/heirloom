@@ -255,11 +255,11 @@ def claim(path: Path, worker: str, budget_ok: Callable[[int], bool]) -> Event | 
 
 
 def reopen(path: Path) -> list[str]:
-    """Put waiting, blocked and budget-stopped events back in the queue (after answers)."""
+    """Put waiting, blocked, budget-stopped and crashed events back in the queue."""
     with locked_state(path) as state:
         ids = []
         for ev in state["events"]:
-            if ev["status"] in (*WAITING, "budget_stop") or (
+            if ev["status"] in (*WAITING, "budget_stop", "harness_error") or (
                 ev["status"] == "running" and not _alive(int(ev.get("pid") or 0))
             ):
                 ev["status"] = "pending"

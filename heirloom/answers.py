@@ -75,7 +75,7 @@ def poll(s: Settings, *, apply: bool = True) -> list[Answer]:
     store = PolicyStore(s.root / "policy" / "precedents.json")
     users = allowed_users(s)
     found: list[Answer] = []
-    for issue in github.open_issues(s.heirloom_repo, '"heirloom-question" in:body'):
+    for issue in github.open_issues(s.heirloom_repo, "heirloom-question:"):
         m = MARKER.search(issue.get("body") or "")
         if not m:
             continue

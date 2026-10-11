@@ -68,20 +68,18 @@ def close_pr(repo: str, number: int, comment: str) -> None:
 
 
 def find_issue(repo: str, marker: str) -> dict[str, Any] | None:
+    """The issue whose body carries ``marker``. Lists issues instead of using the search
+    API, whose index lags by seconds to minutes (a just-created issue was not found)."""
     out = gh(
-        "issue",
-        "list",
-        "--repo",
-        repo,
-        "--state",
-        "all",
-        "--search",
-        f'"{marker}" in:body',
-        "--json",
-        "number,url,state,title",
-    )
+        "issue", "list", "--repo", repo, "--state", "all", "--limit", "500",
+        "--json", "number,url,state,title,body",
+    )  # fmt: skip
     issues: list[dict[str, Any]] = json.loads(out or "[]")
-    return issues[0] if issues else None
+    found = [i for i in issues if marker in (i.get("body") or "")]
+    if not found:
+        return None
+    first = min(found, key=lambda i: int(i["number"]))
+    return {k: first[k] for k in ("number", "url", "state", "title")}
 
 
 def create_issue(repo: str, title: str, body_file: Path) -> str:
@@ -115,9 +113,10 @@ def close_issue(repo: str, number: int, comment_text: str) -> None:
     gh("issue", "close", str(number), "--repo", repo, "--comment", comment_text)
 
 
-def open_issues(repo: str, search: str) -> list[dict[str, Any]]:
+def open_issues(repo: str, contains: str) -> list[dict[str, Any]]:
+    """Open issues whose body contains ``contains`` (listed, not searched: no index lag)."""
     out = gh(
-        "issue", "list", "--repo", repo, "--state", "open", "--search", search,
-        "--json", "number,url,title,body", "--limit", "100",
+        "issue", "list", "--repo", repo, "--state", "open",
+        "--json", "number,url,title,body", "--limit", "500",
     )  # fmt: skip
-    return list(json.loads(out or "[]"))
+    return [i for i in json.loads(out or "[]") if contains in (i.get("body") or "")]
