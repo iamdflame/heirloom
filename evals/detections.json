@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-11T21:54:41Z",
+  "condition": {
+    "runOn": "span_name heirloom.flag.<predicate>",
+    "type": "rule",
+    "field": "status",
+    "operator": "=",
+    "value": "OK"
+  },
+  "neatlogs": {
+    "test_edited_after_red": {
+      "id": "6c675899-cc08-4949-a95e-c5bd2b5fdd60",
+      "hits": 0,
+      "trends": []
+    },
+    "claim_without_span": {
+      "id": "f42b1292-4003-4362-82ed-b7386994f67f",
+      "hits": 13,
+      "trends": [
+        {
+          "count": 13,
+          "start": "2026-10-11T21:00:00Z"
+        }
+      ]
+    },
+    "probe_never_reached_region": {
+      "id": "c849e50e-775a-4f6a-b67b-05763f09b195",
+      "hits": 4,
+      "trends": [
+        {
+          "count": 4,
+          "start": "2026-10-11T21:00:00Z"
+        }
+      ]
+    },
+    "fix_applied_where_probe_passed": {
+      "id": "9156d265-a094-45a9-b1a9-f6ac27418e14",
+      "hits": 0,
+      "trends": []
+    },
+    "not_affected_without_calibration": {
+      "id": "d984dff2-1abc-4ee4-99dd-fc556f074d5b",
+      "hits": 1,
+      "trends": [
+        {
+          "count": 1,
+          "start": "2026-10-11T20:00:00Z"
+        }
+      ]
+    }
+  },
+  "local_mirror": {
+    "not_affected_without_calibration": 0,
+    "fix_applied_where_probe_passed": 0,
+    "probe_never_reached_region": 9,
+    "claim_without_span": 13,
+    "test_edited_after_red": 0
+  }
+}
