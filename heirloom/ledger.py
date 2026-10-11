@@ -290,6 +290,16 @@ class Ledger:
                         ),
                     )
             if pause is None:
+                # Retry loops replay earlier attempts on resume: any done attempt with
+                # the same inputs is a cache hit, not only the latest one.
+                hit = db.execute(
+                    "SELECT * FROM stages WHERE cve=? AND line=? AND stage=? AND status='done' "
+                    "AND input_hash=? ORDER BY attempt DESC LIMIT 1",
+                    (cve, line, stage, input_hash),
+                ).fetchone()
+                if hit is not None:
+                    row = self._row(hit)
+                    return Cached(row.key, row.output or {})
                 key = StageKey(cve, line, stage, attempt)
                 db.execute(
                     "INSERT INTO stages (cve, line, stage, attempt, status, effect, run_id, pid, "

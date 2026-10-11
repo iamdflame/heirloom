@@ -150,3 +150,20 @@ def test_schema_is_idempotent_and_clear_scopes_to_cve(tmp_path: Path) -> None:
 
     assert reopened.stages(CVE, LINE) == []
     assert len(reopened.stages("CVE-2026-1", LINE)) == 1
+
+
+def test_replaying_an_earlier_attempt_is_a_cache_hit(tmp_path: Path) -> None:
+    """Retry loops (probe -> calibrate -> probe with feedback) replay on resume."""
+    ledger = make(tmp_path, pid=100)
+    first = claim(ledger, "probe", {"feedback": None})
+    ledger.finish(first, {"files": "v1"})
+    second = claim(ledger, "probe", {"feedback": "passes on U-"})
+    ledger.finish(second, {"files": "v2"})
+
+    assert ledger.begin(CVE, LINE, "probe", {"feedback": None}, run_id="r2") == Cached(
+        first, {"files": "v1"}
+    )
+    assert ledger.begin(CVE, LINE, "probe", {"feedback": "passes on U-"}, run_id="r2") == Cached(
+        second, {"files": "v2"}
+    )
+    assert len(ledger.stages(CVE, LINE)) == 2
