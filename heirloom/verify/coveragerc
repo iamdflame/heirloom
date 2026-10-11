@@ -1,0 +1,3 @@
+# Empty on purpose: Django ships tests/.coveragerc with `source = django`,
+# which would override --include.
+[run]

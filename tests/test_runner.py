@@ -232,3 +232,21 @@ def test_real_run_on_42_worktree(tmp_path: Path) -> None:
     assert res.outcome == "FAIL"
     assert len(res.failing_ids) == 3
     assert res.django_file == str((WORK / "wt" / "L" / "django" / "__init__.py").resolve())
+
+
+@pytest.mark.skipif(
+    not (TEST_PYTHON.exists() and (WORK / "wt" / "L" / "tests" / "hl_cve_2026_87975").exists()),
+    reason="needs the spike worktree and test venv",
+)
+def test_coverage_is_limited_to_include_and_keyed_relative_to_worktree(tmp_path: Path) -> None:
+    """Django's tests/.coveragerc sets `source = django`, which must not override --include."""
+    wt = WORK / "wt" / "L"
+    res = Runner(python=TEST_PYTHON, timeout=300).run(
+        wt,
+        ["hl_cve_2026_87975"],
+        log_path=tmp_path / "run.log",
+        coverage_include=[wt / "django" / "forms" / "models.py"],
+    )
+    assert list(res.coverage) == ["django/forms/models.py"]
+    # save_existing_objects body on 4.2.30 is lines 910-933.
+    assert res.coverage["django/forms/models.py"] & set(range(910, 934))

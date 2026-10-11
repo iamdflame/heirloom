@@ -26,6 +26,7 @@ from typing import Literal
 Outcome = Literal["PASS", "FAIL", "ERROR", "SKIP", "TIMEOUT"]
 
 SHIM = Path(__file__).with_name("_runtests_shim.py")
+RCFILE = Path(__file__).with_name("coveragerc")
 WRONG_TREE_EXIT = 97
 DJANGO_FILE_MARK = "HEIRLOOM_DJANGO_FILE="
 
@@ -256,6 +257,7 @@ class Runner:
                 "-m",
                 "coverage",
                 "run",
+                f"--rcfile={RCFILE}",
                 f"--data-file={cov_file}",
                 f"--include={include}",
                 str(SHIM),
@@ -311,17 +313,23 @@ class Runner:
                 "coverage",
                 "json",
                 "-q",
+                f"--rcfile={RCFILE}",
                 f"--data-file={data_file}",
                 "-o",
                 str(json_path),
             ],
             check=True,
             capture_output=True,
+            cwd=wt,
         )
         files = json.loads(json_path.read_text())["files"]
         out: dict[str, set[int]] = {}
+        root = wt.resolve()
         for name, data in files.items():
-            path = Path(name)
-            rel = path.resolve().relative_to(wt) if path.is_absolute() else path
-            out[str(rel)] = set(data["executed_lines"])
+            path = Path(name) if Path(name).is_absolute() else wt / name
+            try:
+                rel = path.resolve().relative_to(root)
+            except ValueError:
+                continue
+            out[rel.as_posix()] = set(data["executed_lines"])
         return out
