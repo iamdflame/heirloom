@@ -1,0 +1,6 @@
+<task-notification>
+<task-id>buh1l5oly</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w1] CVE-2026-77050@3b7ae042ce (new) ...
+[w2] CVE-2026-48588@c93a9e3c88: published AFFECTED NONE https://github.com/iamdflame/django/pull/17  $0.112011</event>
+</task-notification>
