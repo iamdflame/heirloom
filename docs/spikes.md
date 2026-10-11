@@ -166,3 +166,25 @@ C4 does not trigger on the real L, so it was exercised on **Lfix** = L + the han
   6. Hits and trends endpoints return 200 with empty `hits: []` / `buckets: []` for both detections at time-box end. Hits re-checked at session close: see the end-of-session note below.
 
 **Verdict: PARTIAL.** init, sessions, LiteLLM auto-instrumentation, detection creation, and hits/trends reads all work. **Not yet shown:** a conditional detection matching a custom span attribute, because no custom-attribute span had finished ingesting within the box. The brief lists no specific fallback for S4 (only "don't depend on backfill"). My proposal, not from the brief: keep both detection variants active and create the five real detections only once the field spelling is confirmed by a hit. Emit `heirloom.*` spans under an AGENT root via `@neatlogs.span(kind=…)`. Mirror each detection's predicate locally in the ledger so the before/after numbers never depend solely on neatlogs ingestion.
+
+## L0 follow-up · neatlogs span shapes (2026-10-11, SDK 1.4.26)
+
+§9 said to nest stages under an AGENT root. Measured on this project, that does not ingest. Three emitter experiments (scratch scripts, one neatlogs session per variant), read back with `GET /api/v1/public/traces`:
+
+| Experiment (UTC) | Variant | Result |
+|---|---|---|
+| exp1 01:06 | WORKFLOW root + TOOL child (string attr) | **finalized**, 2 spans |
+| exp1 01:06 | AGENT root (no children / TOOL child / GUARDRAIL child / str, bool+num, empty-string attrs), CHAIN root, `@neatlogs.span(kind="AGENT")` decorator | `dlq` (all 7), 0 spans |
+| exp1 01:06 | bare AGENT root, nothing else | never listed |
+| exp2 01:09 | WORKFLOW root + GUARDRAIL child + AGENT child → TOOL grandchild, bool/float/empty attrs | never listed (`GET /traces/{id}` 404 after 8 min) |
+| exp3 01:21 | 10 WORKFLOW-root variants (child kind TOOL/GUARDRAIL/AGENT, bool/float/int/empty-string attrs, root attrs) | after 11 min only 3 listed, all `dlq` (float attr, GUARDRAIL child, root attrs); the other 7, including the exp1-identical baseline, not listed |
+
+The dead-lettered trace's export returns `409 TRACE_FINALIZATION_FAILED` ("could not be finalized for span projection"); no further reason is exposed. Earlier, `neatlogs doctor --probe` reported ingestion stuck at `pii_redaction`.
+
+Conclusion: ingestion on this project is unreliable for custom spans, and only a WORKFLOW root has ever finalized. Heirloom therefore:
+- emits a WORKFLOW root per CVE run, with stage children carrying every §5 attribute;
+- takes span/trace ids from the span object (`opentelemetry.trace.get_current_span()` returns an invalid span because the SDK uses its own context);
+- mirrors all five detection predicates locally in the ledger (`detection_hits`), so detection numbers never depend on ingestion;
+- re-emits a `replay` span for cached stages in a resumed run (a SIGKILLed process never exports its batch or closes its root).
+
+PR claim links point at the emitted span ids. Whether a given trace shows up in the app depends on the ingestion behaviour above.
