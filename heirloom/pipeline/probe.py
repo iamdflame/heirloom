@@ -34,20 +34,33 @@ class LeakageError(RuntimeError):
     pass
 
 
+def _norm(line: str) -> str:
+    return " ".join(line.split())
+
+
 def fix_added_lines(ctx: Ctx, fixes: list[str]) -> list[str]:
-    out = []
-    for f in parse_diff(fix_diff(ctx.repo, fixes, "django/")):
-        for h in f.hunks:
-            for line in h.added:
-                text = " ".join(line.split())
-                if len(text) >= 12:  # comments too: they describe the fix
-                    out.append(text)
+    """Lines the fix commits introduce: added lines absent from the file before the commit.
+
+    Comments count (they describe the fix). Re-flowed or moved lines that already exist
+    in the pre-fix file are not new information and would only cause false alarms.
+    """
+    out: list[str] = []
+    for sha in fixes:
+        for f in parse_diff(fix_diff(ctx.repo, [sha], "django/")):
+            before = show_file(ctx.repo, f"{sha}^", f.old_path or f.path) or ""
+            existing = {_norm(x) for x in before.splitlines()}
+            for h in f.hunks:
+                for line in h.added:
+                    text = _norm(line)
+                    if len(text) >= 12 and text not in existing:
+                        out.append(text)
     return out
 
 
 def assert_no_leak(prompt: str, added: list[str]) -> int:
-    flat = " ".join(prompt.split())
-    leaked = [a for a in added if a in flat]
+    """Raise if any line the fix introduces appears as a whole line of the prompt."""
+    lines = {_norm(x) for x in prompt.splitlines()}
+    leaked = [a for a in added if a in lines]
     if leaked:
         raise LeakageError(f"porter prompt contains {len(leaked)} fix line(s): {leaked[0]!r}")
     return len(added)

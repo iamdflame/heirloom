@@ -52,3 +52,11 @@ def test_leakage_guard_trips_on_fix_lines() -> None:
     assert assert_no_leak("advisory text only", added) == 1
     with pytest.raises(LeakageError):
         assert_no_leak("...\n    if not obj._is_pk_set() or   obj._state.adding:\n", added)
+
+
+def test_leakage_guard_ignores_a_prefix_of_an_unchanged_line() -> None:
+    """CVE-2026-1287's fix splits `FORBIDDEN_ALIAS_PATTERN = _lazy_re_compile(r"…")` over
+    several lines; L's untouched line legitimately contains the new first line as a prefix."""
+    added = ["FORBIDDEN_ALIAS_PATTERN = _lazy_re_compile("]
+    l_source = 'FORBIDDEN_ALIAS_PATTERN = _lazy_re_compile(r"[\'`\\"\\]\\[;\\s]|#|--")\n'
+    assert assert_no_leak(l_source, added) == 1
