@@ -535,6 +535,24 @@ def spawn_workers(path: Path, n: int, log_dir: Path) -> list[subprocess.Popen[by
 # Results ---------------------------------------------------------------------------
 
 
+def wall_minutes(ledger: Ledger, cve: str, line: str) -> float:
+    """Wall time of every run of a CVE on a line, including runs a restart interrupted
+    (those end at their last finished stage)."""
+    total = 0.0
+    for run in ledger.db.execute(
+        "SELECT run_id, started_at, finished_at FROM runs WHERE cve=? AND line=?", (cve, line)
+    ):
+        end = run["finished_at"]
+        if end is None:
+            row = ledger.db.execute(
+                "SELECT MAX(COALESCE(finished_at, started_at)) FROM stages WHERE run_id=?",
+                (run["run_id"],),
+            ).fetchone()
+            end = row[0] or run["started_at"]
+        total += max(0.0, float(end) - float(run["started_at"]))
+    return round(total / 60, 2)
+
+
 def results(s: Settings, path: Path) -> dict[str, Any]:
     state = json.loads(path.read_text())
     events = state["events"]
@@ -545,6 +563,25 @@ def results(s: Settings, path: Path) -> dict[str, Any]:
     verdicts = Counter(e.get("verdict", "NONE") for e in final.values())
     statuses = Counter(e["status"] for e in final.values())
     spent = overflow_spent(s) - float(state["overflow"]["start_usd"])
+    ledger = Ledger(s.ledger_path)
+    per_cve = {
+        cve: {
+            "status": e["status"],
+            "verdict": e.get("verdict"),
+            "reason": e.get("reason"),
+            "link": e.get("pr") or e.get("issue") or e.get("question") or "",
+            "depends_on": e.get("depends_on") or [],
+            "escalated": bool(e.get("escalated")),
+            # Every model call of this CVE on the line, all runs (provider-reported on
+            # OpenRouter); the L0 run of a skipped CVE is not part of this campaign.
+            "ledger_cost_usd": 0.0
+            if cve in NO_MORE_PRS
+            else round(ledger.cost_total(cve, state["line"]), 4),
+            "minutes": 0.0 if cve in NO_MORE_PRS else wall_minutes(ledger, cve, state["line"]),
+        }
+        for cve, e in final.items()
+    }
+    ledger.close()
     return {
         "campaign": state["id"],
         "line": state["line"],
@@ -570,8 +607,10 @@ def results(s: Settings, path: Path) -> dict[str, Any]:
             )
             if final
             else None,
-            "ledger_cost_usd": round(sum(float(e.get("cost_usd") or 0) for e in events), 4),
-            "minutes_total": round(sum(float(e.get("minutes") or 0) for e in events), 1),
+            "blocked_on_question": sorted(c for c, e in final.items() if e["status"] == "blocked"),
+            "ledger_cost_usd": round(sum(float(c["ledger_cost_usd"]) for c in per_cve.values()), 4),
+            "minutes_total": round(sum(float(c["minutes"]) for c in per_cve.values()), 1),
         },
+        "per_cve": per_cve,
         "events": events,
     }
