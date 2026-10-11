@@ -181,7 +181,9 @@ NATIVE_HINT = (
     "Field.get_prep_value (or the public function under test) directly on unbound fields; "
     "intercept public constructors (e.g. GDALRaster, GEOSGeometry) with unittest.mock, "
     "recording the arguments they receive and raising before any native I/O, and assert "
-    "on what was recorded.\n"
+    "on what was recorded. Patch in a subclass of the real class that overrides only "
+    "__init__, never a bare Mock/MagicMock: isinstance() checks and the class's other "
+    "methods must keep working.\n"
 )
 NATIVE_PATHS = ("django/contrib/gis/",)
 
