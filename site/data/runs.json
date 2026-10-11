@@ -1,0 +1,922 @@
+[
+ {
+  "run_id": "20261011T215229Z-5741",
+  "cve": "CVE-2026-87975",
+  "line": "ubuntu-noble",
+  "started_at": 1791755549.8011901,
+  "finished_at": 1791755554.0546243,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215224Z-c0e1",
+  "cve": "CVE-2026-87890",
+  "line": "ubuntu-noble",
+  "started_at": 1791755544.9384828,
+  "finished_at": 1791755549.5657065,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215220Z-5549",
+  "cve": "CVE-2026-84429",
+  "line": "ubuntu-noble",
+  "started_at": 1791755540.85488,
+  "finished_at": 1791755544.7018478,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215216Z-fabb",
+  "cve": "CVE-2026-15920",
+  "line": "ubuntu-noble",
+  "started_at": 1791755536.7740204,
+  "finished_at": 1791755540.6206663,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215216Z-8e39",
+  "cve": "CVE-2026-87975",
+  "line": "debian-trixie",
+  "started_at": 1791755536.6779366,
+  "finished_at": 1791755540.975551,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215211Z-5444",
+  "cve": "CVE-2026-87890",
+  "line": "debian-trixie",
+  "started_at": 1791755531.6441936,
+  "finished_at": 1791755536.4253767,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215210Z-5472",
+  "cve": "CVE-2026-15830",
+  "line": "ubuntu-noble",
+  "started_at": 1791755530.99119,
+  "finished_at": 1791755536.514764,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215207Z-ce16",
+  "cve": "CVE-2026-84429",
+  "line": "debian-trixie",
+  "started_at": 1791755527.4538555,
+  "finished_at": 1791755531.3726947,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215203Z-912e",
+  "cve": "CVE-2026-15307",
+  "line": "ubuntu-noble",
+  "started_at": 1791755523.6854033,
+  "finished_at": 1791755530.609837,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215203Z-e332",
+  "cve": "CVE-2026-15920",
+  "line": "debian-trixie",
+  "started_at": 1791755523.3579922,
+  "finished_at": 1791755527.21863,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215157Z-11c9",
+  "cve": "CVE-2026-15830",
+  "line": "debian-trixie",
+  "started_at": 1791755517.6659977,
+  "finished_at": 1791755523.1250868,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215152Z-f2f0",
+  "cve": "CVE-2026-15307",
+  "line": "debian-trixie",
+  "started_at": 1791755512.4180896,
+  "finished_at": 1791755517.4341338,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215151Z-8f5c",
+  "cve": "CVE-2026-53878",
+  "line": "ubuntu-noble",
+  "started_at": 1791755511.9308927,
+  "finished_at": 1791755523.4318502,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215146Z-5cf7",
+  "cve": "CVE-2026-53877",
+  "line": "ubuntu-noble",
+  "started_at": 1791755506.9847934,
+  "finished_at": 1791755511.690534,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215142Z-f3fb",
+  "cve": "CVE-2026-48588",
+  "line": "ubuntu-noble",
+  "started_at": 1791755502.8551147,
+  "finished_at": 1791755506.7518048,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215140Z-24b7",
+  "cve": "CVE-2026-53878",
+  "line": "debian-trixie",
+  "started_at": 1791755500.6642308,
+  "finished_at": 1791755512.1772907,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215139Z-ef53",
+  "cve": "CVE-2026-87975",
+  "line": "4.2.30",
+  "started_at": 1791755499.7338986,
+  "finished_at": 1791755504.1017797,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215138Z-cf45",
+  "cve": "CVE-2026-48587",
+  "line": "ubuntu-noble",
+  "started_at": 1791755498.6542883,
+  "finished_at": 1791755502.6214633,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215135Z-b791",
+  "cve": "CVE-2026-53877",
+  "line": "debian-trixie",
+  "started_at": 1791755495.6901321,
+  "finished_at": 1791755500.4287388,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215132Z-e879",
+  "cve": "CVE-2026-8404",
+  "line": "ubuntu-noble",
+  "started_at": 1791755492.0956833,
+  "finished_at": 1791755498.2249947,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215131Z-3b70",
+  "cve": "CVE-2026-48588",
+  "line": "debian-trixie",
+  "started_at": 1791755491.5180519,
+  "finished_at": 1791755495.453967,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215127Z-fa5a",
+  "cve": "CVE-2026-6873",
+  "line": "ubuntu-noble",
+  "started_at": 1791755487.834797,
+  "finished_at": 1791755491.8601518,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215127Z-1e81",
+  "cve": "CVE-2026-48587",
+  "line": "debian-trixie",
+  "started_at": 1791755487.3648818,
+  "finished_at": 1791755491.2806313,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215125Z-6613",
+  "cve": "CVE-2026-87890",
+  "line": "4.2.30",
+  "started_at": 1791755485.9359858,
+  "finished_at": 1791755499.2342238,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215123Z-c4f6",
+  "cve": "CVE-2026-8404",
+  "line": "debian-trixie",
+  "started_at": 1791755483.2266772,
+  "finished_at": 1791755487.1334465,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215121Z-03c2",
+  "cve": "CVE-2026-84429",
+  "line": "4.2.30",
+  "started_at": 1791755481.8836305,
+  "finished_at": 1791755485.7647336,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215121Z-c7aa",
+  "cve": "CVE-2026-6907",
+  "line": "ubuntu-noble",
+  "started_at": 1791755481.42174,
+  "finished_at": 1791755487.4377058,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215119Z-defb",
+  "cve": "CVE-2026-6873",
+  "line": "debian-trixie",
+  "started_at": 1791755479.0244596,
+  "finished_at": 1791755482.9959142,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215117Z-da3e",
+  "cve": "CVE-2026-15920",
+  "line": "4.2.30",
+  "started_at": 1791755477.8269188,
+  "finished_at": 1791755481.715501,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215114Z-eae0",
+  "cve": "CVE-2026-6907",
+  "line": "debian-trixie",
+  "started_at": 1791755474.8599827,
+  "finished_at": 1791755478.7936857,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215113Z-89aa",
+  "cve": "CVE-2026-35192",
+  "line": "ubuntu-noble",
+  "started_at": 1791755473.3486588,
+  "finished_at": 1791755481.0302658,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215112Z-3812",
+  "cve": "CVE-2026-15830",
+  "line": "4.2.30",
+  "started_at": 1791755472.1859155,
+  "finished_at": 1791755477.6587722,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215110Z-06fd",
+  "cve": "CVE-2026-35192",
+  "line": "debian-trixie",
+  "started_at": 1791755470.7349963,
+  "finished_at": 1791755474.632173,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215106Z-bb53",
+  "cve": "CVE-2026-15307",
+  "line": "4.2.30",
+  "started_at": 1791755466.8585055,
+  "finished_at": 1791755472.0209153,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215106Z-a8e9",
+  "cve": "CVE-2026-5766",
+  "line": "ubuntu-noble",
+  "started_at": 1791755466.5306613,
+  "finished_at": 1791755472.9478347,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215106Z-84a9",
+  "cve": "CVE-2026-5766",
+  "line": "debian-trixie",
+  "started_at": 1791755466.521608,
+  "finished_at": 1791755470.498848,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215055Z-4cd5",
+  "cve": "CVE-2026-53878",
+  "line": "4.2.30",
+  "started_at": 1791755455.246996,
+  "finished_at": 1791755466.6712003,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215050Z-4a9c",
+  "cve": "CVE-2026-53877",
+  "line": "4.2.30",
+  "started_at": 1791755450.4079733,
+  "finished_at": 1791755455.0778654,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215046Z-f5ad",
+  "cve": "CVE-2026-48588",
+  "line": "4.2.30",
+  "started_at": 1791755446.3847194,
+  "finished_at": 1791755450.238684,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215042Z-a22a",
+  "cve": "CVE-2026-48587",
+  "line": "4.2.30",
+  "started_at": 1791755442.381868,
+  "finished_at": 1791755446.2140563,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215038Z-324f",
+  "cve": "CVE-2026-8404",
+  "line": "4.2.30",
+  "started_at": 1791755438.3401742,
+  "finished_at": 1791755442.2136257,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215034Z-f78d",
+  "cve": "CVE-2026-6873",
+  "line": "4.2.30",
+  "started_at": 1791755434.2470403,
+  "finished_at": 1791755438.1735535,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215031Z-c96b",
+  "cve": "CVE-2026-84429",
+  "line": "4.2",
+  "started_at": 1791755431.7767282,
+  "finished_at": 1791755431.8140607,
+  "status": "waiting_human"
+ },
+ {
+  "run_id": "20261011T215030Z-d69d",
+  "cve": "CVE-2026-6907",
+  "line": "4.2.30",
+  "started_at": 1791755430.208976,
+  "finished_at": 1791755434.0767634,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215029Z-f6fa",
+  "cve": "CVE-2026-8404",
+  "line": "4.2",
+  "started_at": 1791755429.7774024,
+  "finished_at": 1791755432.4814107,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215029Z-5453",
+  "cve": "CVE-2026-6907",
+  "line": "4.2",
+  "started_at": 1791755429.4731736,
+  "finished_at": 1791755431.354129,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215027Z-ea0e",
+  "cve": "CVE-2026-5766",
+  "line": "4.2",
+  "started_at": 1791755427.0063953,
+  "finished_at": 1791755429.0275223,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215026Z-7ec2",
+  "cve": "CVE-2026-35192",
+  "line": "4.2",
+  "started_at": 1791755426.873042,
+  "finished_at": 1791755429.0078936,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215026Z-6c0f",
+  "cve": "CVE-2026-35192",
+  "line": "4.2.30",
+  "started_at": 1791755426.23206,
+  "finished_at": 1791755430.0434575,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215023Z-5b46",
+  "cve": "CVE-2026-53878",
+  "line": "4.2",
+  "started_at": 1791755423.6195369,
+  "finished_at": 1791755426.5704267,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T215023Z-e061",
+  "cve": "CVE-2026-15307",
+  "line": "4.2",
+  "started_at": 1791755423.4588242,
+  "finished_at": 1791755426.4153898,
+  "status": "waiting_human"
+ },
+ {
+  "run_id": "20261011T215022Z-34ff",
+  "cve": "CVE-2026-5766",
+  "line": "4.2.30",
+  "started_at": 1791755422.2034345,
+  "finished_at": 1791755426.0662167,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213901Z-fe91",
+  "cve": "CVE-2026-84429",
+  "line": "4.2",
+  "started_at": 1791754741.9294505,
+  "finished_at": 1791754741.9643412,
+  "status": "waiting_human"
+ },
+ {
+  "run_id": "20261011T213859Z-f3ed",
+  "cve": "CVE-2026-15920",
+  "line": "4.2",
+  "started_at": 1791754739.7480547,
+  "finished_at": 1791754741.8706632,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213859Z-e4f5",
+  "cve": "CVE-2026-53877",
+  "line": "4.2",
+  "started_at": 1791754739.579609,
+  "finished_at": 1791754741.4644191,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213856Z-36e3",
+  "cve": "CVE-2026-48588",
+  "line": "4.2",
+  "started_at": 1791754736.9429774,
+  "finished_at": 1791754739.036554,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213853Z-a0b8",
+  "cve": "CVE-2026-8404",
+  "line": "4.2",
+  "started_at": 1791754733.651991,
+  "finished_at": 1791754736.5003827,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213851Z-cd2e",
+  "cve": "CVE-2026-7666",
+  "line": "4.2",
+  "started_at": 1791754731.8906653,
+  "finished_at": 1791754880.9131997,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213850Z-51a9",
+  "cve": "CVE-2026-6873",
+  "line": "4.2",
+  "started_at": 1791754730.8927734,
+  "finished_at": 1791754733.201633,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213850Z-50ff",
+  "cve": "CVE-2026-48587",
+  "line": "4.2",
+  "started_at": 1791754730.7400231,
+  "finished_at": 1791754739.4373107,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213849Z-4e36",
+  "cve": "CVE-2026-6907",
+  "line": "4.2",
+  "started_at": 1791754729.3448603,
+  "finished_at": 1791754731.326046,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213848Z-501f",
+  "cve": "CVE-2026-5766",
+  "line": "4.2",
+  "started_at": 1791754728.6371377,
+  "finished_at": 1791754730.3920171,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213845Z-4785",
+  "cve": "CVE-2026-35192",
+  "line": "4.2",
+  "started_at": 1791754725.6355093,
+  "finished_at": 1791754730.2861958,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213845Z-4b99",
+  "cve": "CVE-2026-53878",
+  "line": "4.2",
+  "started_at": 1791754725.4687676,
+  "finished_at": 1791754728.9043198,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T213845Z-6cae",
+  "cve": "CVE-2026-15307",
+  "line": "4.2",
+  "started_at": 1791754725.3131528,
+  "finished_at": 1791754728.2211814,
+  "status": "waiting_human"
+ },
+ {
+  "run_id": "20261011T212548Z-41bf",
+  "cve": "CVE-2026-84429",
+  "line": "4.2",
+  "started_at": 1791753948.8193743,
+  "finished_at": 1791754131.128457,
+  "status": "waiting_human"
+ },
+ {
+  "run_id": "20261011T212530Z-a78b",
+  "cve": "CVE-2026-77050",
+  "line": "4.2",
+  "started_at": 1791753930.6787653,
+  "finished_at": 1791754043.6346002,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T212524Z-2c04",
+  "cve": "CVE-2026-15920",
+  "line": "4.2",
+  "started_at": 1791753924.7155128,
+  "finished_at": 1791754067.1163282,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T212348Z-7ab0",
+  "cve": "CVE-2026-15337",
+  "line": "4.2",
+  "started_at": 1791753828.2295794,
+  "finished_at": 1791753930.3594923,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T212059Z-db05",
+  "cve": "CVE-2026-53877",
+  "line": "4.2",
+  "started_at": 1791753659.3836713,
+  "finished_at": 1791753827.904233,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T212057Z-e8d7",
+  "cve": "CVE-2026-48588",
+  "line": "4.2",
+  "started_at": 1791753657.676028,
+  "finished_at": 1791753948.4994986,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T212037Z-91f7",
+  "cve": "CVE-2026-8404",
+  "line": "4.2",
+  "started_at": 1791753637.8827665,
+  "finished_at": 1791753924.41793,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211924Z-9e25",
+  "cve": "CVE-2026-35193",
+  "line": "4.2",
+  "started_at": 1791753564.9295702,
+  "finished_at": 1791753637.5754433,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211845Z-78b6",
+  "cve": "CVE-2026-7666",
+  "line": "4.2",
+  "started_at": 1791753525.6846588,
+  "finished_at": 1791753657.649927,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211632Z-0609",
+  "cve": "CVE-2026-6873",
+  "line": "4.2",
+  "started_at": 1791753392.7170186,
+  "finished_at": 1791753657.3490884,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211353Z-c730",
+  "cve": "CVE-2026-48587",
+  "line": "4.2",
+  "started_at": 1791753233.394359,
+  "finished_at": 1791753525.3489277,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211342Z-1274",
+  "cve": "CVE-2026-35193",
+  "line": "4.2",
+  "started_at": 1791753222.3067045,
+  "finished_at": 1791753233.079472,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211152Z-f8af",
+  "cve": "CVE-2026-6907",
+  "line": "4.2",
+  "started_at": 1791753112.9993343,
+  "finished_at": 1791753567.1730223,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211141Z-3be3",
+  "cve": "CVE-2026-15830",
+  "line": "4.2",
+  "started_at": 1791753101.2719834,
+  "finished_at": 1791753222.0157013,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T211028Z-b112",
+  "cve": "CVE-2026-5766",
+  "line": "4.2",
+  "started_at": 1791753028.2282948,
+  "finished_at": 1791753564.3619256,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T210815Z-e826",
+  "cve": "CVE-2026-35192",
+  "line": "4.2",
+  "started_at": 1791752895.3188894,
+  "finished_at": 1791753564.0112479,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T210749Z-1a13",
+  "cve": "CVE-2026-53878",
+  "line": "4.2",
+  "started_at": 1791752869.977555,
+  "finished_at": 1791752975.95218,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T210749Z-c1e5",
+  "cve": "CVE-2026-15830",
+  "line": "4.2",
+  "started_at": 1791752869.8076766,
+  "finished_at": 1791753100.9949763,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T210749Z-9f96",
+  "cve": "CVE-2026-15307",
+  "line": "4.2",
+  "started_at": 1791752869.6620083,
+  "finished_at": 1791753617.8056796,
+  "status": "waiting_human"
+ },
+ {
+  "run_id": "20261011T205149Z-40fd",
+  "cve": "CVE-2026-3902",
+  "line": "bt-neg-4412731aa6",
+  "started_at": 1791751909.0321052,
+  "finished_at": 1791751916.107169,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T205139Z-3a75",
+  "cve": "CVE-2026-3902",
+  "line": "bt-pos-8d2a05c35d",
+  "started_at": 1791751899.3471327,
+  "finished_at": 1791751908.7888927,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094323Z-164f",
+  "cve": "CVE-2026-4292",
+  "line": "bt-neg-abfe1a1c57",
+  "started_at": 1791711803.7565114,
+  "finished_at": 1791711810.6530337,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094317Z-3be1",
+  "cve": "CVE-2026-4277",
+  "line": "bt-neg-051f3909e8",
+  "started_at": 1791711797.0626628,
+  "finished_at": 1791711803.5355978,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094308Z-8440",
+  "cve": "CVE-2026-3902",
+  "line": "bt-neg-4412731aa6",
+  "started_at": 1791711788.917419,
+  "finished_at": 1791711796.8128777,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094302Z-108c",
+  "cve": "CVE-2026-33034",
+  "line": "bt-neg-ed4dfda627",
+  "started_at": 1791711782.9512446,
+  "finished_at": 1791711788.6714785,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094256Z-55cd",
+  "cve": "CVE-2026-33033",
+  "line": "bt-neg-f13c20f81b",
+  "started_at": 1791711776.5955818,
+  "finished_at": 1791711782.7143064,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094249Z-c397",
+  "cve": "CVE-2026-25674",
+  "line": "bt-neg-54b50bf7d6",
+  "started_at": 1791711769.2970495,
+  "finished_at": 1791711776.3659868,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094240Z-72a3",
+  "cve": "CVE-2026-1312",
+  "line": "bt-neg-90f5b10784",
+  "started_at": 1791711760.5940065,
+  "finished_at": 1791711769.0110676,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094235Z-a501",
+  "cve": "CVE-2026-1285",
+  "line": "bt-neg-b40cfc6052",
+  "started_at": 1791711755.043544,
+  "finished_at": 1791711760.3608592,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094227Z-f7ef",
+  "cve": "CVE-2025-14550",
+  "line": "bt-neg-f578acc8c5",
+  "started_at": 1791711747.8794417,
+  "finished_at": 1791711754.7515476,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094220Z-e38a",
+  "cve": "CVE-2025-13473",
+  "line": "bt-neg-6dc23508f3",
+  "started_at": 1791711740.4856477,
+  "finished_at": 1791711747.6319363,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T094103Z-a771",
+  "cve": "CVE-2025-27556",
+  "line": "bt-ext-35c58a7924",
+  "started_at": 1791711663.0566852,
+  "finished_at": 1791711740.2669284,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T093845Z-9428",
+  "cve": "CVE-2026-4292",
+  "line": "bt-pos-051f3909e8",
+  "started_at": 1791711525.4740727,
+  "finished_at": 1791711659.531023,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T093657Z-0920",
+  "cve": "CVE-2026-4277",
+  "line": "bt-pos-4412731aa6",
+  "started_at": 1791711417.5494657,
+  "finished_at": 1791711523.400264,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T093555Z-44e5",
+  "cve": "CVE-2026-3902",
+  "line": "bt-pos-8d2a05c35d",
+  "started_at": 1791711355.3698165,
+  "finished_at": 1791711417.375304,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T093441Z-df73",
+  "cve": "CVE-2026-33034",
+  "line": "bt-pos-f13c20f81b",
+  "started_at": 1791711281.293099,
+  "finished_at": 1791711353.253359,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T093331Z-086f",
+  "cve": "CVE-2026-33033",
+  "line": "bt-pos-abfe1a1c57",
+  "started_at": 1791711211.4691763,
+  "finished_at": 1791711279.1657574,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T093155Z-0627",
+  "cve": "CVE-2026-25673",
+  "line": "bt-pos-e52ff00856",
+  "started_at": 1791711115.869171,
+  "finished_at": 1791711211.3000662,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T093039Z-563d",
+  "cve": "CVE-2026-1312",
+  "line": "bt-pos-f75f8f3597",
+  "started_at": 1791711039.8046474,
+  "finished_at": 1791711113.542406,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T092915Z-6797",
+  "cve": "CVE-2026-1285",
+  "line": "bt-pos-a14363102d",
+  "started_at": 1791710955.7607708,
+  "finished_at": 1791711039.6348999,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T092715Z-aab0",
+  "cve": "CVE-2026-1207",
+  "line": "bt-pos-f578acc8c5",
+  "started_at": 1791710835.7404895,
+  "finished_at": 1791710955.5935943,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T092049Z-7a6d",
+  "cve": "CVE-2025-14550",
+  "line": "bt-pos-6dc23508f3",
+  "started_at": 1791710449.4315617,
+  "finished_at": 1791710691.2721078,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T091842Z-2eda",
+  "cve": "CVE-2025-13473",
+  "line": "bt-pos-a28c3c7395",
+  "started_at": 1791710322.622397,
+  "finished_at": 1791710446.7604833,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T091630Z-9c2e",
+  "cve": "CVE-2026-1287",
+  "line": "bt-neg-f75f8f3597",
+  "started_at": 1791710190.1801848,
+  "finished_at": 1791710197.044583,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T091413Z-a8ea",
+  "cve": "CVE-2026-25674",
+  "line": "bt-pos-b3e8ec8cc3",
+  "started_at": 1791710053.7653883,
+  "finished_at": 1791710189.9389863,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T091138Z-606e",
+  "cve": "CVE-2026-1287",
+  "line": "bt-pos-b40cfc6052",
+  "started_at": 1791709898.0985706,
+  "finished_at": 1791710050.709191,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T085326Z-efb4",
+  "cve": "CVE-2026-87975",
+  "line": "eval-4.2.30",
+  "started_at": 1791708806.5355494,
+  "finished_at": 1791708827.7805886,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T084714Z-e852",
+  "cve": "CVE-2026-87975",
+  "line": "eval-4.2.30",
+  "started_at": 1791708434.2939498,
+  "finished_at": 1791708506.394593,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T015329Z-1030",
+  "cve": "CVE-2026-87975",
+  "line": "4.2",
+  "started_at": 1791683609.4703345,
+  "finished_at": 1791683612.5314307,
+  "status": "done"
+ },
+ {
+  "run_id": "20261011T015149Z-839b",
+  "cve": "CVE-2026-87975",
+  "line": "4.2",
+  "started_at": 1791683509.0953326,
+  "finished_at": 1791683606.831944,
+  "status": "done"
+ }
+]

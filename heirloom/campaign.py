@@ -562,7 +562,8 @@ def results(s: Settings, path: Path) -> dict[str, Any]:
     for ev in events:  # per CVE: the latest event (a follow-up supersedes the first)
         if ev["status"] not in ("pending",):
             final[ev["cve"]] = ev
-    verdicts = Counter(e.get("verdict", "NONE") for e in final.values())
+    # A blocked event never ran: its verdict is still PENDING (not a verdict).
+    verdicts = Counter(e.get("verdict") or "PENDING" for e in final.values())
     statuses = Counter(e["status"] for e in final.values())
     spent = overflow_spent(s) - float(state["overflow"]["start_usd"])
     ledger = Ledger(s.ledger_path)

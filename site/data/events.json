@@ -1,0 +1,308 @@
+{
+ "events": [
+  {
+   "id": 12,
+   "at": 1791683606.8263462,
+   "run_id": "20261011T015149Z-839b",
+   "cve": "CVE-2026-87975",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "kind": "reconciled",
+   "message": "happened"
+  },
+  {
+   "id": 11,
+   "at": 1791683606.5497532,
+   "run_id": "20261011T015149Z-839b",
+   "cve": "CVE-2026-87975",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "kind": "pause",
+   "message": "CVE-2026-87975/4.2/publish.pr#1: side effect state unknown (interrupted while running in pid 34758); reconcile before retrying"
+  },
+  {
+   "id": 10,
+   "at": 1791683599.119527,
+   "run_id": "20261011T015149Z-839b",
+   "cve": "CVE-2026-87975",
+   "line": "4.2",
+   "stage": "publish.push",
+   "kind": "reconciled",
+   "message": "happened"
+  },
+  {
+   "id": 9,
+   "at": 1791683598.8689575,
+   "run_id": "20261011T015149Z-839b",
+   "cve": "CVE-2026-87975",
+   "line": "4.2",
+   "stage": "publish.push",
+   "kind": "pause",
+   "message": "CVE-2026-87975/4.2/publish.push#1: side effect state unknown (interrupted while running in pid 34622); reconcile before retrying"
+  },
+  {
+   "id": 8,
+   "at": 1791683592.274345,
+   "run_id": "20261011T015149Z-839b",
+   "cve": "CVE-2026-87975",
+   "line": "4.2",
+   "stage": "publish.commit",
+   "kind": "reconciled",
+   "message": "happened"
+  },
+  {
+   "id": 7,
+   "at": 1791683592.2574499,
+   "run_id": "20261011T015149Z-839b",
+   "cve": "CVE-2026-87975",
+   "line": "4.2",
+   "stage": "publish.commit",
+   "kind": "pause",
+   "message": "CVE-2026-87975/4.2/publish.commit#1: side effect state unknown (interrupted while running in pid 34118); reconcile before retrying"
+  }
+ ],
+ "detection_hits": [
+  {
+   "id": 22,
+   "run_id": "20261011T215151Z-8f5c",
+   "cve": "CVE-2026-53878",
+   "line": "ubuntu-noble",
+   "stage": "presence",
+   "detection": "probe_never_reached_region",
+   "span_id": "NONE",
+   "trace_id": "NONE",
+   "at": 1791755523.425961
+  },
+  {
+   "id": 21,
+   "run_id": "20261011T215140Z-24b7",
+   "cve": "CVE-2026-53878",
+   "line": "debian-trixie",
+   "stage": "presence",
+   "detection": "probe_never_reached_region",
+   "span_id": "NONE",
+   "trace_id": "NONE",
+   "at": 1791755512.1686687
+  },
+  {
+   "id": 20,
+   "run_id": "20261011T215055Z-4cd5",
+   "cve": "CVE-2026-53878",
+   "line": "4.2.30",
+   "stage": "presence",
+   "detection": "probe_never_reached_region",
+   "span_id": "NONE",
+   "trace_id": "NONE",
+   "at": 1791755466.6627743
+  },
+  {
+   "id": 19,
+   "run_id": "20261011T213851Z-cd2e",
+   "cve": "CVE-2026-7666",
+   "line": "4.2",
+   "stage": "publish.evidence",
+   "detection": "claim_without_span",
+   "span_id": "e191e42cbe4a1901",
+   "trace_id": "3763c9a269456afcd5656dd1eb00e33c",
+   "at": 1791754880.9028084
+  },
+  {
+   "id": 18,
+   "run_id": "20261011T212524Z-2c04",
+   "cve": "CVE-2026-15920",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "04c9e31cef10102f",
+   "trace_id": "6542b8b7e6ef25625bde1eead22afaad",
+   "at": 1791754067.104244
+  },
+  {
+   "id": 17,
+   "run_id": "20261011T212057Z-e8d7",
+   "cve": "CVE-2026-48588",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "b025209c429daedd",
+   "trace_id": "df2c04f55ab2709f0952e04b4681cff8",
+   "at": 1791753948.4884295
+  },
+  {
+   "id": 16,
+   "run_id": "20261011T212037Z-91f7",
+   "cve": "CVE-2026-8404",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "05e1ad951986fa58",
+   "trace_id": "e848835789ecf3ace1fcde1862cdca83",
+   "at": 1791753924.4078276
+  },
+  {
+   "id": 15,
+   "run_id": "20261011T212059Z-db05",
+   "cve": "CVE-2026-53877",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "b3d0d74308d19f5f",
+   "trace_id": "08a3fb66267df5b6a08ab640e3fd9b67",
+   "at": 1791753827.8939886
+  },
+  {
+   "id": 14,
+   "run_id": "20261011T211845Z-78b6",
+   "cve": "CVE-2026-7666",
+   "line": "4.2",
+   "stage": "publish.evidence",
+   "detection": "claim_without_span",
+   "span_id": "d03039abc567e02d",
+   "trace_id": "bfc58caeeb214feb40a69241a54a1b9a",
+   "at": 1791753657.6429248
+  },
+  {
+   "id": 13,
+   "run_id": "20261011T211632Z-0609",
+   "cve": "CVE-2026-6873",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "3468cd716bd195b0",
+   "trace_id": "0645ff1e964b418e4d463a44e4840350",
+   "at": 1791753657.3144329
+  },
+  {
+   "id": 12,
+   "run_id": "20261011T211152Z-f8af",
+   "cve": "CVE-2026-6907",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "adca53575de91745",
+   "trace_id": "f392b579d01037ab18d20a524e188b98",
+   "at": 1791753567.1632395
+  },
+  {
+   "id": 11,
+   "run_id": "20261011T211028Z-b112",
+   "cve": "CVE-2026-5766",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "eff41a1560715518",
+   "trace_id": "1e33b6cda9d9106782cda72706b4a21d",
+   "at": 1791753564.350896
+  },
+  {
+   "id": 10,
+   "run_id": "20261011T210815Z-e826",
+   "cve": "CVE-2026-35192",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "67317ab47c92c0fe",
+   "trace_id": "1a6c4a2717d6478d2bcd78acce1e55e2",
+   "at": 1791753564.0011747
+  },
+  {
+   "id": 9,
+   "run_id": "20261011T211353Z-c730",
+   "cve": "CVE-2026-48587",
+   "line": "4.2",
+   "stage": "publish.pr",
+   "detection": "claim_without_span",
+   "span_id": "a3689696db9f8b43",
+   "trace_id": "20885b0e5eb107706d054b0d130f2357",
+   "at": 1791753525.3384392
+  },
+  {
+   "id": 8,
+   "run_id": "20261011T211342Z-1274",
+   "cve": "CVE-2026-35193",
+   "line": "4.2",
+   "stage": "publish.evidence",
+   "detection": "claim_without_span",
+   "span_id": "da44c27eb2ac3e57",
+   "trace_id": "9d5fbac192f44c775f08002684495875",
+   "at": 1791753233.068624
+  },
+  {
+   "id": 7,
+   "run_id": "20261011T210749Z-1a13",
+   "cve": "CVE-2026-53878",
+   "line": "4.2",
+   "stage": "publish.evidence",
+   "detection": "claim_without_span",
+   "span_id": "d32f9e32ede9e544",
+   "trace_id": "85323bf038e420fc358ecea0adaf28c2",
+   "at": 1791752975.9414723
+  },
+  {
+   "id": 6,
+   "run_id": "20261011T210749Z-1a13",
+   "cve": "CVE-2026-53878",
+   "line": "4.2",
+   "stage": "publish.evidence",
+   "detection": "probe_never_reached_region",
+   "span_id": "d32f9e32ede9e544",
+   "trace_id": "85323bf038e420fc358ecea0adaf28c2",
+   "at": 1791752975.9358978
+  },
+  {
+   "id": 5,
+   "run_id": "20261011T210749Z-1a13",
+   "cve": "CVE-2026-53878",
+   "line": "4.2",
+   "stage": "publish.artifacts",
+   "detection": "probe_never_reached_region",
+   "span_id": "f7ceb56f979915d7",
+   "trace_id": "38540c699669f0737c897a7fd5e3ca41",
+   "at": 1791752893.4803724
+  },
+  {
+   "id": 4,
+   "run_id": "20261011T210749Z-1a13",
+   "cve": "CVE-2026-53878",
+   "line": "4.2",
+   "stage": "decide",
+   "detection": "probe_never_reached_region",
+   "span_id": "43ee3c6c27024d69",
+   "trace_id": "38540c699669f0737c897a7fd5e3ca41",
+   "at": 1791752892.1357307
+  },
+  {
+   "id": 3,
+   "run_id": "20261011T210749Z-1a13",
+   "cve": "CVE-2026-53878",
+   "line": "4.2",
+   "stage": "presence",
+   "detection": "probe_never_reached_region",
+   "span_id": "081212058d33bb79",
+   "trace_id": "38540c699669f0737c897a7fd5e3ca41",
+   "at": 1791752892.1228626
+  },
+  {
+   "id": 2,
+   "run_id": "20261011T094235Z-a501",
+   "cve": "CVE-2026-1285",
+   "line": "bt-neg-b40cfc6052",
+   "stage": "decide",
+   "detection": "probe_never_reached_region",
+   "span_id": "cd74fb10ea27efc1",
+   "trace_id": "b6aa29a4148dd536765137e6cb67e92b",
+   "at": 1791711760.3513067
+  },
+  {
+   "id": 1,
+   "run_id": "20261011T094235Z-a501",
+   "cve": "CVE-2026-1285",
+   "line": "bt-neg-b40cfc6052",
+   "stage": "presence",
+   "detection": "probe_never_reached_region",
+   "span_id": "c09b987ef1ba2e13",
+   "trace_id": "b6aa29a4148dd536765137e6cb67e92b",
+   "at": 1791711760.337445
+  }
+ ]
+}
