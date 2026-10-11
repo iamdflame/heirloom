@@ -25,6 +25,7 @@ import libcst as cst
 
 from heirloom.git_ops import (
     FileDiff,
+    Hunk,
     commit_diff,
     git,
     git_ok,
@@ -34,6 +35,7 @@ from heirloom.git_ops import (
 )
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.pipeline.context import Ctx, StageFailed
+from heirloom.pipeline.fixes import fix_diff, fix_file_diffs, fixes_of
 from heirloom.pipeline.presence import (
     Evidence,
     Gate,
@@ -384,19 +386,23 @@ def changed_lines(diff: FileDiff) -> list[int]:
 
 def provenance(
     repo: Path,
-    um_ref: str,
     l_ref: str,
-    fix_diffs: Sequence[FileDiff],
+    fix_diffs: Sequence[tuple[str, FileDiff]],
     l_symbol_text: str,
 ) -> Gate:
-    """C4c: every changed line was *introduced* after the branch point and never backported."""
-    base = git(repo, "merge-base", um_ref, l_ref).strip()
-    lines = [(d.old_path or d.path, n) for d in fix_diffs for n in changed_lines(d)]
+    """C4c: every changed line was *introduced* after the branch point and never backported.
+
+    ``fix_diffs`` pairs each file diff with the parent ref its line numbers refer to.
+    """
+    if not fix_diffs:
+        return Gate(False, None, "no fix diff")
+    base = git(repo, "merge-base", fix_diffs[0][0], l_ref).strip()
+    lines = [(parent, d.old_path or d.path, n) for parent, d in fix_diffs for n in changed_lines(d)]
     if not lines:
         return Gate(False, None, "fix only inserts lines; provenance cannot apply")
     l_text = " ".join(l_symbol_text.split())
-    for path, n in lines:
-        o = trace_origin(repo, um_ref, path, n)
+    for parent, path, n in lines:
+        o = trace_origin(repo, parent, path, n)
         if o.origin is None:
             return Gate(False, None, f"{path}:{n}: {o.detail}")
         if is_ancestor(repo, o.origin, base):
@@ -414,6 +420,63 @@ def provenance(
         if " ".join(o.line.split()) and " ".join(o.line.split()) in l_text:
             return Gate(False, None, f"line text of {path}:{n} present in L")
     return Gate(True, detail=f"{len(lines)} changed lines introduced after {base[:10]}")
+
+
+# Reach ignores hunks that only touch docstrings, comments or blank lines (§10.2).
+
+
+def noncode_lines(source: str) -> set[int]:
+    """Blank lines, comment-only lines and docstring lines of a Python module."""
+    lines = source.splitlines()
+    out = {i for i, text in enumerate(lines, 1) if not text.strip() or text.strip().startswith("#")}
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return out
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef):
+            first = node.body[0] if node.body else None
+            if (
+                isinstance(first, ast.Expr)
+                and isinstance(first.value, ast.Constant)
+                and isinstance(first.value.value, str)
+            ):
+                out.update(range(first.lineno, (first.end_lineno or first.lineno) + 1))
+    return out
+
+
+def code_hunks(diff: FileDiff, old_source: str, new_source: str) -> FileDiff:
+    """The diff without hunks whose changed lines are all docstrings/comments/blank."""
+    old_nc, new_nc = noncode_lines(old_source), noncode_lines(new_source)
+    keep: list[Hunk] = []
+    for h in diff.hunks:
+        olds = range(h.old_start, h.old_start + h.old_count) if h.old_count else range(0)
+        news = range(h.new_start, h.new_start + h.new_count) if h.new_count else range(0)
+        if all(n in old_nc for n in olds) and all(n in new_nc for n in news):
+            continue
+        keep.append(h)
+    return FileDiff(diff.old_path, diff.new_path, keep)
+
+
+def fix_symbols(
+    repo: Path, fixes: Sequence[str], l_ref: str
+) -> tuple[list[tuple[str, FileDiff]], list[MappedSymbol]]:
+    """Code-changing django/ hunks per fix commit and their enclosing symbols mapped to L."""
+    pairs: list[tuple[str, FileDiff]] = []
+    mapped: list[MappedSymbol] = []
+    for parent, d in fix_file_diffs(repo, fixes, "django/"):
+        if not d.path.endswith(".py"):
+            continue
+        old_src = show_file(repo, parent, d.old_path or d.path) or ""
+        new_src = show_file(repo, parent.removesuffix("^"), d.path) or ""
+        code = code_hunks(d, old_src, new_src)
+        if not code.hunks:
+            continue
+        pairs.append((parent, code))
+        for q in enclosing_symbols(old_src, fix_hunk_lines(code)):
+            if not any(m.um_path == d.path and m.qualname == q for m in mapped):
+                mapped.append(map_symbol(repo, l_ref, parent, d.path, q))
+    return pairs, mapped
 
 
 # Stages ------------------------------------------------------------------------
@@ -474,6 +537,11 @@ def _apply(tree: Path, patch: str, *args: str) -> tuple[bool, str]:
     return proc.returncode == 0, msg.splitlines()[0] if msg else ""
 
 
+def ref_scope(loc: dict[str, Any]) -> str:
+    """Ledger scope for line-independent evidence (U⁻/U⁺), shared by every line."""
+    return f"ref:{loc['fix'][:12]}"
+
+
 def run_c0(ctx: Ctx, loc: dict[str, Any]) -> dict[str, Any]:
     """C0: upstream tests FAIL on U⁻ and PASS on U⁺; ERROR on U⁻ means structural tests."""
 
@@ -483,7 +551,7 @@ def run_c0(ctx: Ctx, loc: dict[str, Any]) -> dict[str, Any]:
             span.set("c0", "no_upstream_tests")
             return {"holds": False, "structural": True, "detail": "fix adds no test methods"}
         um = ctx.tree("Um", loc["um"])
-        test_diff = commit_diff(ctx.repo, loc["fix"], *loc["test_files"], context=3)
+        test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
         ok, err = _apply(um, test_diff)
         if not ok:
             raise StageFailed(f"upstream tests do not apply to U⁻: {err}")
@@ -507,25 +575,33 @@ def run_c0(ctx: Ctx, loc: dict[str, Any]) -> dict[str, Any]:
             "detail": "STRUCTURAL_TEST: upstream tests ERROR on U⁻" if structural else "",
         }
 
-    return ctx.stage("c0", {"fix": loc["fix"], "ids": loc["upstream_test_ids"]}, body)
+    return ctx.stage(
+        "c0",
+        {"fixes": fixes_of(loc), "ids": loc["upstream_test_ids"]},
+        body,
+        scope=ref_scope(loc),
+    )
 
 
 def _mutants(
     ctx: Ctx,
     loc: dict[str, Any],
     files: dict[str, str],
-    diffs: Sequence[FileDiff],
+    tip: str,
+    pairs: Sequence[tuple[str, FileDiff]],
     mapped: Sequence[MappedSymbol],
 ) -> list[MutantOutcome]:
     runner = ctx.runner()
     out: list[MutantOutcome] = []
 
     def run_probe(tree: Path, name: str) -> ProbeRun:
-        return ProbeRun.of(runner.run(tree, [ctx.app], log_path=ctx.log("c4", f"{name}.log")))
+        log = ctx.log("c4", tip[:10], f"{name}.log")
+        return ProbeRun.of(runner.run(tree, [ctx.app], log_path=log))
 
-    # (a) reverse-apply the fix's django/ hunks onto L (clean index: §9 staging fix).
-    tree = ctx.tree("Mut", loc["tip"], files)
-    patch = commit_diff(ctx.repo, loc["fix"], "django/", context=3)
+    # (a) reverse-apply the fix's django/ hunks onto L, newest commit first
+    # (clean index: §9 staging fix).
+    tree = ctx.tree("Mut", tip, files)
+    patch = fix_diff(ctx.repo, list(reversed(fixes_of(loc))), "django/", context=3)
     ok, err = _apply(tree, patch, "-R", "--3way")
     conflicted = "<<<<<<<" in git(tree, "diff", check=False)
     if ok and not conflicted:
@@ -541,12 +617,12 @@ def _mutants(
             by_path.setdefault(m.l_path, []).append(m.qualname)
 
     # (b1) added-condition mutant (§9): drop operands the fix added inside the symbol.
-    tree = ctx.tree("Mut", loc["tip"], files)
+    tree = ctx.tree("Mut", tip, files)
     built = False
-    for d in diffs:
+    for _, d in pairs:
         ops = added_operands(d)
         l_path = next((m.l_path for m in mapped if m.um_path == d.path and m.l_path), None)
-        if not ops or l_path is None:
+        if not ops or l_path is None or l_path not in by_path:
             continue
         mutant = added_condition_mutant((tree / l_path).read_text(), by_path[l_path], ops)
         if mutant is not None:
@@ -560,7 +636,7 @@ def _mutants(
         return out
 
     # (b2) transplant U⁻'s versions of the mapped symbols into L.
-    tree = ctx.tree("Mut", loc["tip"], files)
+    tree = ctx.tree("Mut", tip, files)
     built = False
     for l_path, qualnames in by_path.items():
         um_path = next(m.um_path for m in mapped if m.l_path == l_path)
@@ -603,54 +679,73 @@ def feedback_for(cal: dict[str, Any], verdict: Presence) -> str | None:
     )
 
 
-def run(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any]) -> dict[str, Any]:
-    """Run the probe 3× on U⁻, U⁺ and L; gather C3 and (if it PASSes on L) C4 evidence."""
+def reference(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any]) -> dict[str, Any]:
+    """C1 evidence: the probe 3× on U⁻ and U⁺. Line-independent; cached across lines."""
 
     def body(span: StageSpan) -> dict[str, Any]:
         files: dict[str, str] = probe["files"]
         runner = ctx.runner()
-        um = ctx.tree("Um", loc["um"], files)
-        up = ctx.tree("Up", loc["fix"], files)
-        lt = ctx.tree("L", loc["tip"], files)
-        diffs = parse_diff(commit_diff(ctx.repo, loc["fix"], "django/"))
-        mapped: list[MappedSymbol] = []
-        for d in diffs:
-            src = show_file(ctx.repo, loc["um"], d.path) or ""
-            for q in enclosing_symbols(src, fix_hunk_lines(d)):
-                mapped.append(map_symbol(ctx.repo, loc["tip"], loc["um"], d.path, q))
-        cov = [lt / m.l_path for m in mapped if m.l_path]
-
-        def runs(tree: Path, name: str, coverage: bool = False) -> list[RunResult]:
-            return [
-                runner.run(
-                    tree,
-                    [ctx.app],
-                    log_path=ctx.log("calibrate", probe["sha"][:8], f"{name}-{i}.log"),
-                    coverage_include=cov if coverage and i == 0 else (),
+        out: dict[str, Any] = {"probe": probe["sha"]}
+        for name, ref in (("um", loc["um"]), ("up", loc["fix"])):
+            tree = ctx.tree("Um" if name == "um" else "Up", ref, files)
+            out[name] = [
+                run_json(
+                    runner.run(
+                        tree,
+                        [ctx.app],
+                        log_path=ctx.log("calibrate", probe["sha"][:8], f"{tree.name}-{i}.log"),
+                    )
                 )
                 for i in range(3)
             ]
+        span.set("um_outcome", out["um"][0]["outcome"])
+        span.set("up_outcome", out["up"][0]["outcome"])
+        return out
 
-        um_runs, up_runs, l_runs = runs(um, "Um"), runs(up, "Up"), runs(lt, "L", coverage=True)
+    return ctx.stage(
+        "calibrate.reference",
+        {"probe": probe["sha"], "fixes": fixes_of(loc)},
+        body,
+        scope=ref_scope(loc),
+    )
+
+
+def on_line(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any], tip: str) -> dict[str, Any]:
+    """C2, C3 reach, and (if the probe PASSes on the tip) C4 mutants and provenance."""
+
+    def body(span: StageSpan) -> dict[str, Any]:
+        files: dict[str, str] = probe["files"]
+        runner = ctx.runner()
+        lt = ctx.tree("L", tip, files)
+        pairs, mapped = fix_symbols(ctx.repo, fixes_of(loc), tip)
+        cov = [lt / m.l_path for m in mapped if m.l_path]
+        l_runs = [
+            runner.run(
+                lt,
+                [ctx.app],
+                log_path=ctx.log("calibrate", probe["sha"][:8], f"L-{tip[:10]}-{i}.log"),
+                coverage_include=cov if i == 0 else (),
+            )
+            for i in range(3)
+        ]
         reach = reach_gate(mapped, l_runs[0].coverage)
         mutants: list[MutantOutcome] = []
         prov: Gate | None = None
         if all(r.outcome == "PASS" for r in l_runs):
-            mutants = _mutants(ctx, loc, files, diffs, mapped)
+            mutants = _mutants(ctx, loc, files, tip, pairs, mapped)
             l_text = "\n".join(
                 "\n".join(
-                    (show_file(ctx.repo, loc["tip"], m.l_path) or "").splitlines()[
+                    (show_file(ctx.repo, tip, m.l_path) or "").splitlines()[
                         m.l_symbol.start - 1 : m.l_symbol.end
                     ]
                 )
                 for m in mapped
                 if m.l_path and m.l_symbol
             )
-            prov = provenance(ctx.repo, loc["um"], loc["tip"], diffs, l_text)
-        cal: dict[str, Any] = {
-            "probe": probe["sha"],
-            "um": [run_json(r) for r in um_runs],
-            "up": [run_json(r) for r in up_runs],
+            prov = provenance(ctx.repo, tip, pairs, l_text)
+        span.set("reach", reach.ok)
+        return {
+            "tip": tip,
             "lt": [run_json(r) for r in l_runs],
             "mapped": [
                 {
@@ -691,15 +786,19 @@ def run(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any]) -> dict[str, Any]:
             ],
             "provenance": _gate_json(prov),
         }
-        verdict = presence(evidence_from(cal))
-        cal["feedback"] = feedback_for(cal, verdict)
-        span.set("reach", reach.ok)
-        span.set("calibrated", verdict.calibrated)
-        span.set("verdict", verdict.verdict)
-        span.set("reason", verdict.reason or "NONE")
-        return cal
 
-    return ctx.stage("calibrate", {"probe": probe["sha"], "fix": loc["fix"]}, body)
+    inputs = {"probe": probe["sha"], "fixes": fixes_of(loc), "tip": tip}
+    return ctx.stage("calibrate", inputs, body)
+
+
+def run(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any]) -> dict[str, Any]:
+    """reference() + on_line() for this run's tip, with the verdict-driven porter feedback."""
+    ref = reference(ctx, loc, probe)
+    line = on_line(ctx, loc, probe, loc["tip"])
+    cal: dict[str, Any] = {**ref, **line, "probe": probe["sha"]}
+    verdict = presence(evidence_from(cal))
+    cal["feedback"] = feedback_for(cal, verdict)
+    return cal
 
 
 def run_presence(ctx: Ctx, cal: dict[str, Any]) -> dict[str, Any]:

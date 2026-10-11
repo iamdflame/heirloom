@@ -67,7 +67,17 @@ def _probe_error(detail: str) -> dict[str, Any]:
     }
 
 
-def pipeline(ctx: Ctx) -> Result:
+def calibrated_probe(ledger: Ledger, cve: str, line: str) -> dict[str, Any] | None:
+    """The probe a finished run of (cve, line) calibrated with, for reuse on other lines."""
+    rows = [r for r in ledger.stages(cve, line) if r.status == "done"]
+    pres = [r for r in rows if r.key.stage == "presence" and (r.output or {}).get("calibrated")]
+    probes = [r for r in rows if r.key.stage == "probe" and r.output]
+    if not pres or not probes:
+        return None
+    return max(probes, key=lambda r: r.key.attempt).output
+
+
+def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
     loc = locate.run(ctx)
     c0 = calibrate.run_c0(ctx, loc)
 
@@ -75,9 +85,11 @@ def pipeline(ctx: Ctx) -> Result:
     pr_: dict[str, Any] | None = None
     cal: dict[str, Any] | None = None
     pres = _probe_error("no probe")
-    for _ in range(3):  # first probe + up to 2 porter retries
+    # Reuse mode (other lines, fixed twins, matrix): no porter call and no retries;
+    # an ERROR on the new line is UNPROVEN(PROBE_ERROR) by the verdict table.
+    for _ in range(1 if reuse_probe else 3):  # first probe + up to 2 porter retries
         try:
-            pr_ = probe.run(ctx, loc, c0, feedback)
+            pr_ = reuse_probe or probe.run(ctx, loc, c0, feedback)
         except StageFailed as exc:
             pres = _probe_error(str(exc))
             break
@@ -153,7 +165,14 @@ def pipeline(ctx: Ctx) -> Result:
     return base
 
 
-def execute(s: Settings, cve: str, spec: LineSpec, run_id: str | None = None) -> Result:
+def execute(
+    s: Settings,
+    cve: str,
+    spec: LineSpec,
+    run_id: str | None = None,
+    *,
+    reuse_probe: dict[str, Any] | None = None,
+) -> Result:
     line = spec.name
     with lock(s.work / "locks" / f"{cve}-{line}.lock"):
         ledger = Ledger(s.ledger_path)
@@ -172,7 +191,7 @@ def execute(s: Settings, cve: str, spec: LineSpec, run_id: str | None = None) ->
         status = "failed"
         try:
             with tel.cve_root(cve, line, run_id, campaign), guard.publishing(spec):
-                result = pipeline(ctx)
+                result = pipeline(ctx, reuse_probe)
             done = ("published", "no_fix", "evaluated")
             status = "done" if result.status in done else result.status
             result.cost_usd = ledger.cost_total(cve, line)

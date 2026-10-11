@@ -163,3 +163,33 @@ def test_decide_records_would_ask_instead_of_opening_an_issue(
     assert out["decision"] == "would_ask"
     assert out["kind"] == "ENV_SKIP"
     assert no_subprocess == []
+
+
+def test_reuse_mode_skips_the_porter_and_never_retries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, no_subprocess: list[list[str]]
+) -> None:
+    spec = NON_PUBLISHING[0]
+    calls: list[str] = []
+
+    def porter(*a: Any) -> Any:
+        raise AssertionError("porter called in reuse mode")
+
+    def cal_run(ctx: Ctx, loc: dict[str, Any], pr: dict[str, Any]) -> dict[str, Any]:
+        calls.append(pr["sha"])
+        return {"feedback": "probe ERRORs on L"}  # would trigger a retry in normal mode
+
+    monkeypatch.setattr(locate, "run", lambda ctx: LOC)
+    monkeypatch.setattr(calibrate, "run_c0", lambda ctx, loc: {"structural": False})
+    monkeypatch.setattr(probe, "run", porter)
+    monkeypatch.setattr(calibrate, "run", cal_run)
+    unproven = {"verdict": "UNPROVEN", "reason": "PROBE_ERROR", "detail": "", "gates": {}}
+    monkeypatch.setattr(calibrate, "run_presence", lambda ctx, cal: unproven)
+    ctx = make_ctx(tmp_path, spec)
+    with guard.publishing(spec):
+        result = run.pipeline(ctx, reuse_probe={"sha": "calibrated", "files": {}})
+    assert calls == ["calibrated"]
+    assert (result.status, result.verdict, result.reason) == (
+        "evaluated",
+        "UNPROVEN",
+        "PROBE_ERROR",
+    )

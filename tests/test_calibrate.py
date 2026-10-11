@@ -7,8 +7,11 @@ from heirloom.pipeline.calibrate import (
     _blame,
     added_condition_mutant,
     added_operands,
+    code_hunks,
     enclosing_symbols,
     fix_hunk_lines,
+    fix_symbols,
+    noncode_lines,
     provenance,
     symbols,
     trace_origin,
@@ -119,6 +122,57 @@ def test_c4c_recursive_provenance_sees_through_the_refactor() -> None:
     diffs = parse_diff(commit_diff(DJANGO, FIX_87975, "django/"))
     l_src = show_file(DJANGO, L_42, PATH)
     assert l_src is not None
-    gate = provenance(DJANGO, um, L_42, diffs, l_src)
+    gate = provenance(DJANGO, L_42, [(um, d) for d in diffs], l_src)
     assert not gate.ok
     assert "ancestor of merge-base" in gate.detail
+
+
+OLD_DOC = """\
+def f(x):
+    \"\"\"Return x.
+
+    Old wording.
+    \"\"\"
+    # tidy
+    return x
+"""
+NEW_DOC = OLD_DOC.replace("Old wording.", "New wording.").replace("# tidy", "# tidier")
+NEW_CODE = OLD_DOC.replace("return x", "return x + 1")
+
+
+def _diff(old: str, new: str) -> str:
+    import difflib
+
+    body = "".join(
+        difflib.unified_diff(old.splitlines(True), new.splitlines(True), "a/m.py", "b/m.py", n=0)
+    )
+    return "diff --git a/m.py b/m.py\n" + body
+
+
+def test_docstring_and_comment_only_hunks_are_ignored_for_reach() -> None:
+    assert noncode_lines(OLD_DOC) == {2, 3, 4, 5, 6}
+    (doc_only,) = parse_diff(_diff(OLD_DOC, NEW_DOC))
+    assert len(doc_only.hunks) == 2
+    assert code_hunks(doc_only, OLD_DOC, NEW_DOC).hunks == []
+    (code,) = parse_diff(_diff(OLD_DOC, NEW_CODE))
+    assert len(code_hunks(code, OLD_DOC, NEW_CODE).hunks) == 1
+
+
+@needs_repo
+def test_fix_symbols_per_commit_maps_87975_to_l() -> None:
+    pairs, mapped = fix_symbols(DJANGO, [FIX_87975], L_42)
+    assert [p for p, _ in pairs] == [f"{FIX_87975}^"]
+    assert [(m.qualname, m.how, m.l_path) for m in mapped] == [(SYMBOL, "same-path", PATH)]
+
+
+@needs_repo
+def test_fix_symbols_handles_a_follow_up_commit() -> None:
+    """CVE-2026-15830: 5.2 fix ba80833f + the 5.2.18 follow-up 1eafa1a8."""
+    fixes = [
+        "ba80833fa656dd09660b97c4429331067db1b080",
+        "1eafa1a80f1363283f89208ba4499ed54e35f085",
+    ]
+    pairs, mapped = fix_symbols(DJANGO, fixes, L_42)
+    parents = {p for p, _ in pairs}
+    assert parents == {f"{sha}^" for sha in fixes}
+    assert mapped and all(m.um_path.startswith("django/contrib/gis/") for m in mapped)
