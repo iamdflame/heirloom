@@ -164,14 +164,36 @@ def shown_sources(ctx: Ctx, loc: dict[str, Any]) -> list[tuple[str, str]]:
     return out
 
 
-def guarded_lines(added: list[str], shown: list[tuple[str, str]]) -> list[str]:
-    """Fix-added lines the guard checks: those not already verbatim in the L source shown.
+def test_models(ctx: Ctx, loc: dict[str, Any]) -> list[tuple[str, str]]:
+    """(label, text) of L's upstream test models, as the prompt shows them."""
+    labels = sorted({t.split(".")[0] for t in loc["upstream_test_ids"]})
+    found = (
+        (label, show_file(ctx.repo, loc["tip"], f"tests/{label}/models.py")) for label in labels
+    )
+    return [(label, m[:20000]) for label, m in found if m]
 
-    A line L already has (CVE-2026-35192 adds a third ``patch_vary_headers(response,
-    ("Cookie",))`` to a module that has two) tells the porter nothing about the fix.
+
+def shown_by_design(ctx: Ctx, loc: dict[str, Any]) -> list[str]:
+    """What the porter is shown by design (§3): L's affected modules, the upstream test
+    diff, and L's upstream test models."""
+    test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
+    return [
+        *(t for _, t in shown_sources(ctx, loc)),
+        test_diff,
+        *(t for _, t in test_models(ctx, loc)),
+    ]
+
+
+def guarded_lines(added: list[str], shown: list[str]) -> list[str]:
+    """Fix-added lines the guard checks: those not verbatim in what the porter is shown by
+    design anyway. A line L already has (CVE-2026-35192 adds a third
+    ``patch_vary_headers(response, ("Cookie",))`` to a module that has two) or that the
+    upstream tests also contain (CVE-2026-15307's tests import DisallowedRasterLookup
+    with the same line as the fix) tells the porter nothing about the fix; any other fix
+    line anywhere in the prompt (advisory, feedback, hints) still trips the guard.
     """
-    l_flat = " ".join(" ".join(text.split()) for _, text in shown)
-    return [a for a in added if a not in l_flat]
+    flat = " ".join(" ".join(text.split()) for text in shown)
+    return [a for a in added if a not in flat]
 
 
 def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> str:
@@ -180,12 +202,10 @@ def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: st
         f"#### {path} (Django 4.2 tip)\n```python\n{chunk}\n```"
         for path, chunk in shown_sources(ctx, loc)
     ]
-    labels = sorted({t.split(".")[0] for t in loc["upstream_test_ids"]})
-    models = []
-    for label in labels:
-        m = show_file(ctx.repo, loc["tip"], f"tests/{label}/models.py")
-        if m:
-            models.append(f"#### tests/{label}/models.py (Django 4.2)\n```python\n{m[:20000]}\n```")
+    models = [
+        f"#### tests/{label}/models.py (Django 4.2)\n```python\n{m}\n```"
+        for label, m in test_models(ctx, loc)
+    ]
     structural = ""
     if c0.get("structural"):
         structural = (
@@ -242,7 +262,7 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
     def body(span: StageSpan) -> dict[str, Any]:
         router = Router(ctx.s, ctx.budget())
         all_added = fix_added_lines(ctx, fixes_of(loc))
-        added = guarded_lines(all_added, shown_sources(ctx, loc))
+        added = guarded_lines(all_added, shown_by_design(ctx, loc))
         span.set("fix_lines_already_in_l", len(all_added) - len(added))
         attempt_feedback = feedback
         total = 0.0

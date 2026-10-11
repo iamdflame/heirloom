@@ -50,5 +50,95 @@
       }
     ],
     "ledger_cost_usd": 0.099408
+  },
+  {
+    "cve": "CVE-2026-53878",
+    "line": "4.2.30",
+    "run_id": "20261011T093910Z-f01b",
+    "verdict": "NOT_AFFECTED_PROVEN",
+    "reason": null,
+    "detail": "absent on L: DomainNameValidator; probe ERRORs naming it; blame -C -C of 14 fix-changed lines ends in pure additions after 9409312eef (14 \u2192 4971a9afe5)",
+    "attempts": [
+      {
+        "probe": "7e072112eb4bcf1f501c4be6cb98589b22fa515c65b8b248c8ba008bce6ecd05",
+        "verdict": "NOT_AFFECTED_PROVEN",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.029691
+  },
+  {
+    "cve": "CVE-2026-5766",
+    "line": "4.2.30",
+    "run_id": "20261011T094236Z-ec19",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "a77287873e78d2f0ef842f072d445ce660383a5ae7cf8781c8d1a33bb53beada",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.032556
+  },
+  {
+    "cve": "CVE-2026-35192",
+    "line": "4.2.30",
+    "run_id": "20261011T094236Z-ab09",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "c71ad29e6b9ed97c1876f280b010cc45e5bb029c05772e4361c1e63bfd54c659",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.030342
+  },
+  {
+    "cve": "CVE-2026-6907",
+    "line": "4.2.30",
+    "run_id": "20261011T094303Z-ddea",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "7338b5c9d108c5177e031731379dc58dd7fc7190e7a0a9d447cc74a82832ac9f",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.021078
+  },
+  {
+    "cve": "CVE-2026-8404",
+    "line": "4.2.30",
+    "run_id": "20261011T094329Z-f60e",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "0fd7d7170038d55ee091469e6bcabe1f601cb9bb372ae6621424e640f9595b48",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.026055
+  },
+  {
+    "cve": "CVE-2026-15307",
+    "line": "4.2.30",
+    "run_id": "20261011T094359Z-d46c",
+    "verdict": "UNPROVEN",
+    "reason": "PROBE_ERROR",
+    "detail": "LeakageError: porter prompt contains 4 fix line(s): 'from django.contrib.gis.gdal.raster.source import DisallowedRasterLookup'",
+    "attempts": [],
+    "ledger_cost_usd": 0.0
   }
 ]
