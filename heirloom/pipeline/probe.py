@@ -133,6 +133,11 @@ def validate(files: dict[str, str], app: str) -> list[str]:
                 problems.append(f"{name}:{node.lineno}: uses private attribute .{node.attr}")
             if isinstance(node, ast.Name) and node.id in ("skip", "skipIf", "expectedFailure"):
                 problems.append(f"{name}:{node.lineno}: skips/expected failures are not allowed")
+            if isinstance(node, ast.Try) and guards_imports(node):
+                problems.append(
+                    f"{name}:{node.lineno}: do not guard imports or catch ImportError; "
+                    "import the API under test at module level and let a missing API raise"
+                )
         if WALL_CLOCK.search(src):
             problems.append(f"{name}: wall-clock timing is not allowed; use deterministic signals")
     tests = files.get("tests.py", "")
@@ -141,6 +146,50 @@ def validate(files: dict[str, str], app: str) -> list[str]:
     if "TestCase" not in tests:
         problems.append("tests.py must use django.test.TestCase or SimpleTestCase")
     return problems
+
+
+IMPORT_ERRORS = frozenset({"ImportError", "ModuleNotFoundError"})
+
+
+def guards_imports(node: ast.Try) -> bool:
+    """A try block around an import, or a handler for ImportError/ModuleNotFoundError.
+
+    Such a probe turns "the API does not exist on L" into a FAIL (or a PASS); the
+    absent-symbol path (§10.4) needs the ImportError itself.
+    """
+    if any(isinstance(n, ast.Import | ast.ImportFrom) for b in node.body for n in ast.walk(b)):
+        return True
+    for h in node.handlers:
+        names = h.type.elts if isinstance(h.type, ast.Tuple) else [h.type] if h.type else []
+        if any(ast.unparse(n).split(".")[-1] in IMPORT_ERRORS for n in names):
+            return True
+    return False
+
+
+# Always in the prompt: a probe must not mask a missing API (§10.4 absent-symbol path).
+MISSING_API_RULE = (
+    "\nRULE (missing APIs): import the Django API under test at module level, exactly as "
+    "on Django 5.2. Never wrap imports in try/except or catch ImportError to turn a "
+    "missing API into an assertion. If the API does not exist in Django 4.2, the import "
+    "error there is expected and is evaluated by calibration.\n"
+)
+
+# A general hint (no fix content) for advisories in GIS / native-library code (§10.4).
+NATIVE_HINT = (
+    "\nHINT (GIS / native-library code: GDAL, GEOS, GeoIP): native I/O, spatial databases "
+    "and GIS test data are not available to the probe. Use no spatial models; call "
+    "Field.get_prep_value (or the public function under test) directly on unbound fields; "
+    "intercept public constructors (e.g. GDALRaster, GEOSGeometry) with unittest.mock, "
+    "recording the arguments they receive and raising before any native I/O, and assert "
+    "on what was recorded. Patch in a subclass of the real class that overrides only "
+    "__init__, never a bare Mock/MagicMock: isinstance() checks and the class's other "
+    "methods must keep working.\n"
+)
+NATIVE_PATHS = ("django/contrib/gis/",)
+
+
+def native_hint(fix_files: list[str]) -> str:
+    return NATIVE_HINT if any(f.startswith(NATIVE_PATHS) for f in fix_files) else ""
 
 
 def parse_blocks(text: str) -> dict[str, str]:
@@ -171,6 +220,7 @@ def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: st
             "they reference names that only exist after the fix. Do not copy them: write a "
             "behavioural probe that only uses public API and observable behaviour.\n"
         )
+    structural += native_hint(loc["fix_files"]) + MISSING_API_RULE
     retry = f"\n## Feedback on your previous probe\n{feedback}\n" if feedback else ""
     return f"""You are writing a regression probe for a Django security advisory.
 You have NOT been shown the fix. Write a standalone Django test app `tests/{ctx.app}/`

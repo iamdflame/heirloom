@@ -1,0 +1,482 @@
+{
+  "cve": "CVE-2026-15307",
+  "line": "4.2.30",
+  "phases": [
+    {
+      "phase": "attempt 1: GIS hint 'intercept public constructors with unittest.mock' (0d4e2ec + test-diff exemption)",
+      "logs": "/home/ubuntu/heirloom/work-b/archive/CVE-2026-15307-4.2.30-attempt1",
+      "total_cost_usd": 0.232941,
+      "observation": "Probe attempt 1 was refused by the leakage guard before the test-diff exemption (no cost). Porter probes 1-2 replaced GDALRaster with a bare MagicMock: isinstance() raised TypeError, ERROR on U- and U+ (PROBE_ERROR). Probe 3's mock also replaced the inherited check_raster_lookup_value, so dict values were not rejected on U+ either: FAIL on U- and U+ (NON_DISCRIMINATING). No calibrated probe.",
+      "presence": [
+        {
+          "calibrated": false,
+          "detail": "probe ERROR/TIMEOUT on U⁻",
+          "gates": {
+            "C1": {
+              "detail": "probe ERROR/TIMEOUT on U⁻",
+              "ok": false,
+              "reason": "PROBE_ERROR"
+            }
+          },
+          "reason": "PROBE_ERROR",
+          "verdict": "UNPROVEN"
+        },
+        {
+          "calibrated": false,
+          "detail": "probe ERROR/TIMEOUT on U⁻",
+          "gates": {
+            "C1": {
+              "detail": "probe ERROR/TIMEOUT on U⁻",
+              "ok": false,
+              "reason": "PROBE_ERROR"
+            }
+          },
+          "reason": "PROBE_ERROR",
+          "verdict": "UNPROVEN"
+        },
+        {
+          "calibrated": false,
+          "detail": "probe does not PASS on U⁺",
+          "gates": {
+            "C1": {
+              "detail": "probe does not PASS on U⁺",
+              "ok": false,
+              "reason": "NON_DISCRIMINATING"
+            }
+          },
+          "reason": "NON_DISCRIMINATING",
+          "verdict": "UNPROVEN"
+        }
+      ],
+      "attempts": [
+        {
+          "probe_attempt": 1,
+          "status": "failed",
+          "error": "LeakageError: porter prompt contains 4 fix line(s): 'from django.contrib.gis.gdal.raster.source import DisallowedRasterLookup'",
+          "cost_usd": 0.0,
+          "run_id": "20261011T094359Z-d46c"
+        },
+        {
+          "probe_attempt": 2,
+          "status": "done",
+          "error": null,
+          "cost_usd": 0.076059,
+          "run_id": "20261011T094541Z-4536",
+          "probe_sha": "35e414b343fa8be1499a7bd5da10d97568ef92b66fc12ba1451984004bed52f6",
+          "model": "claude-sonnet-4.6",
+          "tests_py": "import unittest.mock\n\nfrom django.contrib.gis.db.models.fields import BaseSpatialField\nfrom django.contrib.gis.gdal import GDALRaster\nfrom django.core.exceptions import SuspiciousOperation\nfrom django.test import SimpleTestCase\n\nfrom .models import *  # noqa: F401, F403\n\n\nclass _Sentinel(Exception):\n    \"\"\"Raised by the mock to signal GDALRaster was called.\"\"\"\n    pass\n\n\nclass SpatialLookupDictRejectionTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-15307: spatial lookups must reject dict and non-geometry str\n    values without passing them to GDALRaster (which could write files or\n    issue network requests).\n\n    On vulnerable Django 4.2: get_prep_value passes dicts straight to\n    GDALRaster(), so the mock is called and raises _Sentinel — not\n    SuspiciousOperation.  The assertion therefore FAILS.\n\n    On fixed Django: get_prep_value raises SuspiciousOperation (or a\n    subclass) before ever calling GDALRaster(), so the assertion PASSES.\n    \"\"\"\n\n    def _make_field(self):\n        # Use an unbound BaseSpatialField; no DB connection needed.\n        field = BaseSpatialField(srid=4326)\n        field.set_attributes_from_name(\"geom\")\n        return field\n\n    def test_dict_value_rejected_without_gdal_raster_call(self):\n        \"\"\"\n        A dict lookup value must raise SuspiciousOperation, not reach\n        GDALRaster().\n        \"\"\"\n        field = self._make_field()\n        raster_dict = {\n            \"driver\": \"MEM\",\n            \"width\": 4,\n            \"height\": 4,\n            \"srid\": 4326,\n            \"bands\": [{\"data\": list(range(16))}],\n        }\n\n        gdal_raster_called_with = []\n\n        def mock_gdal_raster(value, *args, **kwargs):\n            gdal_raster_called_with.append(value)\n            raise _Sentinel(\"GDALRaster was called — dict was not rejected early\")\n\n        import django.contrib.gis.db.models.fields as fields_module\n\n        with unittest.mock.patch.object(\n            fields_module.gdal, \"GDALRaster\", side_effect=mock_gdal_raster\n        ):\n            try:\n                field.get_prep_value(raster_dict)\n            except SuspiciousOperation:\n                # Fixed behaviour: dict was rejected before reaching GDALRaster.\n                assert not gdal_raster_called_with, (\n                    \"SuspiciousOperation raised but GDALRaster was still called\"\n                )\n                return  # PASS\n            except _Sentinel:\n                # Vulnerable behaviour: dict reached GDALRaster.\n                raise AssertionError(\n                    \"dict lookup value was passed to GDALRaster() without \"\n                    \"raising SuspiciousOperation — CVE-2026-15307 is present\"\n                )\n            except Exception:\n                # Any other exception (e.g. ValueError from GDALException path)\n                # means the dict reached get_raster_prep_value; still vulnerable.\n                if gdal_raster_called_with:\n                    raise AssertionError(\n                        \"dict lookup value was passed to GDALRaster() without \"\n                        \"raising SuspiciousOperation — CVE-2026-15307 is present\"\n                    )\n                raise\n\n        # If we get here, get_prep_value returned normally — also vulnerable.\n        raise AssertionError(\n            \"get_prep_value returned without raising SuspiciousOperation for \"\n            \"a dict value — CVE-2026-15307 is present\"\n        )\n\n    def test_vsi_string_rejected_without_gdal_raster_call(self):\n        \"\"\"\n        A VSI-path string (e.g. '/vsicurl/someurl') must raise\n        SuspiciousOperation, not reach GDALRaster().\n        \"\"\"\n        field = self._make_field()\n        vsi_path = \"/vsicurl/http://example.com/raster.tif\"\n\n        gdal_raster_called_with = []\n\n        def mock_gdal_raster(value, *args, **kwargs):\n            gdal_raster_called_with.append(value)\n            raise _Sentinel(\"GDALRaster was called — string was not rejected early\")\n\n        import django.contrib.gis.db.models.fields as fields_module\n\n        # Also patch GEOSGeometry so it raises for this non-geometry string\n        # (simulating the real behaviour without native libs).\n        from django.contrib.gis.geos import GEOSGeometry\n        from django.contrib.gis.gdal.error import GDALException\n        from django.contrib.gis.geos import GEOSException\n\n        def mock_geos(value, *args, **kwargs):\n            raise GEOSException(\"String input unrecognized as WKT EWKT, and HEXEWKB.\")\n\n        with (\n            unittest.mock.patch.object(\n                fields_module.gdal, \"GDALRaster\", side_effect=mock_gdal_raster\n            ),\n            unittest.mock.patch(\n                \"django.contrib.gis.db.models.fields.GEOSGeometry\",\n                side_effect=mock_geos,\n            ),\n        ):\n            try:\n                field.get_prep_value(vsi_path)\n            except SuspiciousOperation:\n                # Fixed behaviour.\n                assert not gdal_raster_called_with, (\n                    \"SuspiciousOperation raised but GDALRaster was still called\"\n                )\n                return  # PASS\n            except _Sentinel:\n                raise AssertionError(\n                    \"VSI string lookup value was passed to GDALRaster() without \"\n                    \"raising SuspiciousOperation — CVE-2026-15307 is present\"\n                )\n            except (GEOSException, GDALException, ValueError):\n                # On vulnerable code the string may fall through to GEOSGeometry\n                # and raise a geometry error — but only after potentially having\n                # been offered to GDALRaster first.\n                if gdal_raster_called_with:\n                    raise AssertionError(\n                        \"VSI string lookup value was passed to GDALRaster() without \"\n                        \"raising SuspiciousOperation — CVE-2026-15307 is present\"\n                    )\n                # String was never offered to GDALRaster and raised a geometry\n                # error — this is acceptable only if SuspiciousOperation was\n                # not expected; but the fix requires SuspiciousOperation, so fail.\n                raise AssertionError(\n                    \"VSI string raised a geometry error instead of \"\n                    \"SuspiciousOperation — CVE-2026-15307 fix not applied\"\n                )\n            except Exception:\n                raise\n\n        raise AssertionError(\n            \"get_prep_value returned without raising SuspiciousOperation for \"\n            \"a VSI string value — CVE-2026-15307 is present\"\n        )\n",
+          "um": [
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_value_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsi_string_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_value_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsi_string_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_value_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsi_string_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            }
+          ],
+          "up": [
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_value_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsi_string_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_value_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsi_string_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_value_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsi_string_rejected_without_gdal_raster_call": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            }
+          ]
+        },
+        {
+          "probe_attempt": 3,
+          "status": "done",
+          "error": null,
+          "cost_usd": 0.080544,
+          "run_id": "20261011T094541Z-4536",
+          "probe_sha": "3b6f1619ab5e2403a1a29219d24bc646d9c1d9e4f6aaee799c5096183e215611",
+          "model": "claude-sonnet-4.6",
+          "tests_py": "import json\nfrom unittest.mock import MagicMock, patch\n\nfrom django.contrib.gis.db.models.fields import GeometryField\nfrom django.core.exceptions import SuspiciousOperation\nfrom django.test import SimpleTestCase\n\n\nclass SpatialLookupRasterInjectionTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-15307: dict and VSI-path str values passed to spatial lookups\n    must be rejected before GDALRaster() is ever called.\n\n    On vulnerable Django 4.2 code, get_prep_value() calls GDALRaster(dict)\n    or GDALRaster(str) directly, enabling file-write / SSRF.\n\n    On fixed code, SuspiciousOperation is raised before GDALRaster is called.\n    \"\"\"\n\n    def _make_field(self):\n        field = GeometryField(srid=4326)\n        # Provide a minimal get_srid so the field can be used unbound.\n        return field\n\n    def test_dict_value_raises_suspicious_operation(self):\n        \"\"\"\n        A dict lookup value must raise SuspiciousOperation, not be forwarded\n        to GDALRaster() which would write a file.\n        \"\"\"\n        field = self._make_field()\n        raster_dict = {\n            \"driver\": \"tif\",\n            \"name\": \"/vsimem/evil.tif\",\n            \"width\": 4,\n            \"height\": 4,\n            \"srid\": 4326,\n            \"bands\": [{\"data\": list(range(16))}],\n        }\n\n        gdal_raster_called_with = []\n\n        def fake_gdal_raster(value, *args, **kwargs):\n            gdal_raster_called_with.append(value)\n            raise Exception(\"GDALRaster was called - file write attempted!\")\n\n        with patch(\n            \"django.contrib.gis.db.models.fields.gdal.GDALRaster\",\n            side_effect=fake_gdal_raster,\n        ):\n            try:\n                field.get_prep_value(raster_dict)\n            except SuspiciousOperation:\n                # Fixed behaviour: rejected before GDALRaster was called.\n                assert gdal_raster_called_with == [], (\n                    \"Fixed code should not have called GDALRaster at all, \"\n                    f\"but it was called with: {gdal_raster_called_with}\"\n                )\n                return\n            except Exception as exc:\n                # On vulnerable code the mock raises our sentinel exception,\n                # meaning GDALRaster *was* called with the dict.\n                if gdal_raster_called_with:\n                    raise AssertionError(\n                        \"Vulnerable: GDALRaster() was called with a dict lookup \"\n                        f\"value {gdal_raster_called_with[0]!r}, enabling file-write. \"\n                        \"Expected SuspiciousOperation to be raised instead.\"\n                    ) from exc\n                raise\n\n        # If we reach here, get_prep_value returned without error and without\n        # calling GDALRaster - that shouldn't happen for a dict, but if it did\n        # and GDALRaster was never called, we still need to check.\n        if gdal_raster_called_with:\n            raise AssertionError(\n                \"Vulnerable: GDALRaster() was called with a dict lookup \"\n                f\"value {gdal_raster_called_with[0]!r}, enabling file-write. \"\n                \"Expected SuspiciousOperation to be raised instead.\"\n            )\n        # If GDALRaster was never called and no exception was raised,\n        # the value was silently accepted - also wrong.\n        raise AssertionError(\n            \"get_prep_value() accepted a dict without raising SuspiciousOperation \"\n            \"and without calling GDALRaster. Expected SuspiciousOperation.\"\n        )\n\n    def test_vsi_string_raises_suspicious_operation(self):\n        \"\"\"\n        A VSI-path string (e.g. /vsicurl/...) must raise SuspiciousOperation,\n        not be forwarded to GDALRaster() which would issue a network request.\n        \"\"\"\n        field = self._make_field()\n        vsi_path = \"/vsicurl/http://attacker.example.com/evil.tif\"\n\n        gdal_raster_called_with = []\n\n        def fake_gdal_raster(value, *args, **kwargs):\n            gdal_raster_called_with.append(value)\n            raise Exception(\"GDALRaster was called - network request attempted!\")\n\n        with patch(\n            \"django.contrib.gis.db.models.fields.gdal.GDALRaster\",\n            side_effect=fake_gdal_raster,\n        ):\n            try:\n                field.get_prep_value(vsi_path)\n            except SuspiciousOperation:\n                # Fixed behaviour.\n                assert gdal_raster_called_with == [], (\n                    \"Fixed code should not have called GDALRaster at all, \"\n                    f\"but it was called with: {gdal_raster_called_with}\"\n                )\n                return\n            except Exception as exc:\n                if gdal_raster_called_with:\n                    raise AssertionError(\n                        \"Vulnerable: GDALRaster() was called with a VSI-path string \"\n                        f\"{gdal_raster_called_with[0]!r}, enabling SSRF. \"\n                        \"Expected SuspiciousOperation to be raised instead.\"\n                    ) from exc\n                raise\n\n        if gdal_raster_called_with:\n            raise AssertionError(\n                \"Vulnerable: GDALRaster() was called with a VSI-path string \"\n                f\"{gdal_raster_called_with[0]!r}, enabling SSRF. \"\n                \"Expected SuspiciousOperation to be raised instead.\"\n            )\n        raise AssertionError(\n            \"get_prep_value() accepted a VSI-path string without raising \"\n            \"SuspiciousOperation. Expected SuspiciousOperation.\"\n        )\n\n    def test_json_string_raster_raises_suspicious_operation(self):\n        \"\"\"\n        A JSON string that looks like a raster dict must raise\n        SuspiciousOperation, not be forwarded to GDALRaster().\n        \"\"\"\n        field = self._make_field()\n        raster_json = json.dumps({\n            \"driver\": \"tif\",\n            \"name\": \"/vsimem/evil.tif\",\n            \"width\": 4,\n            \"height\": 4,\n            \"srid\": 4326,\n            \"bands\": [{\"data\": list(range(16))}],\n        })\n\n        gdal_raster_called_with = []\n\n        def fake_gdal_raster(value, *args, **kwargs):\n            gdal_raster_called_with.append(value)\n            raise Exception(\"GDALRaster was called!\")\n\n        with patch(\n            \"django.contrib.gis.db.models.fields.gdal.GDALRaster\",\n            side_effect=fake_gdal_raster,\n        ):\n            try:\n                field.get_prep_value(raster_json)\n            except SuspiciousOperation:\n                assert gdal_raster_called_with == [], (\n                    \"Fixed code should not have called GDALRaster at all.\"\n                )\n                return\n            except Exception as exc:\n                if gdal_raster_called_with:\n                    raise AssertionError(\n                        \"Vulnerable: GDALRaster() was called with a JSON raster \"\n                        f\"string, enabling file-write. \"\n                        \"Expected SuspiciousOperation to be raised instead.\"\n                    ) from exc\n                raise\n\n        if gdal_raster_called_with:\n            raise AssertionError(\n                \"Vulnerable: GDALRaster() was called with a JSON raster string, \"\n                \"enabling file-write. \"\n                \"Expected SuspiciousOperation to be raised instead.\"\n            )\n        raise AssertionError(\n            \"get_prep_value() accepted a JSON raster string without raising \"\n            \"SuspiciousOperation. Expected SuspiciousOperation.\"\n        )\n",
+          "um": [
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_json_string_raster_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_vsi_string_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_json_string_raster_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_vsi_string_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_json_string_raster_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_vsi_string_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            }
+          ],
+          "up": [
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_json_string_raster_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_vsi_string_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_json_string_raster_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_vsi_string_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_json_string_raster_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union",
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_vsi_string_raises_suspicious_operation": "TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union"
+              }
+            }
+          ]
+        },
+        {
+          "probe_attempt": 4,
+          "status": "done",
+          "error": null,
+          "cost_usd": 0.076338,
+          "run_id": "20261011T094541Z-4536",
+          "probe_sha": "14ae848311d661c8420352ba4afe1d6c1ed6abcab57155b895646f1efda075dd",
+          "model": "claude-sonnet-4.6",
+          "tests_py": "import unittest.mock\nfrom django.test import SimpleTestCase\nfrom django.core.exceptions import SuspiciousOperation\nfrom django.contrib.gis.db.models.fields import BaseSpatialField\n\n\nclass SpatialLookupRasterInjectionTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-15307: dict and raster-like str values passed to spatial lookups\n    should be rejected on fixed code. On vulnerable code they are forwarded to\n    GDALRaster(), which can write files or issue network requests.\n    \"\"\"\n\n    def _make_field(self):\n        field = BaseSpatialField(srid=4326)\n        # get_srid() needs self.srid, already set above\n        return field\n\n    def test_dict_value_not_forwarded_to_gdal_raster(self):\n        \"\"\"\n        On vulnerable code, get_prep_value() calls GDALRaster(dict_value),\n        which can write a file. On fixed code it raises before calling GDALRaster.\n        \"\"\"\n        field = self._make_field()\n        raster_dict = {\n            \"driver\": \"tif\",\n            \"name\": \"/tmp/cve_2026_15307_probe.tif\",\n            \"width\": 4,\n            \"height\": 4,\n            \"srid\": 4326,\n            \"bands\": [{\"data\": list(range(16))}],\n        }\n\n        gdal_raster_called_with = []\n\n        def fake_gdal_raster(value, *args, **kwargs):\n            gdal_raster_called_with.append(value)\n            # Raise so we don't need actual GDAL I/O\n            raise Exception(\"mock GDALRaster called\")\n\n        with unittest.mock.patch(\n            \"django.contrib.gis.db.models.fields.gdal.GDALRaster\",\n            side_effect=fake_gdal_raster,\n        ):\n            try:\n                field.get_prep_value(raster_dict)\n            except (SuspiciousOperation,):\n                # Fixed code: raises SuspiciousOperation before calling GDALRaster\n                # GDALRaster must NOT have been called\n                assert gdal_raster_called_with == [], (\n                    \"Fixed code should not call GDALRaster with a dict, \"\n                    f\"but it was called with: {gdal_raster_called_with}\"\n                )\n                return\n            except Exception as exc:\n                if gdal_raster_called_with:\n                    # Vulnerable: GDALRaster was called with the dict\n                    # This is the security flaw - assert it should NOT happen\n                    assert False, (\n                        \"VULNERABLE: get_prep_value() forwarded a dict to \"\n                        f\"GDALRaster({gdal_raster_called_with[0]!r}), \"\n                        \"enabling server-side file write (CVE-2026-15307). \"\n                        f\"Exception from mock: {exc}\"\n                    )\n                # Some other exception without calling GDALRaster - treat as fixed\n                return\n\n        # If we get here without exception, GDALRaster was called (vulnerable)\n        if gdal_raster_called_with:\n            assert False, (\n                \"VULNERABLE: get_prep_value() forwarded a dict to \"\n                f\"GDALRaster({gdal_raster_called_with[0]!r}), \"\n                \"enabling server-side file write (CVE-2026-15307).\"\n            )\n\n    def test_vsi_string_not_forwarded_to_gdal_raster(self):\n        \"\"\"\n        On vulnerable code, a /vsicurl/ string is a candidate (str) and\n        get_raster_prep_value tries GDALRaster('/vsicurl/...').\n        On fixed code it raises SuspiciousOperation before calling GDALRaster.\n        \"\"\"\n        field = self._make_field()\n        vsi_string = \"/vsicurl/http://attacker.example.com/evil.tif\"\n\n        gdal_raster_called_with = []\n\n        def fake_gdal_raster(value, *args, **kwargs):\n            gdal_raster_called_with.append(value)\n            raise Exception(\"mock GDALRaster called\")\n\n        with unittest.mock.patch(\n            \"django.contrib.gis.db.models.fields.gdal.GDALRaster\",\n            side_effect=fake_gdal_raster,\n        ):\n            try:\n                field.get_prep_value(vsi_string)\n            except (SuspiciousOperation,):\n                # Fixed: rejected before GDALRaster\n                assert gdal_raster_called_with == [], (\n                    \"Fixed code should not call GDALRaster with a vsi string, \"\n                    f\"but it was called with: {gdal_raster_called_with}\"\n                )\n                return\n            except Exception:\n                if gdal_raster_called_with:\n                    assert False, (\n                        \"VULNERABLE: get_prep_value() forwarded a vsi string to \"\n                        f\"GDALRaster({gdal_raster_called_with[0]!r}), \"\n                        \"enabling SSRF (CVE-2026-15307).\"\n                    )\n                return\n\n        if gdal_raster_called_with:\n            assert False, (\n                \"VULNERABLE: get_prep_value() forwarded a vsi string to \"\n                f\"GDALRaster({gdal_raster_called_with[0]!r}), \"\n                \"enabling SSRF (CVE-2026-15307).\"\n            )\n\n    def test_dict_value_raises_suspicious_operation(self):\n        \"\"\"\n        Fixed code must raise SuspiciousOperation (or a subclass) for dict input.\n        Vulnerable code does not raise SuspiciousOperation.\n        \"\"\"\n        field = self._make_field()\n        raster_dict = {\n            \"driver\": \"MEM\",\n            \"width\": 2,\n            \"height\": 2,\n            \"srid\": 4326,\n            \"bands\": [{\"data\": [1, 2, 3, 4]}],\n        }\n\n        raised_suspicious = False\n\n        def fake_gdal_raster(value, *args, **kwargs):\n            raise Exception(\"mock: would write/fetch raster\")\n\n        with unittest.mock.patch(\n            \"django.contrib.gis.db.models.fields.gdal.GDALRaster\",\n            side_effect=fake_gdal_raster,\n        ):\n            try:\n                field.get_prep_value(raster_dict)\n            except SuspiciousOperation:\n                raised_suspicious = True\n            except Exception:\n                pass\n\n        # On fixed code, SuspiciousOperation must be raised for dict input\n        assert raised_suspicious, (\n            \"VULNERABLE: get_prep_value() did not raise SuspiciousOperation \"\n            \"for dict input. Fixed code must reject dict values in spatial \"\n            \"lookups to prevent server-side file write (CVE-2026-15307).\"\n        )\n",
+          "um": [
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "AssertionError: VULNERABLE: get_prep_value() did not raise SuspiciousOperation for dict input. Fixed code must reject dict values in spatial lookups to prevent server-side file write (CVE-2026-15307)."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "AssertionError: VULNERABLE: get_prep_value() did not raise SuspiciousOperation for dict input. Fixed code must reject dict values in spatial lookups to prevent server-side file write (CVE-2026-15307)."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "AssertionError: VULNERABLE: get_prep_value() did not raise SuspiciousOperation for dict input. Fixed code must reject dict values in spatial lookups to prevent server-side file write (CVE-2026-15307)."
+              }
+            }
+          ],
+          "up": [
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "AssertionError: VULNERABLE: get_prep_value() did not raise SuspiciousOperation for dict input. Fixed code must reject dict values in spatial lookups to prevent server-side file write (CVE-2026-15307)."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "AssertionError: VULNERABLE: get_prep_value() did not raise SuspiciousOperation for dict input. Fixed code must reject dict values in spatial lookups to prevent server-side file write (CVE-2026-15307)."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupRasterInjectionTest.test_dict_value_raises_suspicious_operation": "AssertionError: VULNERABLE: get_prep_value() did not raise SuspiciousOperation for dict input. Fixed code must reject dict values in spatial lookups to prevent server-side file write (CVE-2026-15307)."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "attempt 2: GIS hint asks for a subclass of the real class, never a bare MagicMock (f89c149)",
+      "logs": "/home/ubuntu/heirloom/work-b/cve/CVE-2026-15307-4.2.30/logs",
+      "total_cost_usd": 0.210885,
+      "observation": "Three porter probes, 0.2109 USD. Probes 1 and 3 import DisallowedRasterLookup (added by the fix) and ERROR on U- (PROBE_ERROR). Probe 2 (5802954c4f) discriminates: FAIL x3 on U- 115ffd04^, PASS x3 on U+ 115ffd04, FAIL x3 on 4.2.30 with the recorded dict/JSON-string raster reaching GDALRaster.__init__; but its recording subclass overrides GDALRaster.__init__, which the fix also changed, so the real __init__ never runs on L: UNPROVEN/NO_REACH (never AFFECTED). C1 holds, so the matrix may reuse it on other lines.",
+      "presence": [
+        {
+          "calibrated": false,
+          "detail": "probe ERROR/TIMEOUT on U⁻",
+          "gates": {
+            "C1": {
+              "detail": "probe ERROR/TIMEOUT on U⁻",
+              "ok": false,
+              "reason": "PROBE_ERROR"
+            }
+          },
+          "reason": "PROBE_ERROR",
+          "verdict": "UNPROVEN"
+        },
+        {
+          "calibrated": false,
+          "detail": "probe never executed GDALRaster.__init__ on L",
+          "gates": {
+            "C1": {
+              "detail": "4 stable failing ids on U⁻",
+              "ok": true,
+              "reason": null
+            },
+            "C2": {
+              "detail": "",
+              "ok": true,
+              "reason": null
+            },
+            "C3": {
+              "detail": "probe never executed GDALRaster.__init__ on L",
+              "ok": false,
+              "reason": "NO_REACH"
+            }
+          },
+          "reason": "NO_REACH",
+          "verdict": "UNPROVEN"
+        },
+        {
+          "calibrated": false,
+          "detail": "probe ERROR/TIMEOUT on U⁻",
+          "gates": {
+            "C1": {
+              "detail": "probe ERROR/TIMEOUT on U⁻",
+              "ok": false,
+              "reason": "PROBE_ERROR"
+            }
+          },
+          "reason": "PROBE_ERROR",
+          "verdict": "UNPROVEN"
+        }
+      ],
+      "attempts": [
+        {
+          "probe_attempt": 1,
+          "status": "done",
+          "error": null,
+          "cost_usd": 0.073767,
+          "run_id": "20261011T140513Z-42de",
+          "probe_sha": "f107603cb5235d209e8145b7ac4cdf66640d8e6fea3e264533a6bb78cbce9eba",
+          "model": "claude-sonnet-4.6",
+          "tests_py": "import json\nimport unittest.mock\n\nfrom django.contrib.gis.db.models.fields import BaseSpatialField\nfrom django.contrib.gis.gdal import GDALRaster\nfrom django.core.exceptions import SuspiciousOperation\nfrom django.test import SimpleTestCase\n\n# Import the new exception introduced by the fix at module level.\n# On Django 4.2 (vulnerable), this import will fail with ImportError,\n# which is the expected calibration signal.\nfrom django.contrib.gis.gdal.raster.source import DisallowedRasterLookup\n\nfrom .models import *  # noqa: F401, F403\n\n\n# A minimal raster-dict that looks like a valid GDALRaster input.\n_RASTER_DICT = {\n    \"driver\": \"MEM\",\n    \"width\": 2,\n    \"height\": 2,\n    \"srid\": 4326,\n    \"bands\": [{\"data\": [1, 2, 3, 4]}],\n}\n\n# A JSON string representation of the same dict (matches json_regex).\n_RASTER_JSON = json.dumps(_RASTER_DICT)\n\n# A VSI network path string (not valid WKT/EWKT/HEXEWKB).\n_VSI_URL = \"/vsicurl/http://example.com/raster.tif\"\n\n\nclass _RecordingGDALRaster(GDALRaster):\n    \"\"\"\n    Subclass of GDALRaster that records constructor arguments and raises\n    before performing any native I/O. Used to detect whether the vulnerable\n    code path attempts to construct a GDALRaster from a dict or string.\n    \"\"\"\n\n    calls = []\n\n    def __init__(self, ds_input, write=False):\n        _RecordingGDALRaster.calls.append(ds_input)\n        raise GDALRaster.__class__  # never reaches native code\n\n\nclass DisallowedRasterLookupTest(SimpleTestCase):\n    \"\"\"\n    Probe for CVE-2026-15307.\n\n    On vulnerable Django 4.2: get_prep_value() passes dict/str values\n    directly to GDALRaster(), which can write files or make network requests.\n\n    On fixed Django: get_prep_value() raises DisallowedRasterLookup\n    (a subclass of SuspiciousOperation) before touching GDALRaster.\n    \"\"\"\n\n    def _make_field(self):\n        \"\"\"Return an unbound BaseSpatialField (GeometryField subclass).\"\"\"\n        from django.contrib.gis.db.models.fields import GeometryField\n        field = GeometryField(srid=4326)\n        # Patch get_srid so it doesn't need a real geometry object.\n        field.srid = 4326\n        return field\n\n    def _call_get_prep_value(self, field, value):\n        \"\"\"\n        Call field.get_prep_value(value) with GDALRaster patched to our\n        recording subclass so no native I/O occurs.\n        \"\"\"\n        with unittest.mock.patch(\n            \"django.contrib.gis.db.models.fields.gdal.GDALRaster\",\n            _RecordingGDALRaster,\n        ):\n            return field.get_prep_value(value)\n\n    def test_dict_raises_disallowed_raster_lookup(self):\n        \"\"\"\n        Passing a dict to get_prep_value must raise DisallowedRasterLookup,\n        not silently attempt to construct a GDALRaster.\n        \"\"\"\n        field = self._make_field()\n        _RecordingGDALRaster.calls.clear()\n\n        with self.assertRaises((DisallowedRasterLookup, SuspiciousOperation)) as cm:\n            self._call_get_prep_value(field, _RASTER_DICT)\n\n        # On fixed code: exception raised, GDALRaster never called with dict.\n        for recorded in _RecordingGDALRaster.calls:\n            assert not isinstance(recorded, dict), (\n                \"Vulnerable: GDALRaster was called with a dict lookup value, \"\n                \"which can write files or make network requests. \"\n                f\"Recorded call: {recorded!r}\"\n            )\n\n        # Confirm the exception message mentions the disallowed object.\n        exc_str = str(cm.exception)\n        assert _RASTER_DICT is not None  # trivially true; real check below\n        # The fix must raise before native I/O; reaching here means it did.\n\n    def test_json_string_raises_disallowed_raster_lookup(self):\n        \"\"\"\n        Passing a JSON string (matching json_regex) to get_prep_value must\n        raise DisallowedRasterLookup, not parse and pass to GDALRaster.\n        \"\"\"\n        field = self._make_field()\n        _RecordingGDALRaster.calls.clear()\n\n        with self.assertRaises((DisallowedRasterLookup, SuspiciousOperation)):\n            self._call_get_prep_value(field, _RASTER_JSON)\n\n        # On fixed code: GDALRaster must NOT have been called with a dict\n        # (the parsed JSON) or the original JSON string.\n        for recorded in _RecordingGDALRaster.calls:\n            assert not isinstance(recorded, dict), (\n                \"Vulnerable: GDALRaster was called with a parsed JSON dict \"\n                f\"from a string lookup value. Recorded: {recorded!r}\"\n            )\n\n    def test_vsi_url_string_raises_disallowed_raster_lookup(self):\n        \"\"\"\n        Passing a VSI network path string to get_prep_value must raise\n        DisallowedRasterLookup (or SuspiciousOperation), not attempt a\n        network fetch via GDALRaster.\n        \"\"\"\n        field = self._make_field()\n        _RecordingGDALRaster.calls.clear()\n\n        with self.assertRaises((DisallowedRasterLookup, SuspiciousOperation)):\n            self._call_get_prep_value(field, _VSI_URL)\n\n        for recorded in _RecordingGDALRaster.calls:\n            assert not isinstance(recorded, str) or not recorded.startswith(\"/vsi\"), (\n                \"Vulnerable: GDALRaster was called with a VSI network path \"\n                f\"string lookup value. Recorded: {recorded!r}\"\n            )\n\n    def test_disallowed_raster_lookup_is_suspicious_operation(self):\n        \"\"\"\n        DisallowedRasterLookup must be a subclass of SuspiciousOperation\n        so that Django's security middleware handles it correctly.\n        \"\"\"\n        assert issubclass(DisallowedRasterLookup, SuspiciousOperation), (\n            \"DisallowedRasterLookup must subclass SuspiciousOperation \"\n            f\"but got MRO: {DisallowedRasterLookup.__mro__}\"\n        )\n",
+          "um": [
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {}
+            }
+          ],
+          "up": [
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            }
+          ]
+        },
+        {
+          "probe_attempt": 2,
+          "status": "done",
+          "error": null,
+          "cost_usd": 0.067218,
+          "run_id": "20261011T140513Z-42de",
+          "probe_sha": "5802954c4f578da4841d7e292fcd7fd6dd2a1c98e84464f2318319e3817ae2dc",
+          "model": "claude-sonnet-4.6",
+          "tests_py": "import json\nfrom unittest.mock import patch, MagicMock\n\nfrom django.core.exceptions import SuspiciousOperation\nfrom django.test import SimpleTestCase\n\nfrom .models import *  # noqa: F401, F403\n\n\nclass SpatialLookupDictRejectionTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-15307: spatial lookups must reject dict and suspicious-string\n    values instead of forwarding them to GDALRaster (which can write files\n    or issue network requests).\n\n    We call BaseSpatialField.get_prep_value() directly (unbound field) with\n    a dict / suspicious-string value and assert that:\n      - on FIXED code  → an exception is raised BEFORE GDALRaster is called\n      - on VULNERABLE code → GDALRaster.__init__ is reached (we intercept it\n        and raise RuntimeError so the test can detect the difference)\n\n    The probe asserts that the exception raised is NOT the sentinel\n    RuntimeError we inject, meaning the fixed code rejected the value early.\n    \"\"\"\n\n    def _get_field(self):\n        # Import here so an ImportError surfaces as a test error, not a\n        # module-level error.\n        from django.contrib.gis.db.models.fields import GeometryField\n        field = GeometryField(srid=4326)\n        return field\n\n    def _assert_rejected_before_gdal(self, value):\n        \"\"\"\n        Assert that get_prep_value raises an exception that is NOT our\n        sentinel (meaning the fixed code rejected the value before reaching\n        GDALRaster).  On vulnerable code, GDALRaster.__init__ is reached and\n        our sentinel RuntimeError propagates, causing the assertion to fail.\n        \"\"\"\n        SENTINEL = \"GDAL_WAS_CALLED_SENTINEL\"\n\n        import django.contrib.gis.db.models.fields as fields_module\n\n        original_GDALRaster = fields_module.gdal.GDALRaster\n\n        class InterceptingRaster(original_GDALRaster):\n            def __init__(self, ds_input, write=False):\n                raise RuntimeError(SENTINEL)\n\n        field = self._get_field()\n\n        with patch.object(fields_module.gdal, \"GDALRaster\", InterceptingRaster):\n            try:\n                field.get_prep_value(value)\n            except RuntimeError as exc:\n                # Vulnerable: GDALRaster was reached\n                assert SENTINEL not in str(exc), (\n                    f\"VULNERABLE: GDALRaster.__init__ was called with {value!r}; \"\n                    f\"the fix should have rejected this value before reaching GDALRaster.\"\n                )\n                # If RuntimeError but not our sentinel, treat as unexpected\n                raise\n            except Exception:\n                # Fixed: some other exception was raised before GDALRaster\n                # This is the expected path on fixed code.\n                pass\n            else:\n                # No exception at all — also vulnerable (value was silently accepted)\n                raise AssertionError(\n                    f\"VULNERABLE: get_prep_value({value!r}) did not raise any \"\n                    f\"exception; the fix should reject dict/suspicious-string values.\"\n                )\n\n    def test_dict_rejected_in_lookup(self):\n        \"\"\"A plain dict must be rejected before GDALRaster is constructed.\"\"\"\n        raster_dict = {\n            \"driver\": \"MEM\",\n            \"width\": 4,\n            \"height\": 4,\n            \"srid\": 4326,\n            \"bands\": [{\"data\": list(range(16))}],\n        }\n        self._assert_rejected_before_gdal(raster_dict)\n\n    def test_json_string_rejected_in_lookup(self):\n        \"\"\"A JSON string (which GDALRaster would parse as a raster) must be rejected.\"\"\"\n        raster_json = json.dumps({\n            \"driver\": \"MEM\",\n            \"width\": 4,\n            \"height\": 4,\n            \"srid\": 4326,\n            \"bands\": [{\"data\": list(range(16))}],\n        })\n        self._assert_rejected_before_gdal(raster_json)\n\n    def test_vsicurl_string_rejected_in_lookup(self):\n        \"\"\"A /vsicurl/ path must be rejected before GDALRaster is constructed.\"\"\"\n        self._assert_rejected_before_gdal(\"/vsicurl/http://example.com/raster.tif\")\n\n    def test_vsis3_string_rejected_in_lookup(self):\n        \"\"\"A /vsis3/ path must be rejected before GDALRaster is constructed.\"\"\"\n        self._assert_rejected_before_gdal(\"/vsis3/mybucket/raster.tif\")\n",
+          "um": [
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_json_string_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsicurl_string_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsis3_string_rejected_in_lookup"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with {'driver': 'MEM', 'width': 4, 'height': 4, 'srid': 4326, 'bands': [{'data': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}]}; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_json_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '{\"driver\": \"MEM\", \"width\": 4, \"height\": 4, \"srid\": 4326, \"bands\": [{\"data\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}]}'; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsicurl_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '/vsicurl/http://example.com/raster.tif'; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsis3_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '/vsis3/mybucket/raster.tif'; the fix should have rejected this value before reaching GDALRaster."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_json_string_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsicurl_string_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsis3_string_rejected_in_lookup"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with {'driver': 'MEM', 'width': 4, 'height': 4, 'srid': 4326, 'bands': [{'data': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}]}; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_json_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '{\"driver\": \"MEM\", \"width\": 4, \"height\": 4, \"srid\": 4326, \"bands\": [{\"data\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}]}'; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsicurl_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '/vsicurl/http://example.com/raster.tif'; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsis3_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '/vsis3/mybucket/raster.tif'; the fix should have rejected this value before reaching GDALRaster."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_json_string_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsicurl_string_rejected_in_lookup",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsis3_string_rejected_in_lookup"
+              ],
+              "details": {
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_dict_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with {'driver': 'MEM', 'width': 4, 'height': 4, 'srid': 4326, 'bands': [{'data': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}]}; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_json_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '{\"driver\": \"MEM\", \"width\": 4, \"height\": 4, \"srid\": 4326, \"bands\": [{\"data\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}]}'; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsicurl_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '/vsicurl/http://example.com/raster.tif'; the fix should have rejected this value before reaching GDALRaster.",
+                "hl_cve_2026_15307.tests.SpatialLookupDictRejectionTest.test_vsis3_string_rejected_in_lookup": "AssertionError: VULNERABLE: GDALRaster.__init__ was called with '/vsis3/mybucket/raster.tif'; the fix should have rejected this value before reaching GDALRaster."
+              }
+            }
+          ],
+          "up": [
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            }
+          ]
+        },
+        {
+          "probe_attempt": 3,
+          "status": "done",
+          "error": null,
+          "cost_usd": 0.0699,
+          "run_id": "20261011T140513Z-42de",
+          "probe_sha": "dd2d93038460815eccbfe74ff78d5bba26d063db8e4dd598b3df3c0c4c043670",
+          "model": "claude-sonnet-4.6",
+          "tests_py": "import json\nimport unittest.mock\n\nfrom django.contrib.gis.db.models.fields import BaseSpatialField\nfrom django.core.exceptions import SuspiciousOperation\nfrom django.test import SimpleTestCase\n\n# Import the new exception added by the fix; if it doesn't exist on 4.2,\n# the ImportError is expected and evaluated by calibration.\nfrom django.contrib.gis.gdal.raster.source import DisallowedRasterLookup\n\nfrom .models import *  # noqa: F401, F403\n\n\n_JSON_RASTER = json.dumps(\n    {\n        \"driver\": \"MEM\",\n        \"width\": 4,\n        \"height\": 4,\n        \"srid\": 4326,\n        \"bands\": [{\"data\": list(range(16))}],\n    }\n)\n\n_DICT_RASTER = json.loads(_JSON_RASTER)\n\n_VSICURL = \"/vsicurl/http://example.com/raster.tif\"\n_VSIS3 = \"/vsis3/mybucket/raster.tif\"\n\n\nclass SpatialLookupRasterRejectionTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-15307: dict and raster-string values must be rejected by\n    BaseSpatialField.get_prep_value() with SuspiciousOperation /\n    DisallowedRasterLookup, not silently forwarded to GDALRaster().\n    \"\"\"\n\n    def _field(self):\n        # Unbound BaseSpatialField – no DB needed.\n        f = BaseSpatialField()\n        f.srid = 4326\n        return f\n\n    def _assert_rejected(self, value):\n        \"\"\"\n        On the fixed tree, get_prep_value must raise DisallowedRasterLookup\n        (a subclass of SuspiciousOperation) before touching GDALRaster.\n        On the vulnerable tree it calls GDALRaster.__init__, which we\n        intercept and turn into an AssertionError so the probe FAILs.\n        \"\"\"\n        field = self._field()\n\n        calls = []\n\n        # Patch GDALRaster at the location used by BaseSpatialField.\n        original_cls = field.__class__.__module__  # unused, just for clarity\n\n        import django.contrib.gis.gdal as gdal_module\n        original_GDALRaster = gdal_module.GDALRaster\n\n        class TrackingRaster(original_GDALRaster):\n            def __init__(self, ds_input, write=False):\n                calls.append(ds_input)\n                # Raise immediately – no native I/O.\n                raise RuntimeError(\"TrackingRaster: native I/O blocked\")\n\n        with unittest.mock.patch.object(gdal_module, \"GDALRaster\", TrackingRaster):\n            # Also patch inside the fields module which imports gdal directly.\n            import django.contrib.gis.db.models.fields as fields_module\n            with unittest.mock.patch.object(fields_module, \"gdal\", gdal_module):\n                try:\n                    field.get_prep_value(value)\n                except DisallowedRasterLookup:\n                    # Fixed tree: correct exception raised before GDALRaster.\n                    assert not calls, (\n                        \"Fixed tree raised DisallowedRasterLookup but also \"\n                        \"called GDALRaster.__init__: %r\" % calls\n                    )\n                    return  # PASS\n                except (RuntimeError, Exception):\n                    pass\n\n        # If we reach here, either:\n        # - GDALRaster.__init__ was called (vulnerable), or\n        # - get_prep_value returned without raising (also vulnerable).\n        assert not calls, (\n            \"VULNERABLE: GDALRaster.__init__ was called with %r; \"\n            \"the fix should have raised DisallowedRasterLookup before \"\n            \"reaching GDALRaster.\" % (calls[0],)\n        )\n        # get_prep_value returned a value without raising – also vulnerable.\n        raise AssertionError(\n            \"VULNERABLE: get_prep_value(%r) did not raise DisallowedRasterLookup \"\n            \"and did not call GDALRaster (unexpected path).\" % (value,)\n        )\n\n    def test_dict_rejected_in_lookup(self):\n        self._assert_rejected(_DICT_RASTER)\n\n    def test_json_string_rejected_in_lookup(self):\n        self._assert_rejected(_JSON_RASTER)\n\n    def test_vsicurl_string_rejected_in_lookup(self):\n        self._assert_rejected(_VSICURL)\n\n    def test_vsis3_string_rejected_in_lookup(self):\n        self._assert_rejected(_VSIS3)\n",
+          "um": [
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "ERROR",
+              "failing_ids": [],
+              "details": {}
+            }
+          ],
+          "up": [
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            },
+            {
+              "outcome": "PASS",
+              "failing_ids": [],
+              "details": {}
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "total_cost_usd": 0.443826
+}

@@ -1,0 +1,853 @@
+{
+  "lines": {
+    "debian-trixie": {
+      "line": "debian-trixie",
+      "archive": "debian",
+      "series": "trixie",
+      "package": "python-django",
+      "version": "3:4.2.28-0+deb13u2",
+      "upstream_tag": "4.2.28",
+      "upstream_commit": "20c71f6b91324cf401056c72136c14e0ec2bf7bf",
+      "repo": "/home/ubuntu/work/django-b",
+      "branch": "distro/debian-trixie",
+      "downloads": [
+        {
+          "role": "debian",
+          "name": "python-django_4.2.28-0+deb13u2.debian.tar.xz",
+          "url": "https://deb.debian.org/debian/pool/main/p/python-django/python-django_4.2.28-0+deb13u2.debian.tar.xz",
+          "final_url": "https://deb.debian.org/debian/pool/main/p/python-django/python-django_4.2.28-0+deb13u2.debian.tar.xz",
+          "sha256": "21aac447a293b479af00d48e27018a19b3dd186680c2fd662be622c04c9858d2",
+          "size": 35340
+        },
+        {
+          "role": "dsc",
+          "name": "python-django_4.2.28-0+deb13u2.dsc",
+          "url": "https://deb.debian.org/debian/pool/main/p/python-django/python-django_4.2.28-0+deb13u2.dsc",
+          "final_url": "https://deb.debian.org/debian/pool/main/p/python-django/python-django_4.2.28-0+deb13u2.dsc",
+          "sha256": "2c55c71dc74f5db81086b88bae3c42a1a9ae806d0c7a993371f69f8c774e6839",
+          "size": 2822
+        },
+        {
+          "role": "orig",
+          "name": "python-django_4.2.28.orig.tar.gz",
+          "url": "https://deb.debian.org/debian/pool/main/p/python-django/python-django_4.2.28.orig.tar.gz",
+          "final_url": "https://deb.debian.org/debian/pool/main/p/python-django/python-django_4.2.28.orig.tar.gz",
+          "sha256": "a4b9cd881991add394cafa8bb3b11ad1742d1e1470ba99c3ef53dc540316ccfe",
+          "size": 10464933
+        }
+      ],
+      "dsc_sha256_verified": true,
+      "dsc_signature_verified": false,
+      "orig_diff_django": [],
+      "orig_delta_commit": null,
+      "changelog_date": "Tue, 26 May 2026 14:35:49 -0700",
+      "patches": [
+        {
+          "file": "0001-disable-sources-in-sphinxdoc.diff",
+          "sha256": "b13f1de2aa82c4ee298ae9aca3d32b4b0a145c6bde728cc500f699d0fa31b41e",
+          "strip": 1,
+          "commit": "b6af388881d9f07b22ec611fa64da222b00690d9",
+          "subject": "Disable creation of _sources directory by Sphinx",
+          "cves": [],
+          "files": [
+            "docs/conf.py"
+          ]
+        },
+        {
+          "file": "0002-use_debian_geoip_database_as_default.diff",
+          "sha256": "11fc3a504904ad1f779bf5f0772a813fad2feb23ee3de89c411d5abc66be22b9",
+          "strip": 1,
+          "commit": "ac182198b7e9bbd55f3cdd9aa61138061683a45b",
+          "subject": "Use Debian GeoIP database path as default",
+          "cves": [],
+          "files": [
+            "django/contrib/gis/geoip2/base.py"
+          ]
+        },
+        {
+          "file": "0004-Use-locally-installed-documentation-sources.patch",
+          "sha256": "06f32116ed73afb28a6057522fb2bbb3ac865ab4bf90f057095a5a76ffc28ba0",
+          "strip": 1,
+          "commit": "dfd150929ad24834c86c7b3e24cf62fa2c4246e1",
+          "subject": "Use locally installed documentation sources",
+          "cves": [],
+          "files": [
+            "docs/conf.py"
+          ]
+        },
+        {
+          "file": "0004-Set-the-default-shebang-to-new-projects-to-use-Pytho.patch",
+          "sha256": "beb960542bd71316b6edb5c4f14eddc3a5585c18a1b7c5480b03e81a9df8aea2",
+          "strip": 1,
+          "commit": "43efa67b60f6ea13b20995f59cc00887606a8689",
+          "subject": "Set the default shebang to new projects to use Python 3.",
+          "cves": [],
+          "files": [
+            "django/conf/project_template/manage.py-tpl"
+          ]
+        },
+        {
+          "file": "py313-test-help-default-options-with-custom-arguments.patch",
+          "sha256": "88663f9b9446148e6a61f351d4a2c26bf709d623f0a761bf75ad50a4b2ee4729",
+          "strip": 1,
+          "commit": "28f9901edd2b034447d26aaae3c1331ff45965f6",
+          "subject": "Refs #34900 -- Fixed CommandTypes.test_help_default_options_with_custom_arguments test on Python 3.13+.",
+          "cves": [],
+          "files": [
+            "django/utils/version.py",
+            "tests/admin_scripts/tests.py"
+          ]
+        },
+        {
+          "file": "0006-Workaround-changes-in-CVE-2025-6069.patch",
+          "sha256": "a799ceaa27b4a3636ad642df3745d9549e9200ef4949619a1c15069bb1063075",
+          "strip": 1,
+          "commit": "5c812154435cac0774e546b968efd1bf515fc681",
+          "subject": "Workaround changes in CVE-2025-6069",
+          "cves": [
+            "CVE-2025-6069"
+          ],
+          "files": [
+            "tests/utils_tests/test_html.py"
+          ]
+        }
+      ],
+      "tip": "5c812154435cac0774e546b968efd1bf515fc681"
+    },
+    "ubuntu-noble": {
+      "line": "ubuntu-noble",
+      "archive": "launchpad",
+      "series": "noble",
+      "package": "python-django",
+      "version": "3:4.2.11-1ubuntu1.18",
+      "upstream_tag": "4.2.11",
+      "upstream_commit": "61a986f53d805e4d359ab61af60a2dcd55befe25",
+      "repo": "/home/ubuntu/work/django-b",
+      "branch": "distro/ubuntu-noble",
+      "downloads": [
+        {
+          "role": "debian",
+          "name": "python-django_4.2.11-1ubuntu1.18.debian.tar.xz",
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/python-django/3:4.2.11-1ubuntu1.18/python-django_4.2.11-1ubuntu1.18.debian.tar.xz",
+          "final_url": "https://launchpadlibrarian.net/878570331/python-django_4.2.11-1ubuntu1.18.debian.tar.xz",
+          "sha256": "5ecbe43be60503f09d8c5badc438d466102a1b9d3c07068ebcb76b4daf3a2a90",
+          "size": 86336
+        },
+        {
+          "role": "dsc",
+          "name": "python-django_4.2.11-1ubuntu1.18.dsc",
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/python-django/3:4.2.11-1ubuntu1.18/python-django_4.2.11-1ubuntu1.18.dsc",
+          "final_url": "https://launchpadlibrarian.net/878570332/python-django_4.2.11-1ubuntu1.18.dsc",
+          "sha256": "794430ed3a9a362be9e0f6ef46e01f52757d1c96306aeb6f5a7813b0cc7d9fea",
+          "size": 2912
+        },
+        {
+          "role": "orig",
+          "name": "python-django_4.2.11.orig.tar.gz",
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/python-django/3:4.2.11-1ubuntu1.18/python-django_4.2.11.orig.tar.gz",
+          "final_url": "https://launchpadlibrarian.net/878570328/python-django_4.2.11.orig.tar.gz",
+          "sha256": "6e6ff3db2d8dd0c986b4eec8554c8e4f919b5c1ff62a5b4390c17aff2ed6e5c4",
+          "size": 10426858
+        }
+      ],
+      "dsc_sha256_verified": true,
+      "dsc_signature_verified": false,
+      "orig_diff_django": [],
+      "orig_delta_commit": null,
+      "changelog_date": "Mon, 28 Sep 2026 16:58:29 +0800",
+      "patches": [
+        {
+          "file": "0001-disable-sources-in-sphinxdoc.diff",
+          "sha256": "a86b307c826cfff7e75ed7bcd9e57ce366e9c2301764e915b1cde5b9cac13f99",
+          "strip": 1,
+          "commit": "66c359646fecc8442c8faf96f960885f36180249",
+          "subject": "Disable creation of _sources directory by Sphinx",
+          "cves": [],
+          "files": [
+            "docs/conf.py"
+          ]
+        },
+        {
+          "file": "0002-use_debian_geoip_database_as_default.diff",
+          "sha256": "11fc3a504904ad1f779bf5f0772a813fad2feb23ee3de89c411d5abc66be22b9",
+          "strip": 1,
+          "commit": "093a9669face1117e69bda21bdf2b4cc83c644bf",
+          "subject": "Use Debian GeoIP database path as default",
+          "cves": [],
+          "files": [
+            "django/contrib/gis/geoip2/base.py"
+          ]
+        },
+        {
+          "file": "0004-Use-locally-installed-documentation-sources.patch",
+          "sha256": "d20f3dc3fe3986ac799ef7fc1e98a565dd908342a319eac9a2a630a8a7739f16",
+          "strip": 1,
+          "commit": "156d591698df6af0bfaafce6dbf7e2f433df4fc4",
+          "subject": "Use locally installed documentation sources",
+          "cves": [],
+          "files": [
+            "docs/conf.py"
+          ]
+        },
+        {
+          "file": "0004-Set-the-default-shebang-to-new-projects-to-use-Pytho.patch",
+          "sha256": "beb960542bd71316b6edb5c4f14eddc3a5585c18a1b7c5480b03e81a9df8aea2",
+          "strip": 1,
+          "commit": "d16089508b59a15ade307e4b9b669449175cfb2c",
+          "subject": "Set the default shebang to new projects to use Python 3.",
+          "cves": [],
+          "files": [
+            "django/conf/project_template/manage.py-tpl"
+          ]
+        },
+        {
+          "file": "fix-mail-using-utf-8-surrogateescape.patch",
+          "sha256": "678ae52bc45a59522a7ae490aa44b0d4f10cc012c1e5585f4e237c4569af020b",
+          "strip": 1,
+          "commit": "ebb41b32416d0dc78c64992d8689a03f939fe71f",
+          "subject": "Fix SafeMIMEText.set_payload() crash due to utf-8 surrogateescape error in mail.",
+          "cves": [],
+          "files": [
+            "django/core/mail/message.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-38875.patch",
+          "sha256": "69d67d5e76296851d1bf092a4d891404b25cb26117e7500f3b0d606afa80e800",
+          "strip": 1,
+          "commit": "c639fd964aa9022d4c488d45bad3a61dad0bec41",
+          "subject": "[4.2.x] Fixed CVE-2024-38875 -- Mitigated potential DoS in urlize and urlizetrunc template filters.",
+          "cves": [
+            "CVE-2024-38875"
+          ],
+          "files": [
+            "django/utils/html.py",
+            "tests/utils_tests/test_html.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-39329.patch",
+          "sha256": "9f871d5a180e88cd9996bc6d40e2b59fc5d9d992730621d7d878cc2f0429a80c",
+          "strip": 1,
+          "commit": "2c8b3aafaf95ae49658cb3b847919b47159b4998",
+          "subject": "[4.2.x] Fixed CVE-2024-39329 -- Standarized timing of verify_password() when checking unusuable passwords.",
+          "cves": [
+            "CVE-2024-39329"
+          ],
+          "files": [
+            "django/contrib/auth/hashers.py",
+            "tests/auth_tests/test_hashers.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-39330.patch",
+          "sha256": "db02910840b0040249a4eda67cf34cfc1fa97f31ea2290c1751f60b2e96701ee",
+          "strip": 1,
+          "commit": "5293b5f531a3648f6a53e619cd2b09f79deb1d16",
+          "subject": "[4.2.x] Fixed CVE-2024-39330 -- Added extra file name validation in Storage's save method.",
+          "cves": [
+            "CVE-2024-39330"
+          ],
+          "files": [
+            "django/core/files/storage/base.py",
+            "django/core/files/utils.py",
+            "tests/file_storage/test_base.py",
+            "tests/file_storage/tests.py",
+            "tests/file_uploads/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-39614.patch",
+          "sha256": "59e693706636871922245129f7c5f8636bddb5c79739a25034deaf0353d36513",
+          "strip": 1,
+          "commit": "47cb255d11e01a9ea7391b650bad88bbc66c57b9",
+          "subject": "[4.2.x] Fixed CVE-2024-39614 -- Mitigated potential DoS in get_supported_language_variant().",
+          "cves": [
+            "CVE-2024-39614"
+          ],
+          "files": [
+            "django/utils/translation/trans_real.py",
+            "docs/ref/utils.txt",
+            "tests/i18n/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-41989.patch",
+          "sha256": "47c21ec016b75699b10f8dcb5febfd1cd96a5a8baa199604d36e0800bbdc5204",
+          "strip": 1,
+          "commit": "f2a283f41771a86678aa525d946edfeeb7252eb8",
+          "subject": "[4.2.x] Fixed CVE-2024-41989 -- Prevented excessive memory consumption in floatformat.",
+          "cves": [
+            "CVE-2024-41989"
+          ],
+          "files": [
+            "django/template/defaultfilters.py",
+            "tests/template_tests/filter_tests/test_floatformat.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-41990.patch",
+          "sha256": "667faf0b27e865906df1674c6e526c6e28e449ec1bcd8c6367810e9be99291b0",
+          "strip": 1,
+          "commit": "fd7a56ac86a25dcd9713c3f41d07b2b671aa1a15",
+          "subject": "[4.2.x] Fixed CVE-2024-41990 -- Mitigated potential DoS in urlize and urlizetrunc template filters.",
+          "cves": [
+            "CVE-2024-41990"
+          ],
+          "files": [
+            "django/utils/html.py",
+            "tests/utils_tests/test_html.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-41991.patch",
+          "sha256": "adcdd28317b895ba29b01ff3c86d0a3214c152ec44f3ccd639fe6568dc451d75",
+          "strip": 1,
+          "commit": "0a36b356f12dd1d8cec9ea12c509899cf22748d4",
+          "subject": "[4.2.x] Fixed CVE-2024-41991 -- Prevented potential ReDoS in django.utils.html.urlize() and AdminURLFieldWidget.",
+          "cves": [
+            "CVE-2024-41991"
+          ],
+          "files": [
+            "django/contrib/admin/widgets.py",
+            "django/utils/html.py",
+            "tests/admin_widgets/tests.py",
+            "tests/utils_tests/test_html.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-42005.patch",
+          "sha256": "69c4db6b77a5b84d925a1e077a7da6a4a65d007fc3fba46a0498574107b3f692",
+          "strip": 1,
+          "commit": "e5e653bc8ecfb3b0daf3bd15fed1fae4aec1375d",
+          "subject": "[4.2.x] Fixed CVE-2024-42005 -- Mitigated QuerySet.values() SQL injection attacks against JSON fields.",
+          "cves": [
+            "CVE-2024-42005"
+          ],
+          "files": [
+            "django/db/models/sql/query.py",
+            "tests/expressions/models.py",
+            "tests/expressions/test_queryset_values.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-45230.patch",
+          "sha256": "5265e5d5dea6b2c63fc015f7760ed580ad4d9d81e0fcb8ed17a71d14f8a8ae0f",
+          "strip": 1,
+          "commit": "3b1cd6f46171f215d21d0aef2307f04f2c158dd8",
+          "subject": "[4.2.x] Fixed CVE-2024-45230 -- Mitigated potential DoS in urlize and urlizetrunc template filters.",
+          "cves": [
+            "CVE-2024-45230"
+          ],
+          "files": [
+            "django/utils/html.py",
+            "docs/ref/templates/builtins.txt",
+            "docs/releases/4.2.16.txt",
+            "tests/template_tests/filter_tests/test_urlize.py",
+            "tests/utils_tests/test_html.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-45231.patch",
+          "sha256": "0ae6a49ecfe972c57ff3965a8e0a66aeb45699b45ad55d4556723a06bda57a8c",
+          "strip": 1,
+          "commit": "fe5fdcbfe95ac1266498e7a0407090e06cb44317",
+          "subject": "[4.2.x] Fixed CVE-2024-45231 -- Avoided server error on password reset when email sending fails.",
+          "cves": [
+            "CVE-2024-45231"
+          ],
+          "files": [
+            "django/contrib/auth/forms.py",
+            "docs/ref/logging.txt",
+            "docs/releases/4.2.16.txt",
+            "docs/topics/auth/default.txt",
+            "tests/auth_tests/test_forms.py",
+            "tests/mail/custombackend.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-53907.patch",
+          "sha256": "87f441bae1f45b6fb09172c83aa8460ed537a91d45e97516530fe4d6be18472c",
+          "strip": 1,
+          "commit": "eefab6291db563da8b5bc59d72a892975be4d7ff",
+          "subject": "[4.2.x] Fixed CVE-2024-53907 -- Mitigated potential DoS in strip_tags().",
+          "cves": [
+            "CVE-2024-53907"
+          ],
+          "files": [
+            "django/utils/html.py",
+            "tests/utils_tests/test_html.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-53908.patch",
+          "sha256": "9fb09e5c2caf88dc90ed9a651a2ca1d8649e936442f8c8038890384c2113bd5c",
+          "strip": 1,
+          "commit": "f64a68b4888ee853e1d68744b7a0c3cdba828a5c",
+          "subject": "[4.2.x] Fixed CVE-2024-53908 -- Prevented SQL injections in direct HasKeyLookup usage on Oracle.",
+          "cves": [
+            "CVE-2024-53908"
+          ],
+          "files": [
+            "django/db/models/fields/json.py",
+            "tests/model_fields/test_jsonfield.py"
+          ]
+        },
+        {
+          "file": "CVE-2024-56374.patch",
+          "sha256": "80e6361c0fe88d0cf732c25b1e5fd5a770fc867f0002b8c1979d839b23bc2bdd",
+          "strip": 1,
+          "commit": "23ed2f13878571edd9bda48a68303933e1a29df2",
+          "subject": "[4.2.x] Fixed CVE-2024-56374 -- Mitigated potential DoS in IPv6 validation.",
+          "cves": [
+            "CVE-2024-56374"
+          ],
+          "files": [
+            "django/db/models/fields/__init__.py",
+            "django/forms/fields.py",
+            "django/utils/ipv6.py",
+            "docs/ref/forms/fields.txt",
+            "docs/releases/4.2.18.txt",
+            "tests/forms_tests/field_tests/test_genericipaddressfield.py",
+            "tests/utils_tests/test_ipv6.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-26699.patch",
+          "sha256": "f31fe41e5d5404490c98357fe042bca9d20de674e64904eb3d95d1b05ad75035",
+          "strip": 1,
+          "commit": "16cf90a09cdf05500b0e54450665fcd056fd1990",
+          "subject": "[4.2.x] Fixed CVE-2025-26699 -- Mitigated potential DoS in wordwrap template filter.",
+          "cves": [
+            "CVE-2025-26699"
+          ],
+          "files": [
+            "django/utils/text.py",
+            "tests/template_tests/filter_tests/test_wordwrap.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-32873.patch",
+          "sha256": "bdfa217ab6a2301a371e4bd3f7b1eb1dd2da2b756b12b7c4499e6c163efb2956",
+          "strip": 1,
+          "commit": "88586e947ce213f01d7e7a330bd1c1b24a42acad",
+          "subject": "[4.2.x] Fixed CVE-2025-32873 -- Mitigated potential DoS in strip_tags().",
+          "cves": [
+            "CVE-2025-32873"
+          ],
+          "files": [
+            "django/utils/html.py",
+            "tests/utils_tests/test_html.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-48432.patch",
+          "sha256": "89e88d22817014c44bfef9e8e2cd118815a328a1321e8131c30f2a7a8ba0bef7",
+          "strip": 1,
+          "commit": "a29ffd3a14dee07cf7ace46bfdb56c346e916461",
+          "subject": "[4.2.x] Fixed CVE-2025-48432 -- Escaped formatting arguments in `log_response()`.",
+          "cves": [
+            "CVE-2025-48432"
+          ],
+          "files": [
+            "django/utils/log.py",
+            "tests/logging_tests/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-48432-2.patch",
+          "sha256": "d32482f1e3d1fcd4ebe25df2cac85f6fc9a35b19d934ac8d29df11cbd72a2eb2",
+          "strip": 1,
+          "commit": "50b6caf52924df921db5cb6653e161dcc9cef5ce",
+          "subject": "[4.2.x] Refs CVE-2025-48432 -- Prevented log injection in remaining response logging.",
+          "cves": [
+            "CVE-2025-48432"
+          ],
+          "files": [
+            "django/views/generic/base.py",
+            "tests/generic_views/test_base.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-57833.patch",
+          "sha256": "8250ebb4e824a7c9e4d903cabcaefbcfeda47d1c12ee8dba9085e5e222045485",
+          "strip": 1,
+          "commit": "9cae93fdb8c217dafe50a4245445a4acb21f6751",
+          "subject": "[4.2.x] Fixed CVE-2025-57833 -- Protected FilteredRelation against SQL injection in column aliases.",
+          "cves": [
+            "CVE-2025-57833"
+          ],
+          "files": [
+            "django/db/models/sql/query.py",
+            "tests/annotations/tests.py"
+          ]
+        },
+        {
+          "file": "skipping_tests.patch",
+          "sha256": "00985ae38291d598e71798d56b109f8f0c304f825868c9f9f64222b407f02ecd",
+          "strip": 1,
+          "commit": "632d1b149659d28b8a230dbdd922a5f88366555f",
+          "subject": "Skipping FTBFS tests",
+          "cves": [],
+          "files": [
+            "tests/utils_tests/test_html.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-59681.patch",
+          "sha256": "e3d7a336795e9cdf658a7230bbc8be9554904f03f52aeebc1ededb07bd1c2608",
+          "strip": 1,
+          "commit": "4c139721db012c85c714470d68058d6ec26cc9e8",
+          "subject": "[4.2.x] Fixed CVE-2025-59681 -- Protected QuerySet.annotate(), alias(), aggregate(), and extra() against SQL injection in column aliases on MySQL/MariaDB.",
+          "cves": [
+            "CVE-2025-59681"
+          ],
+          "files": [
+            "django/db/models/sql/query.py",
+            "tests/aggregation/tests.py",
+            "tests/annotations/tests.py",
+            "tests/expressions/test_queryset_values.py",
+            "tests/queries/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-59682.patch",
+          "sha256": "e40e41a0ea6f7eef05414b3dcccdf4e8895687bc386c2bcd72c15561a98bb459",
+          "strip": 1,
+          "commit": "ad842100a5d31661d6057cc39bda7870c88fb818",
+          "subject": "[4.2.x] Fixed CVE-2025-59682 -- Fixed potential partial directory-traversal via archive.extract().",
+          "cves": [
+            "CVE-2025-59682"
+          ],
+          "files": [
+            "django/utils/archive.py",
+            "tests/utils_tests/test_archive.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-62769-1.patch",
+          "sha256": "aaf0a634d9e7f493ec6969dd379d60e32cabd057eca39c15b93391c05f32d25f",
+          "strip": 1,
+          "commit": "77b6ddb59843be3073e2a3a5c009d58d4e391a28",
+          "subject": "[4.2.x] Fixed CVE-2025-62769 -- Prevented SQL injections in Q/QuerySet via the _connector kwarg.",
+          "cves": [
+            "CVE-2025-62769"
+          ],
+          "files": [
+            "django/db/models/query_utils.py",
+            "tests/queries/test_q.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-62769-2.patch",
+          "sha256": "401c585025d336fb240fa0f46e6e3d01a3c0c0578ae22dda839416fdef5de802",
+          "strip": 1,
+          "commit": "a028eac7c70864b4d7d622c0837b6a661c29c55d",
+          "subject": "[4.2.x] Refs CVE-2025-62769 -- Avoided propagating invalid arguments to Q on dictionary expansion.",
+          "cves": [
+            "CVE-2025-62769"
+          ],
+          "files": [
+            "django/db/models/query.py",
+            "tests/queries/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-13372.patch",
+          "sha256": "2c145896c36c28438ce9151571130c065bed1cc74f94d1419ad6e753c348cf94",
+          "strip": 1,
+          "commit": "47fa8a855db7943ba8a9d1b15dbdba50a148f5ba",
+          "subject": "[4.2.x] Fixed CVE-2025-13372 -- Protected FilteredRelation against SQL injection in column aliases on PostgreSQL.",
+          "cves": [
+            "CVE-2025-13372",
+            "CVE-2025-57833"
+          ],
+          "files": [
+            "django/db/backends/postgresql/compiler.py",
+            "django/db/backends/postgresql/operations.py",
+            "tests/annotations/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-64460.patch",
+          "sha256": "c60a93fd923df79da8370324f3eb9b6c1675cd3dc3cdacf24cdea49f390cc464",
+          "strip": 1,
+          "commit": "5414f80e5f0c77e1eee391e898870b9953286e85",
+          "subject": "[4.2.x] Fixed CVE-2025-64460 -- Corrected quadratic inner text accumulation in XML serializer.",
+          "cves": [
+            "CVE-2025-64460"
+          ],
+          "files": [
+            "django/core/serializers/xml_serializer.py",
+            "docs/topics/serialization.txt",
+            "tests/serializers/test_xml.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-13473.patch",
+          "sha256": "47e49ff4328a072d978b04512023178d0a68ff58ba16da122b4cd1a829e96233",
+          "strip": 1,
+          "commit": "002bea891ca844fee9a56f6d8f4127f67e645736",
+          "subject": "[4.2.x] Fixed CVE-2025-13473 -- Standardized timing of check_password() in mod_wsgi auth handler.",
+          "cves": [
+            "CVE-2024-39329",
+            "CVE-2025-13473"
+          ],
+          "files": [
+            "django/contrib/auth/handlers/modwsgi.py",
+            "tests/auth_tests/test_handlers.py"
+          ]
+        },
+        {
+          "file": "CVE-2025-14550.patch",
+          "sha256": "271e6a2f8f8cfb9a8e7da543e580671b52068ed9d903afabf384d41b63aab3d8",
+          "strip": 1,
+          "commit": "0da0be701b1cb22e08c4ec92386fefa5ccecf148",
+          "subject": "[4.2.x] Fixed CVE-2025-14550 -- Optimized repeated header parsing in ASGI requests.",
+          "cves": [
+            "CVE-2025-14550"
+          ],
+          "files": [
+            "django/core/handlers/asgi.py",
+            "tests/asgi/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-1207.patch",
+          "sha256": "881234f838740fb8fdb760d72a7b558f6b9b35fcc645d1c14e7a0d70f2ebf549",
+          "strip": 1,
+          "commit": "3f34ab1092e870d0641e91abff74b6bf4d955e98",
+          "subject": "[4.2.x] Fixed CVE-2026-1207 -- Prevented SQL injections in RasterField lookups via band index.",
+          "cves": [
+            "CVE-2026-1207"
+          ],
+          "files": [
+            "django/contrib/gis/db/backends/postgis/operations.py",
+            "tests/gis_tests/rasterapp/test_rasterfield.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-1285.patch",
+          "sha256": "ebf62f2ae0ba01aa39bab7860e576c5e60fe8a7317b6c874299129357b461006",
+          "strip": 1,
+          "commit": "60bbe9357fa88b90ec9b7b85eb16eb1da616edd9",
+          "subject": "[4.2.x] Fixed CVE-2026-1285 -- Mitigated potential DoS in django.utils.text.Truncator for HTML input.",
+          "cves": [
+            "CVE-2026-1285"
+          ],
+          "files": [
+            "django/utils/text.py",
+            "tests/utils_tests/test_text.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-1287.patch",
+          "sha256": "4db396f3068e2ff1b985bfbc1627fafecf1c23d7cc39044f5ebf65298d76390e",
+          "strip": 1,
+          "commit": "a1d1609ff054572b0a9aabb097a25f9e69592214",
+          "subject": "[4.2.x] Fixed CVE-2026-1287 -- Protected against SQL injection in column aliases via control characters.",
+          "cves": [
+            "CVE-2026-1287"
+          ],
+          "files": [
+            "django/db/models/sql/query.py",
+            "tests/aggregation/tests.py",
+            "tests/annotations/tests.py",
+            "tests/expressions/test_queryset_values.py",
+            "tests/queries/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-1312-1.patch",
+          "sha256": "516c0da3b4b66f697379a0db31257d1123d068443b374a3a66ef537eb9729d3a",
+          "strip": 1,
+          "commit": "51b8e7af43ff30311d774da38c36a536a9c6d7a1",
+          "subject": "[4.2.x] Fixed CVE-2026-1312 -- Protected order_by() from SQL injection via aliases with periods.",
+          "cves": [
+            "CVE-2026-1312"
+          ],
+          "files": [
+            "django/db/models/sql/compiler.py",
+            "tests/ordering/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-1312-2.patch",
+          "sha256": "4faa89639e0b53058d98d8ff20d2540d393733f85abccad09242f09b0f9ea399",
+          "strip": 1,
+          "commit": "0405490744b0067efd235e988c50ffc4a67b30bf",
+          "subject": "[4.2.x] Refs CVE-2026-1312 -- Raised ValueError when FilteredRelation aliases contain periods.",
+          "cves": [
+            "CVE-2026-1312"
+          ],
+          "files": [
+            "django/db/models/sql/query.py",
+            "tests/filtered_relation/tests.py",
+            "tests/ordering/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-33033.patch",
+          "sha256": "99283f35f84976aeeebbfdeb1607135a9534b596df29e3437ba6b19b3e3f1b39",
+          "strip": 1,
+          "commit": "73efef72477ee95880ca504e9d346e89f965a38a",
+          "subject": "[4.2.x] Fixed CVE-2026-33033 -- Mitigated potential DoS in MultiPartParser.",
+          "cves": [
+            "CVE-2026-33033"
+          ],
+          "files": [
+            "django/http/multipartparser.py",
+            "tests/requests_tests/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-33034.patch",
+          "sha256": "8697574a1b0a2608021864f0f9b4376f42ec4d169e65e9587ae08b3fb9960111",
+          "strip": 1,
+          "commit": "cb986d932ee9c4adc84fded3bc0357f5d7cdd90f",
+          "subject": "[4.2.x] Fixed CVE-2026-33034 -- Enforced DATA_UPLOAD_MAX_MEMORY_SIZE on body size in ASGI requests.",
+          "cves": [
+            "CVE-2026-33034"
+          ],
+          "files": [
+            "django/http/request.py",
+            "tests/asgi/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-3902.patch",
+          "sha256": "db1b3c3ebd8f1251fa3f6871d0ef206d1b4633094306e5c8cc510e8755e6f2b3",
+          "strip": 1,
+          "commit": "547d4b5ceeef45ac954a40153fd499fc15f34cd3",
+          "subject": "[4.2.x] Fixed CVE-2026-3902 -- Ignored headers with underscores in ASGIRequest.",
+          "cves": [
+            "CVE-2026-3902"
+          ],
+          "files": [
+            "django/core/handlers/asgi.py",
+            "django/test/client.py",
+            "tests/asgi/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-4277.patch",
+          "sha256": "b923c37fd147e4cd13bbd5854efe9525399a49322bccdc2ed7ed3e9e6160d371",
+          "strip": 1,
+          "commit": "29d3a9367587d9e7723e98567bde8e51acea1263",
+          "subject": "[4.2.x] Fixed CVE-2026-4277 -- Checked add permissions in GenericInlineModelAdmin.",
+          "cves": [
+            "CVE-2026-4277"
+          ],
+          "files": [
+            "django/contrib/contenttypes/admin.py",
+            "tests/generic_inline_admin/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-4292.patch",
+          "sha256": "c2a4f6030eb6e5c61fe9179ce4dbde62a802e45d14006a1f6d337f6d8409674e",
+          "strip": 1,
+          "commit": "45ad28b7a3c47387a7e6ff31d2ae2152dd62a2ac",
+          "subject": "[4.2.x] Fixed CVE-2026-4292 -- Disallowed instance creation via ModelAdmin.list_editable.",
+          "cves": [
+            "CVE-2026-4292"
+          ],
+          "files": [
+            "django/contrib/admin/options.py",
+            "tests/admin_views/admin.py",
+            "tests/admin_views/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-5766.patch",
+          "sha256": "9072a9f85ae8234bdbbaedc5c22d1637a0e442b1240dfeaa7edccbee5b55a0b1",
+          "strip": 1,
+          "commit": "61eea41672ab06a50255dd18d995dc0d16ad9884",
+          "subject": "[5.2.x] Fixed CVE-2026-5766 -- Enforced DATA_UPLOAD_MAX_MEMORY_SIZE in MemoryFileUploadHandler on ASGI.",
+          "cves": [
+            "CVE-2026-5766"
+          ],
+          "files": [
+            "django/core/files/uploadhandler.py",
+            "tests/asgi/tests.py",
+            "tests/requests_tests/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-35192.patch",
+          "sha256": "7976d642f50a6f5bde5259ad9b84ce096968cbf780ed03d8d778ffae4a99165e",
+          "strip": 1,
+          "commit": "678aa819b28fc5be943cc1d19e096ba2c9944f49",
+          "subject": "[5.2.x] Fixed CVE-2026-35192 -- Ensured Vary header is sent when setting session cookie with SESSION_SAVE_EVERY_REQUEST=True.",
+          "cves": [
+            "CVE-2026-35192"
+          ],
+          "files": [
+            "django/contrib/sessions/middleware.py",
+            "tests/sessions_tests/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-6907.patch",
+          "sha256": "f5147b6d3971e645f6cd4121e0bec340e89627790647d7b928f19b38210cdb1e",
+          "strip": 1,
+          "commit": "18b4246f3a79647c996a35010e0de7bfba0b1bb8",
+          "subject": "[5.2.x] Fixed CVE-2026-6907 -- Prevented caching of requests when Vary header contains an asterisk.",
+          "cves": [
+            "CVE-2026-6907"
+          ],
+          "files": [
+            "django/middleware/cache.py",
+            "tests/cache/tests.py"
+          ]
+        },
+        {
+          "file": "fix-test-HTML-parsing-errors.patch",
+          "sha256": "4b1075e059d71aa8832cd474ac01624eb78dc1fae0ff5de96e12e828f63847bf",
+          "strip": 1,
+          "commit": "f04726b8107ecc0f6c87d1e9f592f1e93e15d667",
+          "subject": "[4.2.x] Fixed test_utils.tests.HTMLEqualTests.test_parsing_errors following Python's HTMLParser fixed parsing.",
+          "cves": [],
+          "files": [
+            "tests/test_utils/tests.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-15307.patch",
+          "sha256": "b44b6977b25c6e425a92aed6a288e73d7d839480877dbdf2175e254d964544cf",
+          "strip": 1,
+          "commit": "206722f638bbf43af733327f78d15286476b5d22",
+          "subject": "[5.2.x] Fixed CVE-2026-15307 -- Blocked raster strings and dicts in spatial lookups.",
+          "cves": [
+            "CVE-2026-15307"
+          ],
+          "files": [
+            "django/contrib/gis/db/models/fields.py",
+            "django/contrib/gis/gdal/raster/source.py",
+            "docs/ref/contrib/gis/db-api.txt",
+            "docs/ref/contrib/gis/gdal.txt",
+            "tests/gis_tests/geoadmin/tests.py",
+            "tests/gis_tests/geoapp/tests.py",
+            "tests/gis_tests/rasterapp/test_rasterfield.py",
+            "tests/gis_tests/test_geoforms.py"
+          ]
+        },
+        {
+          "file": "CVE-2026-8404.patch",
+          "sha256": "feb2828bc556382c9e91254c4ced9f6560ba04a474c974a6342a27ace37466d4",
+          "strip": 1,
+          "commit": "f566e91a2c2b22901264e62b0939c7a5bda61c1d",
+          "subject": "[5.2.x] Fixed CVE-2026-8404 -- Used Cache-Control directives case-insensitively in UpdateCacheMiddleware.",
+          "cves": [
+            "CVE-2026-8404"
+          ],
+          "files": [
+            "django/middleware/cache.py",
+            "tests/cache/tests.py"
+          ]
+        }
+      ],
+      "tip": "f566e91a2c2b22901264e62b0939c7a5bda61c1d"
+    }
+  }
+}

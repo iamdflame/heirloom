@@ -1,0 +1,196 @@
+[
+  {
+    "cve": "CVE-2026-53878",
+    "line": "4.2.30",
+    "run_id": "20261011T093132Z-c1b0",
+    "verdict": "UNPROVEN",
+    "reason": "NO_REACH",
+    "detail": "no fix symbol exists in L",
+    "attempts": [
+      {
+        "probe": "45b1fb2c20001f83fac64b4a6934037716c95bd483f03cb2ce421da34b5011a0",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      },
+      {
+        "probe": "deb3a5e92142af113b3534e3b4c0e37c529e81df0800de55cfd57a3e7a6a0fa9",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      },
+      {
+        "probe": "8731fa1ed4487ade9ae11081fb52e781cf50ba8d25f3675ed795a5621232a6be",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      }
+    ],
+    "ledger_cost_usd": 0.122892
+  },
+  {
+    "cve": "CVE-2026-53878",
+    "line": "4.2.30",
+    "run_id": "20261011T093547Z-7ed3",
+    "verdict": "UNPROVEN",
+    "reason": "PROBE_ERROR",
+    "detail": "probe ERROR/TIMEOUT on L",
+    "attempts": [
+      {
+        "probe": "da44de536388142c54289f6df3e384c56dd96f3c24af8e9dc547377f863c7484",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "481aeee54f4892deec397935ce132ed6fb5b688cba754e0c9440925b9e4a4746",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "8b0135c50be4b374de495d267b28288bdf49e41985071315e09ffbe4f69e431c",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      }
+    ],
+    "ledger_cost_usd": 0.099408
+  },
+  {
+    "cve": "CVE-2026-53878",
+    "line": "4.2.30",
+    "run_id": "20261011T093910Z-f01b",
+    "verdict": "NOT_AFFECTED_PROVEN",
+    "reason": null,
+    "detail": "absent on L: DomainNameValidator; probe ERRORs naming it; blame -C -C of 14 fix-changed lines ends in pure additions after 9409312eef (14 \u2192 4971a9afe5)",
+    "attempts": [
+      {
+        "probe": "7e072112eb4bcf1f501c4be6cb98589b22fa515c65b8b248c8ba008bce6ecd05",
+        "verdict": "NOT_AFFECTED_PROVEN",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.029691
+  },
+  {
+    "cve": "CVE-2026-5766",
+    "line": "4.2.30",
+    "run_id": "20261011T094236Z-ec19",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "a77287873e78d2f0ef842f072d445ce660383a5ae7cf8781c8d1a33bb53beada",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.032556
+  },
+  {
+    "cve": "CVE-2026-35192",
+    "line": "4.2.30",
+    "run_id": "20261011T094236Z-ab09",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "c71ad29e6b9ed97c1876f280b010cc45e5bb029c05772e4361c1e63bfd54c659",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.030342
+  },
+  {
+    "cve": "CVE-2026-6907",
+    "line": "4.2.30",
+    "run_id": "20261011T094303Z-ddea",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "7338b5c9d108c5177e031731379dc58dd7fc7190e7a0a9d447cc74a82832ac9f",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.021078
+  },
+  {
+    "cve": "CVE-2026-8404",
+    "line": "4.2.30",
+    "run_id": "20261011T094329Z-f60e",
+    "verdict": "AFFECTED",
+    "reason": null,
+    "detail": "probe FAILs on L with U\u207b's failing ids",
+    "attempts": [
+      {
+        "probe": "0fd7d7170038d55ee091469e6bcabe1f601cb9bb372ae6621424e640f9595b48",
+        "verdict": "AFFECTED",
+        "reason": null
+      }
+    ],
+    "ledger_cost_usd": 0.026055
+  },
+  {
+    "cve": "CVE-2026-15307",
+    "line": "4.2.30",
+    "run_id": "20261011T094359Z-d46c",
+    "verdict": "UNPROVEN",
+    "reason": "PROBE_ERROR",
+    "detail": "LeakageError: porter prompt contains 4 fix line(s): 'from django.contrib.gis.gdal.raster.source import DisallowedRasterLookup'",
+    "attempts": [],
+    "ledger_cost_usd": 0.0
+  },
+  {
+    "cve": "CVE-2026-15307",
+    "line": "4.2.30",
+    "run_id": "20261011T094541Z-4536",
+    "verdict": "UNPROVEN",
+    "reason": "NON_DISCRIMINATING",
+    "detail": "probe does not PASS on U\u207a",
+    "attempts": [
+      {
+        "probe": "35e414b343fa8be1499a7bd5da10d97568ef92b66fc12ba1451984004bed52f6",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "3b6f1619ab5e2403a1a29219d24bc646d9c1d9e4f6aaee799c5096183e215611",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "14ae848311d661c8420352ba4afe1d6c1ed6abcab57155b895646f1efda075dd",
+        "verdict": "UNPROVEN",
+        "reason": "NON_DISCRIMINATING"
+      }
+    ],
+    "ledger_cost_usd": 0.232941
+  },
+  {
+    "cve": "CVE-2026-15307",
+    "line": "4.2.30",
+    "run_id": "20261011T140513Z-42de",
+    "verdict": "UNPROVEN",
+    "reason": "PROBE_ERROR",
+    "detail": "probe ERROR/TIMEOUT on U\u207b",
+    "attempts": [
+      {
+        "probe": "f107603cb5235d209e8145b7ac4cdf66640d8e6fea3e264533a6bb78cbce9eba",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "5802954c4f578da4841d7e292fcd7fd6dd2a1c98e84464f2318319e3817ae2dc",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      },
+      {
+        "probe": "dd2d93038460815eccbfe74ff78d5bba26d063db8e4dd598b3df3c0c4c043670",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      }
+    ],
+    "ledger_cost_usd": 0.210885
+  }
+]
