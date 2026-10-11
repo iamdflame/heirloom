@@ -289,16 +289,17 @@
         "verdict": "UNPROVEN",
         "reason": "NO_REACH",
         "status": "evaluated",
-        "run_id": "20261011T093555Z-44e5",
+        "run_id": "20261011T205139Z-3a75",
         "escalated": true,
         "decision": "would_ask",
         "reused_probe": false,
         "cost_usd": 0.2026,
         "cost_unknown": false,
-        "minutes": 1.04,
+        "cost_estimated": true,
+        "minutes": 0.16,
         "message": "eval line: decision would_ask; nothing published",
         "correct": null,
-        "at": "2026-10-11T09:36:57Z"
+        "at": "2026-10-11T20:51:48Z"
       },
       "CVE-2026-4277:positive": {
         "cve": "CVE-2026-4277",
@@ -551,16 +552,17 @@
         "verdict": "UNPROVEN",
         "reason": "NO_REACH",
         "status": "evaluated",
-        "run_id": "20261011T094308Z-8440",
+        "run_id": "20261011T205149Z-40fd",
         "escalated": true,
         "decision": "would_ask",
         "reused_probe": true,
         "cost_usd": 0.0,
         "cost_unknown": false,
-        "minutes": 0.13,
+        "cost_estimated": false,
+        "minutes": 0.12,
         "message": "eval line: decision would_ask; nothing published",
         "correct": null,
-        "at": "2026-10-11T09:43:17Z"
+        "at": "2026-10-11T20:51:56Z"
       },
       "CVE-2026-4277:negative": {
         "cve": "CVE-2026-4277",
@@ -1268,7 +1270,8 @@
       "usd_per_case": 0.133,
       "usd_total": 3.5906,
       "cost_unknown_cases": 0,
-      "minutes_per_case": 1.0
+      "cost_estimated_cases": 14,
+      "minutes_per_case": 0.97
     },
     "v1": {
       "cases": 27,
@@ -1283,6 +1286,7 @@
       "usd_per_case": 0.1478,
       "usd_total": 3.9894,
       "cost_unknown_cases": 0,
+      "cost_estimated_cases": 22,
       "minutes_per_case": 1.96
     }
   }

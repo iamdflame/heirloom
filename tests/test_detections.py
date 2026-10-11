@@ -77,7 +77,13 @@ def test_api_definitions_mirror_the_local_predicates(monkeypatch: object) -> Non
     from heirloom.integrations import neatlogs_api as api
 
     assert set(api.definitions()) == set(DETECTIONS)
-    rules = api.definitions()["not_affected_without_calibration"]
+    d = api.definitions()["not_affected_without_calibration"]
+    assert d["runOn"] == {
+        "frequency": "span_name",
+        "span_names": ["heirloom.flag.not_affected_without_calibration"],
+    }
+    assert d["rules"] == [{"type": "rule", "field": "status", "operator": "=", "value": "OK"}]
+    rules = api.attribute_definitions()["not_affected_without_calibration"]
     assert rules == [
         {
             "type": "rule",
@@ -89,3 +95,72 @@ def test_api_definitions_mirror_the_local_predicates(monkeypatch: object) -> Non
     ]
     key = api.idempotency_key("x")
     assert key == api.idempotency_key("x") and key[14] == "4"
+
+
+class FakeSpan:
+    def __init__(self, name: str, log: list[tuple[str, str]]) -> None:
+        self.name, self.log, self.attrs = name, log, dict[str, object]()
+
+    def __enter__(self) -> "FakeSpan":
+        self.log.append(("enter", self.name))
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.log.append(("exit", self.name))
+
+    def set_attribute(self, k: str, v: object) -> None:
+        self.attrs[k] = v
+
+    def get_span_context(self) -> object:
+        raise RuntimeError("no context in the fake")
+
+
+class FakeNeatlogs:
+    def __init__(self) -> None:
+        self.log: list[tuple[str, str]] = []
+        self.spans: list[FakeSpan] = []
+
+    def trace(self, name: str, kind: str) -> FakeSpan:
+        span = FakeSpan(name, self.log)
+        self.spans.append(span)
+        return span
+
+
+def test_a_fired_predicate_emits_its_flag_span_inside_the_stage(tmp_path: object) -> None:
+    from pathlib import Path
+
+    from heirloom import config
+    from heirloom.config import runtime_line
+    from heirloom.integrations.neatlogs import Telemetry
+    from heirloom.ledger import Ledger
+    from heirloom.pipeline.context import Ctx
+
+    assert isinstance(tmp_path, Path)
+    tel = Telemetry()
+    fake = FakeNeatlogs()
+    tel._nl, tel.enabled = fake, True
+    ledger = Ledger(tmp_path / "ledger.sqlite")
+    spec = runtime_line("eval-x", "abc", "eval")
+    ctx = Ctx(config.load(), ledger, tel, spec, "CVE-0000-1", "eval-x", "run-1")
+
+    def body(span: object) -> dict[str, object]:
+        ctx.verdict, ctx.calibrated = "NOT_AFFECTED_PROVEN", False  # a v1-style claim
+        ctx.reach = True
+        return {}
+
+    ctx.stage("presence", {"x": 1}, body)
+    flag = "heirloom.flag.not_affected_without_calibration"
+    assert fake.log == [
+        ("enter", "presence"),
+        ("enter", flag),
+        ("exit", flag),
+        ("exit", "presence"),
+    ]
+    assert fake.spans[1].attrs["heirloom.detection"] == "not_affected_without_calibration"
+    assert [h["detection"] for h in ledger.hits()] == ["not_affected_without_calibration"]
+
+    fake.log.clear()
+    ctx.verdict, ctx.calibrated = "AFFECTED", True
+    ctx.reach = True
+    ctx.stage("presence.clean", {"x": 2}, lambda span: {})
+    assert fake.log == [("enter", "presence.clean"), ("exit", "presence.clean")]

@@ -13,6 +13,12 @@ Verified against SDK 1.4.26 on 2026-10-11 (see docs/spikes.md):
 Every stage span carries all §5 attributes with explicit values (no empty
 strings), and the five detection predicates are evaluated locally so the
 before/after numbers never depend on ingestion timing.
+
+Detections (§11): custom-attribute conditions never matched in neatlogs, so when a
+local predicate fires the stage emits a zero-work child span named
+``heirloom.flag.<predicate>``. Each neatlogs detection runs on that span name with
+a built-in condition, so hits and trends come from neatlogs while the ledger
+stays the source of truth.
 """
 
 from __future__ import annotations
@@ -108,6 +114,13 @@ def _detections() -> dict[str, Callable[[Mapping[str, Attr]], bool]]:
 
 
 DETECTIONS = _detections()
+
+
+FLAG_PREFIX = "heirloom.flag."
+
+
+def flag_span_name(predicate: str) -> str:
+    return FLAG_PREFIX + predicate
 
 
 def evaluate(attrs: Mapping[str, Attr]) -> list[str]:
@@ -214,6 +227,15 @@ class Telemetry:
                 yield handle
             finally:
                 handle.flush_attrs()
+
+    def flag(self, predicate: str, attrs: Mapping[str, Attr]) -> None:
+        """A zero-work child span marking a fired predicate (nest it inside a stage span)."""
+        if not self.enabled:
+            return
+        with self._nl.trace(flag_span_name(predicate), kind="GUARDRAIL") as span:
+            for k, v in {**ATTR_DEFAULTS, **attrs}.items():
+                span.set_attribute(f"heirloom.{k}", v)
+            span.set_attribute("heirloom.detection", predicate)
 
     def flush(self) -> None:
         if self.enabled:

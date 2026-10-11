@@ -2,13 +2,17 @@
 
 Field spelling for custom span attributes is not documented and, as of
 2026-10-11, none of ten tried spellings produced a hit (evals/neatlogs_ingestion.json),
-while built-in fields (``status``) did. The spelling is therefore a template,
-``NEATLOGS_ATTR_FIELD`` (default ``heirloom.{name}``), to be confirmed in the UI.
+while the built-in ``status`` field did. So (BUILD-BRIEF §11) each detection runs on
+the span name ``heirloom.flag.<predicate>``, which the pipeline emits only when the
+local predicate fires, with the built-in condition ``status = OK``.
+:func:`attribute_definitions` keeps the attribute form (``NEATLOGS_ATTR_FIELD``)
+for when the dashboard's custom-attribute syntax is known.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import uuid
 from typing import Any
@@ -16,6 +20,7 @@ from typing import Any
 import httpx
 
 from heirloom.config import Settings
+from heirloom.integrations.neatlogs import DETECTIONS, flag_span_name
 
 BASE = "https://app.neatlogs.com/api/v1/public"
 NEGATIVE_GROUP = "0410d37c-bea2-4360-a15c-ef6fb0f949f7"  # the project's "Negative" group
@@ -38,7 +43,22 @@ def rule(name: str, operator: str, value: Any) -> dict[str, Any]:
     return {"type": "rule", "field": field(name), "operator": operator, "value": value}
 
 
-def definitions() -> dict[str, list[dict[str, Any]]]:
+# A built-in span field verified to match on this project (23 hits on `presence`).
+FLAG_CONDITION = {"type": "rule", "field": "status", "operator": "=", "value": "OK"}
+
+
+def definitions() -> dict[str, dict[str, Any]]:
+    """The five detections: runOn the predicate's flag span name, built-in condition."""
+    return {
+        name: {
+            "runOn": {"frequency": "span_name", "span_names": [flag_span_name(name)]},
+            "rules": [FLAG_CONDITION],
+        }
+        for name in DETECTIONS
+    }
+
+
+def attribute_definitions() -> dict[str, list[dict[str, Any]]]:
     """The five detections as AND-groups over span attributes (mirrors neatlogs.DETECTIONS)."""
     return {
         "not_affected_without_calibration": [
@@ -86,16 +106,19 @@ class Api:
         code, data = self.call("GET", "/detections", params={"limit": 50})
         return list(data["data"]["detections"]) if code == 200 else []
 
-    def create(self, name: str, rules: list[dict[str, Any]]) -> tuple[int, Any]:
+    def create(
+        self, name: str, rules: list[dict[str, Any]], run_on: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
         body = {
             "displayName": name,
             "groupId": NEGATIVE_GROUP,
             "type": "conditional",
             "isActive": True,
-            "runOn": {"frequency": "trace"},
+            "runOn": run_on or {"frequency": "trace"},
             "config": {"root": {"type": "group", "logic": "AND", "children": rules}},
         }
-        return self.call("POST", "/detections", body, key=idempotency_key(f"heirloom-{name}-v1"))
+        key = idempotency_key(f"heirloom-{name}-{json.dumps(body, sort_keys=True)}")
+        return self.call("POST", "/detections", body, key=key)
 
     def delete(self, detection_id: str) -> tuple[int, Any]:
         # The API requires the id echoed back as a confirmation.

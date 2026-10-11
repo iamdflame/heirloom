@@ -197,6 +197,7 @@ class Ctx:
                 self.ledger.record_hit(
                     self.run_id, self.cve, self.line, name, hit, span.span_id, span.trace_id
                 )
+                self.tel.flag(hit, span.attrs)  # neatlogs detections match this span name
             crash = os.environ.get("HEIRLOOM_CRASH_AFTER")
             if crash == name:
                 # Test hook: die after the work (and any side effect) but before the

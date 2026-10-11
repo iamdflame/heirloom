@@ -5,9 +5,9 @@ Heirloom is an agent that keeps end-of-life software patched.
 <!-- e1:start -->
 | Pipeline | Cases | Verdict accuracy (decided) | False NOT_AFFECTED | False AFFECTED | UNPROVEN | Fellows' 4.2 test passes | Escalation rate | $ / case | Min / case |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| v2 · Heirloom (calibrated) | 27 | 94% (16 decided) | **0** | 1 | 9 | 7/13 | 37% | $0.13 | 1.0 |
+| v2 · Heirloom (calibrated) | 27 | 94% (16 decided) | **0** | 1 | 9 | 7/13 | 37% | $0.13 | 0.97 |
 | v1 · naive (cherry-pick + LLM, no calibration) | 27 | 85% (27 decided) | **1** | 3 | 0 | 11/13 | 0% | $0.15 | 1.96 |
-_Set `django-4.2-2026`; rendered from [`evals/results.json`](evals/results.json) by `evals/render_readme.py`. Accuracy counts only decided cases; UNPROVEN means Heirloom declined to claim either way and would ask a human. $ figures are Heirloom's own token × list-price estimates; on 2026-10-11 the LiteLLM gateway billed roughly twice that (see hackathon.md), so treat them as lower bounds._
+_Set `django-4.2-2026`; rendered from [`evals/results.json`](evals/results.json) by `evals/render_readme.py`. Accuracy counts only decided cases; UNPROVEN means Heirloom declined to claim either way and would ask a human. $ figures: 0 of 36 priced cases use provider-reported cost (OpenRouter `usage.cost`, `claude -p` `total_cost_usd` on OpenRouter); the other 36 are token × list-price estimates from the LiteLLM gateway, which billed roughly twice that on 2026-10-11 (see hackathon.md), so treat those as lower bounds._
 
 <details><summary>Per case</summary>
 

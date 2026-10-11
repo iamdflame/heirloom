@@ -185,11 +185,11 @@ def detections(
     client = api.Api(s)
     if create:
         existing = {d["displayName"] for d in client.detections()}
-        for name, rules in api.definitions().items():
+        for name, d in api.definitions().items():
             if name in existing:
                 typer.echo(f"exists: {name}")
                 continue
-            code, _ = client.create(name, rules)
+            code, _ = client.create(name, d["rules"], d["runOn"])
             typer.echo(f"create {name}: {code}")
     if delete_s4:
         for det in api.S4_TEST_DETECTIONS:
@@ -215,7 +215,7 @@ def detections(
         ledger.close()
         out = {
             "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "field_template": api.field("{name}"),
+            "condition": {"runOn": "span_name heirloom.flag.<predicate>", **api.FLAG_CONDITION},
             "neatlogs": remote,
             "local_mirror": {name: local.get(name, 0) for name in api.definitions()},
         }
