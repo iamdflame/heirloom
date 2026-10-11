@@ -49,6 +49,7 @@ class Ctx:
     run_id: str
     campaign_id: str = "NONE"
     archive_ref: str = "origin/main"  # security.txt revision LOCATE reads (campaign replay)
+    settings_module: str | None = None  # e.g. "test_postgis" once LOCATE sees a GIS fix
     verdict: str = "PENDING"
     calibrated: bool = False
     reach: bool = False
@@ -82,7 +83,11 @@ class Ctx:
         return p
 
     def runner(self) -> Runner:
-        return Runner(python=self.s.test_python, timeout=self.s.test_timeout)
+        return Runner(
+            python=self.s.test_python,
+            timeout=self.s.test_timeout,
+            settings_module=self.settings_module,
+        )
 
     def budget(self) -> Budget:
         return Budget(self.s.max_usd_per_cve, lambda: self.ledger.cost_total(self.cve, self.line))

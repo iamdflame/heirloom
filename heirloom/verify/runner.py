@@ -11,6 +11,7 @@ a wrong tree raises :class:`WrongTreeError` rather than producing an outcome.
 
 from __future__ import annotations
 
+import functools
 import json
 import os
 import re
@@ -27,6 +28,24 @@ Outcome = Literal["PASS", "FAIL", "ERROR", "SKIP", "TIMEOUT"]
 
 SHIM = Path(__file__).with_name("_runtests_shim.py")
 RCFILE = Path(__file__).with_name("coveragerc")
+SETTINGS_DIR = Path(__file__).with_name("django_settings")
+
+
+@functools.cache
+def postgis_password(container: str = "heirloom-pg") -> str:
+    """The PostGIS container's password, read at run time (never stored)."""
+    out = subprocess.run(
+        ["docker", "inspect", container, "--format", "{{range .Config.Env}}{{println .}}{{end}}"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    for row in out.splitlines():
+        if row.startswith("POSTGRES_PASSWORD="):
+            return row.split("=", 1)[1]
+    raise RuntimeError(f"{container} has no POSTGRES_PASSWORD")
+
+
 WRONG_TREE_EXIT = 97
 DJANGO_FILE_MARK = "HEIRLOOM_DJANGO_FILE="
 
@@ -232,6 +251,8 @@ class Runner:
     python: Path
     timeout: float = 900.0
     extra_pythonpath: tuple[Path, ...] = ()
+    # e.g. "test_postgis" for GIS CVEs (heirloom/verify/django_settings/).
+    settings_module: str | None = None
 
     def run(
         self,
@@ -243,9 +264,16 @@ class Runner:
         coverage_include: Sequence[Path] = (),
     ) -> RunResult:
         wt = worktree.resolve()
+        extra_args = list(extra_args)
         log_path.parent.mkdir(parents=True, exist_ok=True)
         env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "VIRTUAL_ENV")}
-        env["PYTHONPATH"] = os.pathsep.join([str(wt), *map(str, self.extra_pythonpath)])
+        extra_path = list(self.extra_pythonpath)
+        if self.settings_module:
+            extra_path.append(SETTINGS_DIR)
+            env["PGPASSWORD"] = postgis_password()
+            env["HEIRLOOM_PG_NAME"] = f"hl{os.getpid()}"
+            extra_args = [*extra_args, f"--settings={self.settings_module}"]
+        env["PYTHONPATH"] = os.pathsep.join([str(wt), *map(str, extra_path)])
         env["PYTHONDONTWRITEBYTECODE"] = "1"
         args = [*labels, "--parallel=1", "-v", "2", *extra_args]
         cov_file: Path | None = None
@@ -308,7 +336,7 @@ class Runner:
 
     def _coverage(self, data_file: Path, wt: Path) -> dict[str, set[int]]:
         json_path = Path(f"{data_file}.json")
-        subprocess.run(
+        proc = subprocess.run(
             [
                 str(self.python),
                 "-m",
@@ -320,10 +348,14 @@ class Runner:
                 "-o",
                 str(json_path),
             ],
-            check=True,
             capture_output=True,
+            text=True,
             cwd=wt,
         )
+        if proc.returncode != 0:
+            if "No data to report" in proc.stdout + proc.stderr:
+                return {}  # the run never executed an included file: zero reach
+            raise RuntimeError(f"coverage json failed: {proc.stderr.strip()[:300]}")
         files = json.loads(json_path.read_text())["files"]
         out: dict[str, set[int]] = {}
         root = wt.resolve()

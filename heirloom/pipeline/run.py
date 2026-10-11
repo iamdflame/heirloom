@@ -88,6 +88,8 @@ def calibrated_probe(ledger: Ledger, cve: str, line: str) -> dict[str, Any] | No
 
 def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
     loc = locate.run(ctx)
+    if any(f.startswith("django/contrib/gis/") for f in loc["fix_files"]):
+        ctx.settings_module = "test_postgis"  # GIS fixes run against the PostGIS container
     c0 = calibrate.run_c0(ctx, loc)
 
     feedback: str | None = None

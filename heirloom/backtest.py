@@ -98,9 +98,12 @@ def fellows_test_passes(s: Settings, case: Case, patch: str, work: Path) -> tupl
         )
         if proc.returncode != 0:
             return False, f"{what} does not apply: {proc.stderr.strip()[:200]}"
-    r = Runner(python=s.test_python, timeout=s.test_timeout).run(
-        tree, ids, log_path=work / "fellows-check.log"
-    )
+    gis = any(f.startswith("tests/gis_tests/") for f in files)
+    r = Runner(
+        python=s.test_python,
+        timeout=s.test_timeout,
+        settings_module="test_postgis" if gis else None,
+    ).run(tree, ids, log_path=work / "fellows-check.log")
     return r.outcome == "PASS", f"{r.outcome} {r.summary} ({len(ids)} tests)"
 
 
