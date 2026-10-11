@@ -41,6 +41,9 @@ def test_valid_probe_with_relative_models_import() -> None:
         ("from unittest import skip\n@skip('x')\ndef f():\n    pass\n", "skips"),
         ("from .views import x\n", "relative import"),
         ("import requests\n", "unexpected import requests"),
+        ("import socket\n", "unexpected import socket"),
+        ("from urllib.request import urlopen\n", "unexpected import from urllib.request"),
+        ("import subprocess\n", "unexpected import subprocess"),
         ("from tests.model_formsets.models import Author\n", "unexpected import from tests"),
     ],
 )
@@ -80,3 +83,12 @@ def test_leak_surface_skips_l_source_but_keeps_feedback() -> None:
     leaky = prompt + "\n## Feedback on your previous probe\nexcept FileExistsError:\n"
     with pytest.raises(LeakageError):
         assert_no_leak(leak_surface(leaky), added)
+
+
+def test_filesystem_and_parsing_stdlib_modules_are_allowed() -> None:
+    """CVE-2026-25674 (file permissions): the porter needs os/stat/shutil/tempfile."""
+    extra = (
+        "import os\nimport shutil\nimport stat\nimport tempfile\nfrom pathlib import Path\n"
+        "from urllib.parse import quote\nfrom unittest import mock\n"
+    )
+    assert validate({"models.py": MODELS, "tests.py": extra + TESTS}, APP) == []

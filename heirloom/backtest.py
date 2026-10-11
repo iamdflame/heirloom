@@ -121,7 +121,15 @@ def run_v2(s: Settings, case: Case) -> dict[str, Any]:
         reuse = calibrated_probe(ledger, case.cve, positive_line) if positive_line else None
         ledger.close()
         if reuse is None:
-            return {"verdict": "SKIPPED", "reason": "positive has no calibrated probe to reuse"}
+            return {
+                "verdict": "SKIPPED",
+                "reason": "NO_CALIBRATED_PROBE",
+                "message": "the positive case has no calibrated probe to reuse",
+                "escalated": False,
+                "cost_usd": 0.0,
+                "cost_unknown": False,
+                "minutes": 0.0,
+            }
     start = time.monotonic()
     result = execute(s, case.cve, spec, reuse_probe=reuse)
     minutes = (time.monotonic() - start) / 60

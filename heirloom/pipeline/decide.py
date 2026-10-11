@@ -52,6 +52,9 @@ def run(
                 "asked": False,
                 "precedent": {"id": precedent.id, "issue": precedent.issue_url},
             }
+        if not ctx.spec.publish:
+            # Eval and distro lines never ask on GitHub; they record what they would ask.
+            return {"decision": "would_ask", "kind": kind, "asked": False, "precedent": None}
         return {"decision": "waiting_human", "kind": kind, "asked": True, "precedent": None}
 
     out = ctx.stage("decide", {"kind": kind, "verdict": pres["verdict"]}, body)

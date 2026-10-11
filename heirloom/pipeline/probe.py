@@ -12,6 +12,7 @@ import ast
 import hashlib
 import json
 import re
+import sys
 from typing import Any
 
 from heirloom.git_ops import parse_diff, show_file
@@ -24,10 +25,22 @@ FILES = ("models.py", "tests.py")
 BLOCK = re.compile(r"^### (models\.py|tests\.py)\s*\n```(?:python)?\n(.*?)^```", re.M | re.S)
 WALL_CLOCK = re.compile(r"\b(time\.time|perf_counter|monotonic|sleep|timeit)\b")
 MAX_SOURCE_CHARS = 120_000
-ALLOWED_IMPORTS = frozenset(
-    {"django", "unittest", "tracemalloc", "gc", "io", "json", "re", "datetime", "decimal",
-     "uuid", "functools", "itertools", "collections", "string", "copy"}
+# Probes may use Django and the standard library (filesystem CVEs need os/stat/
+# tempfile, ...), except wall-clock time and anything that reaches the network or
+# spawns processes. Checked on the full dotted module name.
+BLOCKED_MODULES = frozenset(
+    {"time", "timeit", "socket", "ssl", "http.client", "http.server", "urllib.request",
+     "ftplib", "smtplib", "poplib", "imaplib", "telnetlib", "xmlrpc", "socketserver",
+     "subprocess", "multiprocessing", "webbrowser", "ctypes", "asyncio.subprocess"}
 )  # fmt: skip
+ALLOWED_ROOTS = frozenset(sys.stdlib_module_names) | {"django"}
+
+
+def import_allowed(module: str) -> bool:
+    parts = module.split(".")
+    if parts[0] not in ALLOWED_ROOTS:
+        return False
+    return not any(".".join(parts[: i + 1]) in BLOCKED_MODULES for i in range(len(parts)))
 
 
 class LeakageError(RuntimeError):
@@ -105,11 +118,11 @@ def validate(files: dict[str, str], app: str) -> list[str]:
                 if node.level:
                     if mod not in ("models", ""):
                         problems.append(f"{name}:{node.lineno}: relative import of .{mod}")
-                elif mod.split(".")[0] not in ALLOWED_IMPORTS:
+                elif not import_allowed(mod):
                     problems.append(f"{name}:{node.lineno}: unexpected import from {mod}")
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    if alias.name.split(".")[0] not in ALLOWED_IMPORTS:
+                    if not import_allowed(alias.name):
                         problems.append(f"{name}:{node.lineno}: unexpected import {alias.name}")
             if (
                 isinstance(node, ast.Attribute)
