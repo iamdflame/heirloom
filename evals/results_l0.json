@@ -1,0 +1,240 @@
+{
+  "repeat": {
+    "at": "2026-10-11T01:51:43Z",
+    "runs": [
+      {
+        "run": 1,
+        "exit": 0,
+        "seconds": 75.3,
+        "output": [
+          "CVE-2026-87975 on 4.2: published",
+          "  verdict     AFFECTED (NONE)",
+          "  run         20261011T014742Z-9b9c",
+          "  cost        $0.1871",
+          "  PR          https://github.com/iamdflame/django/pull/6",
+          "  checkpoint  01M4MABZ28SZ3AWFWBXDCXA24J"
+        ],
+        "ok": true,
+        "checks": {
+          "one_commit_on_fork_branch": true,
+          "entire_trailer": true,
+          "checkpoint_ref_on_fork": true,
+          "one_open_pr": true,
+          "zero_struck_claims": true,
+          "no_unknown_stages": true,
+          "each_effect_done_once": true
+        },
+        "pr": "https://github.com/iamdflame/django/pull/6",
+        "commit": "fcdaf1e5ddba481f458b2192f75cc0b5c2c299a1",
+        "checkpoint": "01M4MABZ28SZ3AWFWBXDCXA24J",
+        "cost_usd": 0.1871,
+        "attempts": {
+          "locate": 1,
+          "c0": 1,
+          "probe": 1,
+          "calibrate": 1,
+          "presence": 1,
+          "adapt": 1,
+          "verify": 1,
+          "verify.baseline": 1,
+          "behaviour": 1,
+          "decide": 1,
+          "publish.commit": 1,
+          "publish.push": 1,
+          "publish.artifacts": 1,
+          "publish.pr": 1
+        },
+        "failed_attempts": []
+      },
+      {
+        "run": 2,
+        "exit": 0,
+        "seconds": 77.8,
+        "output": [
+          "CVE-2026-87975 on 4.2: published",
+          "  verdict     AFFECTED (NONE)",
+          "  run         20261011T014903Z-dd7d",
+          "  cost        $0.2092",
+          "  PR          https://github.com/iamdflame/django/pull/7",
+          "  checkpoint  01M4MAEGMGFMYJK42ZBCAVM0V7"
+        ],
+        "ok": true,
+        "checks": {
+          "one_commit_on_fork_branch": true,
+          "entire_trailer": true,
+          "checkpoint_ref_on_fork": true,
+          "one_open_pr": true,
+          "zero_struck_claims": true,
+          "no_unknown_stages": true,
+          "each_effect_done_once": true
+        },
+        "pr": "https://github.com/iamdflame/django/pull/7",
+        "commit": "d14cc87b32aaaf3470330f55a7a7bf35fcc4f1e6",
+        "checkpoint": "01M4MAEGMGFMYJK42ZBCAVM0V7",
+        "cost_usd": 0.2092,
+        "attempts": {
+          "locate": 1,
+          "c0": 1,
+          "probe": 1,
+          "calibrate": 1,
+          "presence": 1,
+          "adapt": 1,
+          "verify": 1,
+          "verify.baseline": 1,
+          "behaviour": 1,
+          "decide": 1,
+          "publish.commit": 1,
+          "publish.push": 1,
+          "publish.artifacts": 1,
+          "publish.pr": 1
+        },
+        "failed_attempts": []
+      },
+      {
+        "run": 3,
+        "exit": 0,
+        "seconds": 76.7,
+        "output": [
+          "CVE-2026-87975 on 4.2: published",
+          "  verdict     AFFECTED (NONE)",
+          "  run         20261011T015026Z-752b",
+          "  cost        $0.1828",
+          "  PR          https://github.com/iamdflame/django/pull/8",
+          "  checkpoint  01M4MAH0QH9A75GMTYTC81E7S9"
+        ],
+        "ok": true,
+        "checks": {
+          "one_commit_on_fork_branch": true,
+          "entire_trailer": true,
+          "checkpoint_ref_on_fork": true,
+          "one_open_pr": true,
+          "zero_struck_claims": true,
+          "no_unknown_stages": true,
+          "each_effect_done_once": true
+        },
+        "pr": "https://github.com/iamdflame/django/pull/8",
+        "commit": "830f870d3342e1ba32be709b113058839bf1e2eb",
+        "checkpoint": "01M4MAH0QH9A75GMTYTC81E7S9",
+        "cost_usd": 0.1828,
+        "attempts": {
+          "locate": 1,
+          "c0": 1,
+          "probe": 1,
+          "calibrate": 1,
+          "presence": 1,
+          "adapt": 1,
+          "verify": 1,
+          "verify.baseline": 1,
+          "behaviour": 1,
+          "decide": 1,
+          "publish.commit": 1,
+          "publish.push": 1,
+          "publish.artifacts": 1,
+          "publish.pr": 1
+        },
+        "failed_attempts": []
+      }
+    ]
+  },
+  "resume": {
+    "at": "2026-10-11T01:53:28Z",
+    "steps": [
+      {
+        "step": "SIGKILL during adapt",
+        "adapt_was_running": true,
+        "exit": -9
+      },
+      {
+        "step": "resume (crash after publish.commit)",
+        "exit": 137,
+        "seconds": 34.5,
+        "output": [
+          "resuming CVE-2026-87975 on 4.2 (run 20261011T015149Z-839b, was running)"
+        ]
+      },
+      {
+        "step": "resume (crash after publish.push)",
+        "exit": 137,
+        "seconds": 6.6,
+        "output": [
+          "resuming CVE-2026-87975 on 4.2 (run 20261011T015149Z-839b, was running)"
+        ]
+      },
+      {
+        "step": "resume (crash after publish.pr)",
+        "exit": 137,
+        "seconds": 7.7,
+        "output": [
+          "resuming CVE-2026-87975 on 4.2 (run 20261011T015149Z-839b, was running)"
+        ]
+      },
+      {
+        "step": "resume (to completion)",
+        "exit": 0,
+        "seconds": 4.8,
+        "output": [
+          "CVE-2026-87975 on 4.2: published",
+          "  verdict     AFFECTED (NONE)",
+          "  run         20261011T015149Z-839b",
+          "  cost        $0.1684",
+          "  PR          https://github.com/iamdflame/django/pull/9",
+          "  checkpoint  01M4MAKVSBHAHH00AQ3PSJM4HN"
+        ]
+      }
+    ],
+    "final": {
+      "ok": true,
+      "checks": {
+        "one_commit_on_fork_branch": true,
+        "entire_trailer": true,
+        "checkpoint_ref_on_fork": true,
+        "one_open_pr": true,
+        "zero_struck_claims": true,
+        "no_unknown_stages": true,
+        "each_effect_done_once": true
+      },
+      "pr": "https://github.com/iamdflame/django/pull/9",
+      "commit": "8e263e58f34342766a4ec40b0a45adc8d51a95bf",
+      "checkpoint": "01M4MAKVSBHAHH00AQ3PSJM4HN",
+      "cost_usd": 0.1684,
+      "attempts": {
+        "locate": 1,
+        "c0": 1,
+        "probe": 1,
+        "calibrate": 1,
+        "presence": 1,
+        "adapt": 2,
+        "verify": 1,
+        "verify.baseline": 1,
+        "behaviour": 1,
+        "decide": 1,
+        "publish.commit": 1,
+        "publish.push": 1,
+        "publish.artifacts": 1,
+        "publish.pr": 1
+      },
+      "failed_attempts": [
+        "adapt#1: interrupted (pid 33780)"
+      ],
+      "adapt_attempts": [
+        "#1 failed",
+        "#2 done"
+      ],
+      "reconciled_effects": [
+        "publish.commit#1 done",
+        "publish.push#1 done",
+        "publish.artifacts#1 done",
+        "publish.pr#1 done"
+      ]
+    }
+  },
+  "noop_rerun": {
+    "at": "2026-10-11T01:53:34Z",
+    "exit": 0,
+    "seconds": 4.5,
+    "same_commit": true,
+    "same_pr": true,
+    "no_new_stage_attempts": true,
+    "after_ok": true
+  }
+}

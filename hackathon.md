@@ -64,14 +64,84 @@ No heirloom pytest suite exists yet; no pipeline code was written this session.
 - `entire status` (heirloom): `● Enabled · branch main · Agents · Claude Code · Checkpoints sync to: origin`. `entire checkpoint list`: 0 checkpoints on main.
 - `entire status` (work/wt/S2): `Checkpoints sync to: dedicated checkpoint remote (iamdflame/django)`. `entire checkpoint list`: 1 checkpoint, `01M4M6CR7PEVT271C9117GNQS0` → `d4e768f`.
 
+### 2026-10-11 · L0 golden path: `heirloom cve CVE-2026-87975 --line 4.2`
+
+**Done**
+- Pushed `stable/4.2.x-heirloom` (= `3396992e83`, tag 4.2.30) and the S2 demo branch `hl/s2-cve-2026-87975` to the fork once the `workflow` scope was granted.
+- Built the pipeline in the brief's order:
+  - `ledger.py` (SQLite, `(cve, line, stage, attempt)`, an interrupted effect becomes `unknown` and pauses until reconciled);
+  - `sources/django_security.py`;
+  - `verify/runner.py` (outcome classifier where ERROR never counts as FAIL, plus an in-process `django.__file__` worktree guard);
+  - the PRESENCE verdict table with the §9 calibration fixes (staged C4a, added-condition mutant, recursive C4c provenance);
+  - LOCATE → PROBE (independent porter with a leakage guard) → CALIBRATE → PRESENCE → ADAPT (headless Claude Code in an Entire worktree) → VERIFY → BEHAVIOUR → DECIDE → PUBLISH (commit, push, artifacts, PR).
+- Every stage runs inside a neatlogs child span of a per-CVE WORKFLOW root that carries all §5 attributes; the five detection predicates are mirrored in the ledger.
+- Acceptance is scripted in `evals/l0.py` and recorded in [`evals/results_l0.json`](evals/results_l0.json). Every number below comes from that file.
+
+**Results (final code, `c08f4a7`)**
+| Check | Result |
+|---|---|
+| 3× from a clean state (`clean --remote` → `cve`) | 3/3 pass: 75.3 s / 77.8 s / 76.7 s; $0.187 / $0.209 / $0.183 per CVE; every stage succeeded first time; PRs #6, #7, #8 (each closed by the next clean) |
+| Kill + resume | SIGKILL of the process group while ADAPT's `claude -p` was running (adapt #1 failed, #2 done), then `resume` with injected crashes right after publish.commit, publish.push and publish.pr (each exit 137), then `resume` to completion: exit 0 |
+| No duplicates after resume | 1 commit on the fork branch, 1 open PR ([#9](https://github.com/iamdflame/django/pull/9)), each publish effect done exactly once; all three crashed effects paused as `unknown` and reconciled as "happened" against git/`ls-remote`/`gh` |
+| Re-run of a published CVE | no-op in 4.5 s: same commit, same PR, no new stage attempts |
+| PR #9 | verdict AFFECTED (C1 C2 C3), `Entire-Checkpoint: 01M4MAKVSBHAHH00AQ3PSJM4HN` with the ref on the fork, 12 claims, 0 struck, escalations 0, ledger cost $0.168 (excludes the killed adapt attempt, see below) |
+| pytest / ruff / mypy --strict | 83 passed / clean / clean (39 files) |
+
+**Tests that actually ran**
+- pytest (83): `test_ledger` (12), `test_django_security` (7, incl. a live check that all 19 post-EOL CVEs have a 5.2 commit and no 4.2 commit), `test_runner` (21, incl. two real runs on the 4.2.30 tree), `test_presence` (13, incl. weakened probe ⇒ UNPROVEN), `test_calibrate` (8, incl. the real `_is_pk_set` refactor trap), `test_probe_rules` (10), `test_claims` (5), `test_detections` (3), `test_decide` (4).
+- Inside every pipeline run (Django `runtests.py --parallel=1 -v 2`):
+  - the 3 upstream 87975 tests 3× on U⁻ (FAIL) and on U⁺ (PASS);
+  - the porter's probe 3× each on U⁻ (FAIL), U⁺ (PASS) and L (FAIL), with coverage on L;
+  - the probe 3× on L+fix (PASS);
+  - `inline_formsets model_forms model_formsets` (266 tests) on unmodified L and on L+fix: 0 new failures, 0 new skips;
+  - the probe + upstream tests on U⁺ and L+fix (BEHAVIOUR: same on all 5 comparable tests).
+
+**Bugs found by the runs (fixed, with tests)**
+- The probe validator rejected `from .models import …`, which surfaced as a bogus PROBE_ERROR question ([issue #1](https://github.com/iamdflame/heirloom/issues/1), closed with an explanation).
+- Django's `tests/.coveragerc` (`source = django`) overrode `--include`, and coverage keys did not match the mapped paths, so every probe looked like NO_REACH ([issue #2](https://github.com/iamdflame/heirloom/issues/2), closed).
+- Artifacts were keyed on the run id, so re-running a published CVE re-published artifacts and edited the PR. They are now keyed on the pushed commit.
+
+**Failures / open problems**
+- **neatlogs ingestion:**
+  - Of the ~10 pipeline traces, only one has finalized: `d1389e2383`, the 4-second no-op rerun with 14 replay spans and no LLM span. Full runs are `dlq` or `pending` with 0 spans, including PR #9's trace `d67121e6…`, so its span links currently lead to nothing.
+  - AGENT/CHAIN roots always dead-letter. Hypothesis under test: the porter's ~120 KB LiteLLM payload breaks server-side PII redaction (`doctor --probe` showed ingestion stuck at `pii_redaction`). The fallback per §9 is the local ledger mirror (0 detection hits across all runs).
+  - The five §5 detections are not created yet, and the two S4 test detections are still active, because the attribute field spelling is still unconfirmed by a real hit.
+- **Unverified trace link format:** the app documents no deep links, so trace URLs use a configurable template (`NEATLOGS_TRACE_URL`). The trace and span ids are printed beside each link.
+- **Lost cost from a killed agent:** a killed `claude -p` attempt's spend is not recorded (the process dies before reporting `total_cost_usd`).
+- **Evidence-only publishing missing:** publishing for NOT_AFFECTED_PROVEN/UNPROVEN, and `/heirloom answer` polling for open questions, are not built yet (L1).
+- **No Entire trailers for this build session:** it started in a repo with no commits (the §9.3 trap), so its commits (`8b3f885`…`c08f4a7`) carry no `Entire-Checkpoint`. Recover with `entire session attach` as was done for B1.
+
+**Entire**
+- `entire status` (heirloom): `● Enabled · branch main · Agents · Claude Code · Checkpoints sync to: origin`. `entire checkpoint list`: 1 checkpoint, `01M4M7HFXFT5DBGHYNDES4J73Y` → `acba7e5`.
+- Pipeline worktree (`work/cve/CVE-2026-87975-4.2/trees/Lfix`): checkpoints sync to `iamdflame/django`. `entire checkpoint explain --generate 01M4MAKVSBHAHH00AQ3PSJM4HN` (summary model set to `claude-sonnet-4.6` via `entire configure --summarize-model`, run through the gateway):
+
+  > **Checkpoint 01M4MAKVSBHAHH00AQ3PSJM4HN** · session `030f083b-38a0-4506-8ce7-1c8b0032bb7f` · 2026-10-11 01:53:08 · 199.2k tokens · commit `8e263e5` [4.2.x] Fixed CVE-2026-87975 -- Prevented forging actions in model formsets with editable PKs.
+  >
+  > **Intent:** Backport security fix for CVE-2026-87975 from Django 5.2 to Django 4.2, preventing forged POST data from deleting or creating objects outside a ModelFormSet's queryset via editable primary keys.
+  >
+  > **Outcome:** Successfully applied a one-line fix to `django/forms/models.py` adding `or obj._state.adding` to the existing `obj.pk is None` guard in `save_existing_objects()`. All 3 CVE probe tests and all 74 `model_formsets` regression tests pass.
+  >
+  > **Learnings (repository):** Django 4.2 uses `obj.pk is None` directly rather than the `obj._is_pk_set()` helper introduced in 5.x, so backports must preserve the older idiom. Django sets `_state.adding = False` only after a successful database fetch; instances constructed in memory (via `construct_instance()` or `BaseInlineFormSet` parent-link assignment) retain `_state.adding = True` even if their PK field is later populated.
+  >
+  > **Learnings (code):** `django/forms/models.py:909-933`: `BaseModelFormSet.save_existing_objects()` iterated `initial_forms` and used `obj.pk is None` as the sole guard against acting on instances not fetched from the queryset. With editable PKs, `construct_instance()` or inline parent-link logic could populate the PK, bypassing this guard. The fix adds `or obj._state.adding` to catch all freshly constructed instances regardless of PK population.
+  >
+  > **Learnings (workflow):** The upstream 5.2 diff was directly translatable to 4.2 by substituting the 5.x `_is_pk_set()` helper call with the 4.2 idiom (`obj.pk is None`) and appending the new `obj._state.adding` condition. Running both the targeted CVE probe (`hl_cve_2026_87975`) and the touched module's full test suite (`model_formsets`) in parallel is an efficient way to confirm correctness without broader test runs.
+  >
+  > **Open items:** No commit or push was made per the task rules; the fix remains as a local working-tree change only. The fix covers `BaseModelFormSet`; it was not verified whether `BaseInlineFormSet` subclass overrides of `save_existing_objects` need a parallel guard in 4.2.
+
+  The agent was told not to commit; the orchestrator committed `8e263e5` after VERIFY. Heirloom's VERIFY also ran `inline_formsets` (0 new failures), which partly covers the inline open item.
+
+**Links**
+- PR: https://github.com/iamdflame/django/pull/9 · run artifacts: the `artifacts` branch of this repo (`runs/<run-id>/CVE-2026-87975-4.2/`)
+- Results: [evals/results_l0.json](evals/results_l0.json) · neatlogs findings: [docs/spikes.md](docs/spikes.md#l0-follow-up--neatlogs-span-shapes-2026-10-11-sdk-1426)
+
 ## Demo
 
 ## Known limitations and next steps
 
-- Run `gh auth refresh -h github.com -s workflow`, then push `stable/4.2.x-heirloom` (and the S2 demo branch) to the fork.
-- Fix C4c (recursive provenance through refactors) and add an "added-condition" C4b mutant before L0; add both to the verdict-table unit tests.
-- Pipeline must stage/commit before `git apply -R --3way` (C4a), and set `entire configure --checkpoint-remote github:<fork>` in every worktree.
-- neatlogs: emit `heirloom.*` spans under an AGENT root (`@neatlogs.span`), confirm the attribute field spelling with a real hit, then create the five §5 detections; `identify()` has no `parent_session_id`.
+- neatlogs: find out why full pipeline traces dead-letter (large LLM payloads vs PII redaction: try a `mask=` that truncates long attributes), then confirm the attribute field spelling with one real hit, create the five §5 detections and delete the two S4 test detections. Confirm the app's trace URL format.
+- Record the cost of a killed `claude -p` attempt (e.g. parse the session transcript) so budget accounting survives SIGKILL.
+- L1: evidence-only PR/issue for NOT_AFFECTED_PROVEN and UNPROVEN; `/heirloom answer` polling and the precedent loop; `campaign`, `backtest`, `watch`, `report`, `serve` commands.
 - Install `gettext` (needs approval) to un-skip i18n extraction/compilation tests.
 
 ## Submission
