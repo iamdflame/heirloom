@@ -140,5 +140,31 @@
     "detail": "LeakageError: porter prompt contains 4 fix line(s): 'from django.contrib.gis.gdal.raster.source import DisallowedRasterLookup'",
     "attempts": [],
     "ledger_cost_usd": 0.0
+  },
+  {
+    "cve": "CVE-2026-15307",
+    "line": "4.2.30",
+    "run_id": "20261011T094541Z-4536",
+    "verdict": "UNPROVEN",
+    "reason": "NON_DISCRIMINATING",
+    "detail": "probe does not PASS on U\u207a",
+    "attempts": [
+      {
+        "probe": "35e414b343fa8be1499a7bd5da10d97568ef92b66fc12ba1451984004bed52f6",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "3b6f1619ab5e2403a1a29219d24bc646d9c1d9e4f6aaee799c5096183e215611",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "14ae848311d661c8420352ba4afe1d6c1ed6abcab57155b895646f1efda075dd",
+        "verdict": "UNPROVEN",
+        "reason": "NON_DISCRIMINATING"
+      }
+    ],
+    "ledger_cost_usd": 0.232941
   }
 ]
