@@ -1,0 +1,77 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Testing against Django installed in '/WT/Lfix-87975-c4b/django'
+Importing application hl_cve_2026_87975
+Found 3 test(s).
+Skipping setup of unused database(s): other.
+Operations to perform:
+  Synchronize unmigrated apps: auth, contenttypes, hl_cve_2026_87975, messages, sessions, staticfiles
+  Apply all migrations: admin, sites
+Synchronizing apps without migrations:
+  Creating tables...
+    Creating table django_content_type
+    Creating table auth_permission
+    Creating table auth_group
+    Creating table auth_user
+    Creating table django_session
+    Creating table hl_cve_2026_87975_item
+    Creating table hl_cve_2026_87975_owner
+    Creating table hl_cve_2026_87975_profile
+    Running deferred SQL...
+Running migrations:
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying sites.0001_initial... OK
+  Applying sites.0002_alter_domain_unique... OK
+System check identified no issues (0 silenced).
+test_delete_outside_queryset_editable_pk (hl_cve_2026_87975.tests.FormsetForgeryProbe.test_delete_outside_queryset_editable_pk) ... ERROR
+test_delete_outside_queryset_inline_pk_parent_link (hl_cve_2026_87975.tests.FormsetForgeryProbe.test_delete_outside_queryset_inline_pk_parent_link) ... ERROR
+test_initial_form_cannot_create_editable_pk (hl_cve_2026_87975.tests.FormsetForgeryProbe.test_initial_form_cannot_create_editable_pk) ... ERROR
+
+======================================================================
+ERROR: test_delete_outside_queryset_editable_pk (hl_cve_2026_87975.tests.FormsetForgeryProbe.test_delete_outside_queryset_editable_pk)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/WT/Lfix-87975-c4b/tests/hl_cve_2026_87975/tests.py", line 25, in test_delete_outside_queryset_editable_pk
+    formset.save()
+  File "/WT/Lfix-87975-c4b/django/forms/models.py", line 784, in save
+    return self.save_existing_objects(commit) + self.save_new_objects(commit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/WT/Lfix-87975-c4b/django/forms/models.py", line 923, in save_existing_objects
+    if not obj._is_pk_set():
+           ^^^^^^^^^^^^^^
+AttributeError: 'Item' object has no attribute '_is_pk_set'
+
+======================================================================
+ERROR: test_delete_outside_queryset_inline_pk_parent_link (hl_cve_2026_87975.tests.FormsetForgeryProbe.test_delete_outside_queryset_inline_pk_parent_link)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/WT/Lfix-87975-c4b/tests/hl_cve_2026_87975/tests.py", line 44, in test_delete_outside_queryset_inline_pk_parent_link
+    formset.save()
+  File "/WT/Lfix-87975-c4b/django/forms/models.py", line 784, in save
+    return self.save_existing_objects(commit) + self.save_new_objects(commit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/WT/Lfix-87975-c4b/django/forms/models.py", line 923, in save_existing_objects
+    if not obj._is_pk_set():
+           ^^^^^^^^^^^^^^
+AttributeError: 'Profile' object has no attribute '_is_pk_set'
+
+======================================================================
+ERROR: test_initial_form_cannot_create_editable_pk (hl_cve_2026_87975.tests.FormsetForgeryProbe.test_initial_form_cannot_create_editable_pk)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/WT/Lfix-87975-c4b/tests/hl_cve_2026_87975/tests.py", line 58, in test_initial_form_cannot_create_editable_pk
+    formset.save()
+  File "/WT/Lfix-87975-c4b/django/forms/models.py", line 784, in save
+    return self.save_existing_objects(commit) + self.save_new_objects(commit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/WT/Lfix-87975-c4b/django/forms/models.py", line 923, in save_existing_objects
+    if not obj._is_pk_set():
+           ^^^^^^^^^^^^^^
+AttributeError: 'Item' object has no attribute '_is_pk_set'
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.011s
+
+FAILED (errors=3)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

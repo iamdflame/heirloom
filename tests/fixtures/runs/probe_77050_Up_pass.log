@@ -1,0 +1,11 @@
+test_long_codes_not_retained (hl_cve_2026_77050.tests.LongLanguageCodeRetentionProbe.test_long_codes_not_retained) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.149s
+
+OK
+Testing against Django installed in '/WT/Up-77050/django'
+Importing application hl_cve_2026_77050
+Found 1 test(s).
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

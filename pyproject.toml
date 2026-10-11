@@ -45,7 +45,7 @@ strict = true
 files = ["heirloom", "tests"]
 
 [[tool.mypy.overrides]]
-module = ["neatlogs", "neatlogs.*", "litellm", "litellm.*"]
+module = ["neatlogs", "neatlogs.*", "litellm", "litellm.*", "django"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
