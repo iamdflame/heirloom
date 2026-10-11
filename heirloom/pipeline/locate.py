@@ -32,7 +32,11 @@ def changed_test_ids(repo: Path, commits: list[str], files: list[str]) -> list[s
             ]
             module = d.new_path.removeprefix("tests/").removesuffix(".py").replace("/", ".")
             for h in d.hunks:
-                for n in range(h.new_start, h.new_start + h.new_count):
+                # A pure deletion (new_count 0) sits after new-side line new_start.
+                span = (
+                    range(h.new_start, h.new_start + h.new_count) if h.new_count else [h.new_start]
+                )
+                for n in span:
                     inside = [x for x in syms if x.start <= n <= x.end]
                     if inside:
                         ids.add(f"{module}.{max(inside, key=lambda x: x.start).qualname}")
@@ -146,6 +150,7 @@ def run(ctx: Ctx) -> dict[str, Any]:
     inputs: dict[str, Any] = {"cve": ctx.cve, "line": ctx.line, "tip": ctx.spec.tip}
     if ctx.archive_ref != "origin/main":  # campaign replay: the archive as of that commit
         inputs["archive"] = ctx.archive_ref
+        inputs["test_ids"] = 2  # 2: deletion-only test hunks count as changed tests
     if ctx.done_fixes:
         inputs["done_fixes"] = list(ctx.done_fixes)
     if ctx.spec.base_branch and ctx.spec.base_branch.startswith("heirloom/"):

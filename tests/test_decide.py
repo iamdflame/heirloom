@@ -33,3 +33,26 @@ def test_precedent_is_recorded_once(tmp_path: Path) -> None:
     assert again == first
     assert store.match("ENV_SKIP", "django/4.2") == first
     assert store.match("ENV_SKIP", "django/3.2") is None
+
+
+def test_failures_only_in_tests_upstream_rewrote_are_a_choice_not_an_adapt_failure() -> None:
+    from heirloom.pipeline.decide import classify
+    from heirloom.pipeline.verify import upstream_test_change
+
+    loc = {"upstream_test_ids": ["gis_tests.rasterapp.T.test_a", "gis_tests.geoapp.T.test_b"]}
+    ver = {
+        "ok": False,
+        "probe_before": ["FAIL", "FAIL", "FAIL"],
+        "probe_after": ["PASS", "PASS", "PASS"],
+        "new_failures": ["gis_tests.rasterapp.T.test_a"],
+        "new_skips": [],
+        "tests_edited_after_red": False,
+    }
+    assert upstream_test_change(ver, loc) == ["gis_tests.rasterapp.T.test_a"]
+    pres = {"verdict": "AFFECTED", "reason": None}
+    assert classify(pres, {**ver, "upstream_test_change": ["x"]}, None) == "UPSTREAM_TEST_CHANGE"
+    # Any other new failure, a probe that still fails, or an edited test: not this kind.
+    assert upstream_test_change({**ver, "new_failures": ["other.T.test_c"]}, loc) == []
+    assert upstream_test_change({**ver, "probe_after": ["FAIL"] * 3}, loc) == []
+    assert upstream_test_change({**ver, "tests_edited_after_red": True}, loc) == []
+    assert classify(pres, ver, None) == "ADAPT_FAILED"

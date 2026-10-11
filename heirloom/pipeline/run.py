@@ -150,6 +150,12 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
             ver = verify.run(ctx, loc, pr_, cal, ad)
             if ver["ok"]:
                 break
+            changed = verify.upstream_test_change(ver, loc)
+            if changed:
+                # Only 4.2's versions of tests upstream rewrote fail: re-adapting cannot
+                # help without diverging from upstream. A human chooses (DECIDE).
+                ver = {**ver, "upstream_test_change": changed}
+                break
             hint = ver["hint"]
         if ad is not None and ver is not None and ver["ok"]:
             beh = behaviour.run(ctx, loc, pr_, ad)

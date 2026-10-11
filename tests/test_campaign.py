@@ -100,3 +100,19 @@ def test_cve_2026_87890_fix_changes_lines_from_cve_2026_15307_fix() -> None:
     """The supersession is found by blame, not by a hand-written link."""
     blamed = cmp.blamed_commits(DJANGO, "dd0558d1617619e0d66163675ef02135d0f54e5f")
     assert "115ffd0463a765ab1cc93de18e94b5459b8a300e" in blamed
+
+
+@pytest.mark.skipif(not DJANGO.exists(), reason="needs the Django clone")
+def test_a_deletion_only_hunk_marks_its_test_as_changed_upstream() -> None:
+    from heirloom.pipeline.locate import changed_test_ids
+
+    ids = changed_test_ids(
+        DJANGO,
+        ["115ffd0463a765ab1cc93de18e94b5459b8a300e"],
+        ["tests/gis_tests/rasterapp/test_rasterfield.py"],
+    )
+    # Upstream only deleted lines from this test (@@ -294,8 +293,0 @@).
+    assert (
+        "gis_tests.rasterapp.test_rasterfield.RasterFieldTest."
+        "test_dwithin_gis_lookup_output_with_rasters" in ids
+    )

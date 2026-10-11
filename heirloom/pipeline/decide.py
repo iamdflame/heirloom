@@ -11,6 +11,7 @@ from heirloom.policy import PolicyStore
 
 OPTIONS = {
     "ADAPT_FAILED": ("publish-evidence", "retry-with-hint", "skip"),
+    "UPSTREAM_TEST_CHANGE": ("publish-evidence", "adopt-upstream-tests", "skip"),
     "BEHAVIOUR_DIFF": ("accept-difference", "match-upstream", "publish-evidence"),
 }
 DEFAULT_OPTIONS = ("publish-evidence", "skip")
@@ -22,12 +23,17 @@ EXPLAIN = {
     "publish-evidence": "publish no code, only the evidence",
     "retry-with-hint": "run ADAPT once more with your comment as a hint",
     "skip": "publish nothing for this case",
+    "adopt-upstream-tests": "publish the verified backport together with upstream's updated "
+    "versions of the 4.2 tests it changes (the orchestrator applies upstream's test hunks; "
+    "the adapter still never edits tests), accepting upstream's behaviour change on 4.2",
 }
 
 
 def classify(pres: dict[str, Any], ver: dict[str, Any] | None, beh: dict[str, Any] | None) -> str:
     """The question kind, or '' when no human choice is needed."""
     if pres["verdict"] == "AFFECTED":
+        if ver is not None and ver.get("upstream_test_change"):
+            return "UPSTREAM_TEST_CHANGE"
         if ver is None or not ver["ok"]:
             return "ADAPT_FAILED"
         if beh is None or not beh["same"]:
@@ -98,7 +104,15 @@ def _diffs(beh: dict[str, Any] | None, ver: dict[str, Any] | None) -> list[str]:
             f"  - upstream {d.get('upstream', '')[:300]}",
             f"  - backport {d.get('backport', '')[:300]}",
         ]
-    if ver is not None and not ver.get("ok"):
+    changed = (ver or {}).get("upstream_test_change") or []
+    if changed:
+        lines += [
+            "- The backport passes the calibrated probe (FAIL before, PASS 3× after) and "
+            "edits no test, but these existing 4.2 tests now fail. Upstream rewrote every one "
+            "of them in the same fix commit, i.e. upstream changed the behaviour they assert:",
+            *[f"  - `{t}`" for t in changed[:12]],
+        ]
+    elif ver is not None and not ver.get("ok"):
         lines.append(f"- VERIFY: {str(ver.get('hint', ''))[:600]}")
     return lines
 

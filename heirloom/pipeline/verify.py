@@ -117,3 +117,25 @@ def run(
         }
 
     return ctx.stage("verify", {"patch": adapt["patch_sha"], "probe": probe["sha"]}, body)
+
+
+def upstream_test_change(ver: dict[str, Any] | None, loc: dict[str, Any]) -> list[str]:
+    """New failures that are all tests the upstream fix itself rewrote, or [].
+
+    The fix works (the probe FAILs before and PASSes after, no test edited, no new
+    skip), but 4.2's own versions of tests that upstream changed in the same commit
+    assert the old behaviour. No adaptation can satisfy both without diverging from
+    upstream, so this is a human choice (CVE-2026-15307: raster lookups with strings
+    or dicts now raise DisallowedRasterLookup, and four 4.2 tests expect them to work).
+    """
+    if ver is None or ver.get("ok") or not ver.get("new_failures"):
+        return []
+    if ver.get("new_skips") or ver.get("tests_edited_after_red"):
+        return []
+    if any(o != "FAIL" for o in ver.get("probe_before", [])):
+        return []
+    if any(o != "PASS" for o in ver.get("probe_after", [])):
+        return []
+    changed = set(loc.get("upstream_test_ids") or [])
+    failures: list[str] = list(ver["new_failures"])
+    return failures if all(t in changed for t in failures) else []
