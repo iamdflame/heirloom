@@ -116,7 +116,35 @@ def overflow_allowance(settings: Settings) -> float:
     return max(0.0, settings.max_overflow_usd - OverflowLedger(OVERFLOW_LEDGER).total())
 
 
+TRANSIENT = ("internalservererror", "serviceunavailable", "ratelimit", "timeout",
+             "apiconnectionerror", "badgateway", "<html", "502", "503", "504", "429")  # fmt: skip
+RETRY_DELAYS = (5.0, 15.0, 45.0)
+
+
+def transient(exc: Exception) -> bool:
+    text = f"{type(exc).__name__} {exc}".lower()
+    return any(t in text for t in TRANSIENT)
+
+
 class Router:
+    sleep: Callable[[float], None] = staticmethod(__import__("time").sleep)
+
+    def _gateway(self, litellm: Any, model: str, common: dict[str, Any]) -> Any:
+        """The gateway call, retried with backoff on transient errors (5xx, 429, timeouts)."""
+        for delay in (*RETRY_DELAYS, None):
+            try:
+                return litellm.completion(
+                    model=f"openai/{model}",
+                    api_base=self.settings.litellm_base,
+                    api_key=self.settings.litellm_key,
+                    **common,
+                )
+            except Exception as exc:
+                if delay is None or not transient(exc):
+                    raise
+                self.sleep(delay)
+        raise AssertionError("unreachable")
+
     def __init__(self, settings: Settings, budget: Budget) -> None:
         self.settings = settings
         self.budget = budget
@@ -141,12 +169,7 @@ class Router:
             "timeout": 600,
         }
         try:
-            resp = litellm.completion(
-                model=f"openai/{model}",
-                api_base=self.settings.litellm_base,
-                api_key=self.settings.litellm_key,
-                **common,
-            )
+            resp = self._gateway(litellm, model, common)
             provider = "litellm-gateway"
         except Exception as exc:
             allowance = overflow_allowance(self.settings) if model in OPENROUTER_MODELS else 0.0

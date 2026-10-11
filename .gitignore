@@ -4,3 +4,4 @@ work/
 *.sqlite
 __pycache__/
 work-*/
+.claude/worktrees/

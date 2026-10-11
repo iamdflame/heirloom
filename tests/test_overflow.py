@@ -75,3 +75,48 @@ def test_overflow_stops_at_the_cap(
     with pytest.raises(RuntimeError, match="no overflow"):
         run(monkeypatch, settings(tmp_path), exhausted=True, calls=calls)
     assert calls == ["openai/claude-sonnet-4.6"]
+
+
+def test_transient_gateway_errors_are_retried_not_overflowed(
+    tmp_path: Path, ledger: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import litellm
+
+    calls: list[str] = []
+
+    def flaky(**kw: Any) -> Any:
+        calls.append(kw["model"])
+        if len(calls) < 3:
+            raise RuntimeError("InternalServerError: <html>502 Bad Gateway</html>")
+        usage = SimpleNamespace(prompt_tokens=10, completion_tokens=1)
+        return SimpleNamespace(
+            usage=usage, choices=[SimpleNamespace(message=SimpleNamespace(content="ok"))]
+        )
+
+    monkeypatch.setattr(litellm, "completion", flaky)
+    monkeypatch.setattr(router, "key_exhausted", lambda _s: False)
+    r = Router(settings(tmp_path), Budget(1.5, lambda: 0.0))
+    monkeypatch.setattr(r, "sleep", lambda _d: None)
+    out = r.complete("claude-sonnet-4.6", [{"role": "user", "content": "x"}])
+    assert out.provider == "litellm-gateway"
+    assert calls == ["openai/claude-sonnet-4.6"] * 3
+
+
+def test_non_transient_errors_are_not_retried(
+    tmp_path: Path, ledger: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import litellm
+
+    calls: list[str] = []
+
+    def bad(**kw: Any) -> Any:
+        calls.append(kw["model"])
+        raise RuntimeError("BadRequestError: invalid model")
+
+    monkeypatch.setattr(litellm, "completion", bad)
+    monkeypatch.setattr(router, "key_exhausted", lambda _s: False)
+    r = Router(settings(tmp_path), Budget(1.5, lambda: 0.0))
+    monkeypatch.setattr(r, "sleep", lambda _d: None)
+    with pytest.raises(RuntimeError, match="no overflow"):
+        r.complete("claude-sonnet-4.6", [{"role": "user", "content": "x"}])
+    assert len(calls) == 1
