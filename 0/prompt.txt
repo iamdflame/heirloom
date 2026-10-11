@@ -1,0 +1,11 @@
+<pasted_content id="ab6a">
+Read ~/brief/BUILD-BRIEF.md completely before doing anything — it is the spec for this repo. This session covers only §7 S0–S4 plus the repo skeleton; no pipeline code yet.
+
+1. Verify the environment: python3.12, docker (run hello-world), gh auth status, `entire status`, `claude --version`. Install whatever §7 S0 lists that is missing, and start a postgis/postgis container named heirloom-pg.
+2. Create the repo skeleton: pyproject.toml (uv, python>=3.12, deps: typer, litellm, "neatlogs[litellm]", httpx, gitpython, libcst, coverage, fastapi, uvicorn, python-dotenv, pytest, ruff, mypy), .gitignore (.env, .venv, work/, *.sqlite), .gitattributes (`* text=auto eol=lf`), .env.example (keys from the brief, no values), README.md with only the one-liner, and hackathon.md with the sections Project, Team, Stack, Build log, Demo, Known limitations and next steps, Submission. Confirm `git status` does not list .env, then commit and create a public GitHub repo named heirloom with `gh repo create heirloom --public --source . --push`.
+3. Fork django/django to my account (`gh repo fork django/django --clone=false`), clone django fully into ~/work/django, add my fork as remote `fork`, then create branch stable/4.2.x-heirloom from tag 4.2.30 (upstream deleted stable/4.2.x; 4.2.30 = 3396992e83) and push it to the fork. Build the trimmed test venv from §3.
+4. Run the spikes in this order, time-boxed: S3 test runtimes and baselines (30 min), S1 calibration walk-through for CVE-2026-87975 and CVE-2026-77050 (75 min), S2 headless Claude Code + Entire trailer (45 min), S4 neatlogs init + one conditional detection + hits/trends (30 min). Record each spike's exact commands, outputs and verdict in docs/spikes.md. If a spike fails, write down the fallback from the brief and move on — do not sink extra time.
+5. Close with `entire status` and `entire checkpoint list`, append a dated entry to hackathon.md listing only tests that actually ran, and commit.
+
+Ask me before any action outside ~/heirloom, ~/work/django or my django fork.
+</pasted_content id="ab6a">
