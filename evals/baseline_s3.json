@@ -1,0 +1,73 @@
+{
+  "_note": "Baseline outcomes from runtests.py --parallel=1 -v 2, Python 3.12.15, 2026-10-11. L=4.2.30 (3396992e83); Um-87975=ff27883ca0^ (dd0558d161); Um-77050=02a69e3791^ (f59aef2ee9). GEOS 3.14.1, GDAL 3.12.2, PostGIS 3.4.3/PG16.4 (docker heirloom-pg).",
+  "runs": {
+    "L-forms_tests": {
+      "tests": 950,
+      "seconds": 1.895,
+      "summary": "OK (skipped=2)",
+      "failures": [],
+      "errors": []
+    },
+    "L-gis_tests": {
+      "tests": 560,
+      "seconds": 40.54,
+      "summary": "FAILED (failures=3, errors=4, skipped=21)",
+      "failures": [
+        "gis_tests.geos_tests.test_io.GEOSIOTest.test02_wktwriter",
+        "gis_tests.geos_tests.test_io.GEOSIOTest.test_wkt_writer_precision",
+        "gis_tests.geos_tests.test_io.GEOSIOTest.test_wkt_writer_trim"
+      ],
+      "errors": [
+        "gis_tests.gdal_tests.test_driver.DriverTest.test01_valid_driver",
+        "gis_tests.gdal_tests.test_driver.DriverTest.test03_aliases",
+        "gis_tests.gdal_tests.test_srs.SpatialRefTest.test_unicode",
+        "gis_tests.geoapp.tests.GeoModelTest.test_empty_geometries"
+      ]
+    },
+    "L-i18n": {
+      "tests": 232,
+      "seconds": 0.507,
+      "summary": "OK (skipped=83)",
+      "failures": [],
+      "errors": []
+    },
+    "L-model_formsets": {
+      "tests": 74,
+      "seconds": 0.553,
+      "summary": "OK",
+      "failures": [],
+      "errors": []
+    },
+    "Um-77050-i18n": {
+      "tests": 237,
+      "seconds": 0.503,
+      "summary": "OK (skipped=88)",
+      "failures": [],
+      "errors": []
+    },
+    "Um-87975-forms_tests": {
+      "tests": 1033,
+      "seconds": 2.018,
+      "summary": "OK (skipped=2)",
+      "failures": [],
+      "errors": []
+    },
+    "Um-87975-gis_tests": {
+      "tests": 650,
+      "seconds": 17.084,
+      "summary": "FAILED (errors=2, skipped=48)",
+      "failures": [],
+      "errors": [
+        "gis_tests.gdal_tests.test_driver.DriverTest.test01_valid_driver",
+        "gis_tests.gdal_tests.test_driver.DriverTest.test03_aliases"
+      ]
+    },
+    "Um-87975-model_formsets": {
+      "tests": 78,
+      "seconds": 0.578,
+      "summary": "OK",
+      "failures": [],
+      "errors": []
+    }
+  }
+}
