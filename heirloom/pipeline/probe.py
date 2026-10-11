@@ -14,10 +14,11 @@ import json
 import re
 from typing import Any
 
-from heirloom.git_ops import commit_diff, parse_diff, show_file
+from heirloom.git_ops import parse_diff, show_file
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.models.router import Router
 from heirloom.pipeline.context import Ctx, StageFailed
+from heirloom.pipeline.fixes import fix_diff, fixes_of
 
 FILES = ("models.py", "tests.py")
 BLOCK = re.compile(r"^### (models\.py|tests\.py)\s*\n```(?:python)?\n(.*?)^```", re.M | re.S)
@@ -33,9 +34,9 @@ class LeakageError(RuntimeError):
     pass
 
 
-def fix_added_lines(ctx: Ctx, fix: str) -> list[str]:
+def fix_added_lines(ctx: Ctx, fixes: list[str]) -> list[str]:
     out = []
-    for f in parse_diff(commit_diff(ctx.repo, fix, "django/")):
+    for f in parse_diff(fix_diff(ctx.repo, fixes, "django/")):
         for h in f.hunks:
             for line in h.added:
                 text = " ".join(line.split())
@@ -103,7 +104,7 @@ def parse_blocks(text: str) -> dict[str, str]:
 
 
 def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> str:
-    test_diff = commit_diff(ctx.repo, loc["fix"], *loc["test_files"], context=3)
+    test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
     sources: list[str] = []
     budget = MAX_SOURCE_CHARS
     for path in loc["fix_files"]:
@@ -173,7 +174,7 @@ Reply with exactly two fenced code blocks, each preceded by its header line:
 def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> dict[str, Any]:
     def body(span: StageSpan) -> dict[str, Any]:
         router = Router(ctx.s, ctx.budget())
-        added = fix_added_lines(ctx, loc["fix"])
+        added = fix_added_lines(ctx, fixes_of(loc))
         attempt_feedback = feedback
         total = 0.0
         problems: list[str] = []

@@ -48,6 +48,7 @@ class Ctx:
     line: str
     run_id: str
     campaign_id: str = "NONE"
+    archive_ref: str = "origin/main"  # security.txt revision LOCATE reads (campaign replay)
     verdict: str = "PENDING"
     calibrated: bool = False
     reach: bool = False
@@ -122,11 +123,15 @@ class Ctx:
         *,
         effect: bool = False,
         reconcile: Reconcile | None = None,
+        scope: str | None = None,
     ) -> dict[str, Any]:
+        """Run (or reuse) a stage. ``scope`` keys line-independent stages (e.g. U⁻/U⁺
+        evidence) under a shared ledger scope instead of this run's line."""
+        key_line = scope or self.line
         while True:
             try:
                 claim = self.ledger.begin(
-                    self.cve, self.line, name, inputs, run_id=self.run_id, effect=effect
+                    self.cve, key_line, name, inputs, run_id=self.run_id, effect=effect
                 )
                 break
             except PausedForReconcile as paused:
@@ -161,7 +166,7 @@ class Ctx:
         return self._execute(claim.key, name, fn)
 
     def _row(self, key: StageKey) -> SpanRef | None:
-        for r in self.ledger.stages(self.cve, self.line):
+        for r in self.ledger.stages(self.cve, key.line):
             if r.key == key and r.trace_id:
                 return SpanRef(key.stage, r.trace_id, r.span_id or "NONE", key.attempt)
         return None

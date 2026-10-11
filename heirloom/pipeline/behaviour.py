@@ -5,9 +5,10 @@ from __future__ import annotations
 import subprocess
 from typing import Any
 
-from heirloom.git_ops import commit_diff, git
+from heirloom.git_ops import git
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.pipeline.context import Ctx
+from heirloom.pipeline.fixes import fix_diff, fixes_of
 
 
 def _exc_kind(detail: str) -> str:
@@ -26,7 +27,7 @@ def run(
         ids = [ctx.app]
         upstream_applied = False
         if loc["upstream_test_ids"]:
-            test_diff = commit_diff(ctx.repo, loc["fix"], *loc["test_files"], context=3)
+            test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
             proc = subprocess.run(
                 ["git", "-C", str(beh), "apply", "--3way", "-"],
                 input=test_diff,

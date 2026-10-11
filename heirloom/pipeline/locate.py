@@ -5,20 +5,24 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from heirloom.git_ops import commit_diff, git, is_ancestor, parse_diff, rev_parse, show_file
+from heirloom.git_ops import git, is_ancestor, parse_diff, rev_parse, show_file
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.pipeline.calibrate import symbols
 from heirloom.pipeline.context import Ctx, StageFailed
+from heirloom.pipeline.fixes import fix_diff
 from heirloom.sources.django_security import load
 
 
-def upstream_test_ids(ctx: Ctx, fix: str, test_files: list[str]) -> list[str]:
-    """Dotted ids of the test methods the fix adds, located with ast on U⁺."""
+def upstream_test_ids(ctx: Ctx, fixes: list[str], test_files: list[str]) -> list[str]:
+    """Dotted ids of the test methods the fix commits add, located with ast on U⁺."""
     ids: list[str] = []
-    for f in parse_diff(commit_diff(ctx.repo, fix, *test_files)):
+    if not test_files:
+        return ids
+    up = fixes[-1]
+    for f in parse_diff(fix_diff(ctx.repo, fixes, *test_files)):
         if not f.new_path or not f.new_path.endswith(".py"):
             continue
-        src = show_file(ctx.repo, fix, f.new_path) or ""
+        src = show_file(ctx.repo, up, f.new_path) or ""
         added = {
             m[1]
             for h in f.hunks
@@ -32,11 +36,11 @@ def upstream_test_ids(ctx: Ctx, fix: str, test_files: list[str]) -> list[str]:
     return sorted(set(ids))
 
 
-def advisory_text(ctx: Ctx, fix: str, title: str) -> str:
-    """The release-notes paragraph the fix adds (Django's published advisory text)."""
+def advisory_text(ctx: Ctx, fixes: list[str], title: str) -> str:
+    """The release-notes paragraphs the fix commits add (Django's published advisory text)."""
     notes = [
         line
-        for f in parse_diff(commit_diff(ctx.repo, fix, "docs/releases/"))
+        for f in parse_diff(fix_diff(ctx.repo, fixes, "docs/releases/"))
         for h in f.hunks
         for line in h.added
     ]
@@ -49,23 +53,35 @@ def run(ctx: Ctx) -> dict[str, Any]:
         git(ctx.repo, "fetch", "-q", "origin", "main")
         if ctx.spec.publish and ctx.spec.base_branch:
             git(ctx.repo, "fetch", "-q", ctx.s.fork_remote, ctx.spec.base_branch)
-        archive_ref = rev_parse(ctx.repo, "origin/main")
+        archive_ref = rev_parse(ctx.repo, ctx.archive_ref)
         advisories = load(ctx.repo, archive_ref)
         if ctx.cve not in advisories:
             raise StageFailed(f"{ctx.cve} is not in security.txt at {archive_ref[:10]}")
         adv = advisories[ctx.cve]
-        fix = rev_parse(ctx.repo, adv.fix_commit(ctx.spec.upstream))
-        message = git(ctx.repo, "log", "-1", "--format=%B", fix)
-        if ctx.cve not in message or not (
-            f"Fixed {ctx.cve}" in message or "Backport of" in message
-        ):
-            raise StageFailed(f"{fix[:10]} message does not say 'Fixed {ctx.cve}'/'Backport of'")
-        files = git(ctx.repo, "diff", "--name-only", f"{fix}^", fix).split()
+        series = adv.first_series(ctx.spec.upstreams)
+        fixes = [rev_parse(ctx.repo, sha) for sha in adv.fix_commits(series)]
+        messages = [git(ctx.repo, "log", "-1", "--format=%B", sha) for sha in fixes]
+        first = messages[0]
+        if ctx.cve not in first or not (f"Fixed {ctx.cve}" in first or "Backport of" in first):
+            raise StageFailed(
+                f"{fixes[0][:10]} message does not say 'Fixed {ctx.cve}'/'Backport of'"
+            )
+        for sha, msg in zip(fixes[1:], messages[1:], strict=True):
+            if ctx.cve not in msg:  # follow-ups say "Refs CVE-…"
+                raise StageFailed(f"follow-up {sha[:10]} does not mention {ctx.cve}")
+        files = sorted(
+            {
+                f
+                for sha in fixes
+                for f in git(ctx.repo, "diff", "--name-only", f"{sha}^", sha).split()
+            }
+        )
         fix_files = [f for f in files if f.startswith("django/")]
         test_files = [f for f in files if f.startswith("tests/")]
         if not fix_files:
-            raise StageFailed(f"{fix[:10]} changes no django/ files")
-        um = rev_parse(ctx.repo, f"{fix}^")
+            raise StageFailed(f"{ctx.cve}'s {series} fix changes no django/ files")
+        fix = fixes[-1]  # U⁺
+        um = rev_parse(ctx.repo, f"{fixes[0]}^")  # U⁻
         tip = rev_parse(ctx.repo, ctx.spec.tip)
         if ctx.spec.publish and ctx.spec.base_branch:
             base = rev_parse(ctx.repo, f"{ctx.s.fork_remote}/{ctx.spec.base_branch}")
@@ -76,7 +92,8 @@ def run(ctx: Ctx) -> dict[str, Any]:
         else:
             base = tip  # non-publishing lines work on the tip itself, never the fork
         merge_base = git(ctx.repo, "merge-base", um, tip).strip()
-        subject = message.splitlines()[0]
+        subject = first.splitlines()[0]
+        message = "\n\n".join(messages)
         span.set("claim_id", f"{ctx.cve}/{ctx.line}/locate")
         span.set("fix_sha", fix)
         return {
@@ -85,6 +102,8 @@ def run(ctx: Ctx) -> dict[str, Any]:
             "date": adv.date.isoformat(),
             "url": adv.url or "",
             "archive_ref": archive_ref,
+            "series": series,
+            "fixes": fixes,
             "fix": fix,
             "um": um,
             "tip": tip,
@@ -94,8 +113,8 @@ def run(ctx: Ctx) -> dict[str, Any]:
             "message": message,
             "fix_files": fix_files,
             "test_files": test_files,
-            "upstream_test_ids": upstream_test_ids(ctx, fix, test_files),
-            "advisory": advisory_text(ctx, fix, adv.title),
+            "upstream_test_ids": upstream_test_ids(ctx, fixes, test_files),
+            "advisory": advisory_text(ctx, fixes, adv.title),
         }
 
     return ctx.stage("locate", {"cve": ctx.cve, "line": ctx.line, "tip": ctx.spec.tip}, body)

@@ -32,20 +32,45 @@ class AdvisoryError(LookupError):
 
 
 @dataclass(frozen=True)
+class FixCommit:
+    label: str  # as printed in the archive: "5.2", or a follow-up release such as "5.2.18"
+    sha: str
+
+    @property
+    def series(self) -> str:
+        return ".".join(self.label.split(".")[:2])
+
+
+@dataclass(frozen=True)
 class Advisory:
     cve: str
     date: date
     title: str
     url: str | None
-    commits: dict[str, str] = field(default_factory=dict)
+    fixes: tuple[FixCommit, ...] = field(default_factory=tuple)
 
-    def fix_commit(self, branch: str) -> str:
+    @property
+    def commits(self) -> dict[str, list[str]]:
+        """Every fix commit per branch series, in archive order (follow-ups included)."""
+        out: dict[str, list[str]] = {}
+        for f in self.fixes:
+            out.setdefault(f.series, []).append(f.sha)
+        return out
+
+    def fix_commits(self, series: str) -> list[str]:
         try:
-            return self.commits[branch]
+            return self.commits[series]
         except KeyError:
             raise AdvisoryError(
-                f"{self.cve} has no Django {branch} commit (has: {sorted(self.commits)})"
+                f"{self.cve} has no Django {series} commit (has: {sorted(self.commits)})"
             ) from None
+
+    def first_series(self, candidates: tuple[str, ...]) -> str:
+        """The first candidate series (preferred upstream, then fallbacks) with a fix."""
+        for series in candidates:
+            if series in self.commits:
+                return series
+        raise AdvisoryError(f"{self.cve}: none of {list(candidates)} has a fix commit")
 
 
 def parse_security_txt(text: str) -> dict[str, Advisory]:
@@ -59,13 +84,13 @@ def parse_security_txt(text: str) -> dict[str, Advisory]:
         body = lines[start + 1 : end]
         if body and set(body[0].strip()) == {"-"}:
             body = body[1:]
-        commits: dict[str, str] = {}
+        fixes: list[FixCommit] = []
         prose: list[str] = []
         for line in body:
             c = COMMIT.match(line.strip())
             if c:
-                commits[c["branch"]] = c["sha"]
-            elif not commits and not line.startswith(("Versions affected", "~~~")):
+                fixes.append(FixCommit(c["branch"], c["sha"]))
+            elif not fixes and not line.startswith(("Versions affected", "~~~")):
                 prose.append(line)
         text_block = " ".join(" ".join(prose).split())
         url_match = FULL_DESCRIPTION.search(text_block)
@@ -76,7 +101,7 @@ def parse_security_txt(text: str) -> dict[str, Advisory]:
             date=datetime.strptime(m["date"], "%B %d, %Y").date(),
             title=" ".join(title.split()),
             url=url_match["url"].strip() if url_match else None,
-            commits=commits,
+            fixes=tuple(fixes),
         )
     return advisories
 

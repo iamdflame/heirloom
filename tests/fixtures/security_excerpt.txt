@@ -75,3 +75,33 @@ August 16, 2006 - :cve:`2007-0404`
 Filename validation issue in translation framework. `Full description
 <https://www.djangoproject.com/weblog/2006/aug/16/compilemessages/>`__
 
+
+August 4, 2026 - :cve:`2026-15830`
+----------------------------------
+
+Potential denial-of-service vulnerability via nested geometry collections.
+`Full description
+<https://www.djangoproject.com/weblog/2026/aug/04/security-releases/>`__
+
+* Django 6.1 :commit:`(patch) <9e4a3f186b6b07b483bfd9195ea06734663fcd06>`
+* Django 6.0 :commit:`(patch) <6af5da31775417c610dbf9c3f1b5b8333d42daf6>`
+* Django 5.2 :commit:`(patch) <ba80833fa656dd09660b97c4429331067db1b080>`
+
+There was an additional hardening with new patch releases published on Oct 6,
+2026. `Full description
+<https://www.djangoproject.com/weblog/2026/oct/06/security-releases/>`__
+
+* Django 6.1.2 :commit:`(patch) <75d401a1491e04a907ed745c128836d51c982c0f>`
+* Django 6.0.9 :commit:`(patch) <4353dfb56f8ba3a6fccc4bdd7f2ef2fbee3aa638>`
+* Django 5.2.18 :commit:`(patch) <1eafa1a80f1363283f89208ba4499ed54e35f085>`
+
+April 2, 2025 - :cve:`2025-27556`
+---------------------------------
+
+Potential denial-of-service vulnerability in ``LoginView``, ``LogoutView``, and
+``set_language()`` on Windows. `Full description
+<https://www.djangoproject.com/weblog/2025/apr/02/security-releases/>`__
+
+* Django 5.1 :commit:`(patch) <edc2716d01a6fdd84b173c02031695231bcee1f8>`
+* Django 5.0 :commit:`(patch) <8c6871b097b6c49d2a782c0d80d908bcbe2116f1>`
+

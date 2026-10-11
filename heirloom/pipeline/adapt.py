@@ -11,11 +11,12 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
-from heirloom.git_ops import commit_diff, git, git_ok
+from heirloom.git_ops import git, git_ok
 from heirloom.integrations import entire
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.models.router import BudgetExceeded
 from heirloom.pipeline.context import Ctx, StageFailed
+from heirloom.pipeline.fixes import fix_diff, fixes_of
 
 MAX_HISTORY_CHARS = 6000
 
@@ -86,7 +87,7 @@ def failing_output(cal: dict[str, Any]) -> str:
 
 
 def prompt(ctx: Ctx, loc: dict[str, Any], cal: dict[str, Any], hint: str | None) -> str:
-    fix = commit_diff(ctx.repo, loc["fix"], "django/", context=5)
+    fix = fix_diff(ctx.repo, fixes_of(loc), "django/", context=5)
     retry = f"\n## Your previous attempt failed verification\n{hint}\n" if hint else ""
     return f"""Backport a security fix to Django 4.2 (this checkout: tag 4.2.30 + fork base).
 

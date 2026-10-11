@@ -24,6 +24,8 @@ def test_parses_every_entry() -> None:
         "CVE-2007-0404",
         "CVE-2007-0405",
         "CVE-2023-36053",
+        "CVE-2025-27556",
+        "CVE-2026-15830",
         "CVE-2026-77050",
         "CVE-2026-84429",
         "CVE-2026-87890",
@@ -37,11 +39,11 @@ def test_modern_entry_fields() -> None:
     assert adv.title == "Privilege abuse in model formsets with editable primary keys."
     assert adv.url == "https://www.djangoproject.com/weblog/2026/oct/06/security-releases/"
     assert adv.commits == {
-        "6.1": "cce6c57ed30ea83725f9d6abb2fe5ee932bab107",
-        "6.0": "b83ab92bc5474558b083a840ea4628b3261b2cfe",
-        "5.2": "ff27883ca055aa9ab23015b50674a5b10dfe5a41",
+        "6.1": ["cce6c57ed30ea83725f9d6abb2fe5ee932bab107"],
+        "6.0": ["b83ab92bc5474558b083a840ea4628b3261b2cfe"],
+        "5.2": ["ff27883ca055aa9ab23015b50674a5b10dfe5a41"],
     }
-    assert adv.fix_commit("5.2") == "ff27883ca055aa9ab23015b50674a5b10dfe5a41"
+    assert adv.fix_commits("5.2") == ["ff27883ca055aa9ab23015b50674a5b10dfe5a41"]
 
 
 def test_multiline_title_keeps_rst_literals() -> None:
@@ -57,21 +59,39 @@ def test_title_sharing_a_line_with_full_description() -> None:
         "Potential regular expression denial of service vulnerability in "
         "``EmailValidator``/``URLValidator``."
     )
-    assert adv.commits["4.2"] == "b7c5feb35a31799de6e582ad6a5a91a9de74e0f9"
+    assert adv.commits["4.2"] == ["b7c5feb35a31799de6e582ad6a5a91a9de74e0f9"]
 
 
 def test_old_format_with_versions_affected_heading() -> None:
     parsed = parse_security_txt(FIXTURE.read_text())
     old = parsed["CVE-2007-0405"]
     assert old.title == 'Apparent "caching" of authenticated user.'
-    assert old.commits == {"0.95": "e89f0a65581f82a5740bfe989136cea75d09cd67"}
+    assert old.commits == {"0.95": ["e89f0a65581f82a5740bfe989136cea75d09cd67"]}
     assert parsed["CVE-2007-0404"].commits == {}
 
 
 def test_missing_branch_is_an_error_not_a_guess() -> None:
     adv = parse_security_txt(FIXTURE.read_text())["CVE-2026-87975"]
     with pytest.raises(AdvisoryError):
-        adv.fix_commit("4.2")
+        adv.fix_commits("4.2")
+
+
+def test_follow_up_commits_are_kept_in_order_under_their_series() -> None:
+    adv = parse_security_txt(FIXTURE.read_text())["CVE-2026-15830"]
+    assert adv.fix_commits("5.2") == [
+        "ba80833fa656dd09660b97c4429331067db1b080",
+        "1eafa1a80f1363283f89208ba4499ed54e35f085",  # "Django 5.2.18" follow-up
+    ]
+    assert [f.label for f in adv.fixes if f.series == "5.2"] == ["5.2", "5.2.18"]
+    assert adv.title == "Potential denial-of-service vulnerability via nested geometry collections."
+
+
+def test_upstream_fallbacks_pick_the_first_series_with_a_fix() -> None:
+    parsed = parse_security_txt(FIXTURE.read_text())
+    assert parsed["CVE-2025-27556"].first_series(("5.2", "5.1", "5.0")) == "5.1"
+    assert parsed["CVE-2026-87975"].first_series(("5.2", "5.1", "5.0")) == "5.2"
+    with pytest.raises(AdvisoryError):
+        parsed["CVE-2025-27556"].first_series(("5.2",))
 
 
 @pytest.mark.skipif(not (DJANGO_REPO / ".git").exists(), reason="needs ~/work/django clone")
