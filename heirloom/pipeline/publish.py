@@ -672,10 +672,12 @@ def evidence(ctx: Ctx, d: dict[str, Any]) -> dict[str, Any]:
         body_file = ctx.log("publish", "evidence-issue.md")
         body_file.write_text(text)
         existing = reconcile()
-        if existing:
-            github.edit_issue_body(ctx.s.heirloom_repo, int(existing["number"]), body_file)
-            return {**existing, "claims_unlinked": unlinked, "reused": True}
         title = f"[heirloom] {ctx.cve} on Django {ctx.line}: {pres['verdict']}{reason}"
+        if existing:
+            github.edit_issue_body(
+                ctx.s.heirloom_repo, int(existing["number"]), body_file, title=title
+            )
+            return {**existing, "claims_unlinked": unlinked, "reused": True}
         url = github.create_issue(ctx.s.heirloom_repo, title, body_file)
         found = reconcile()
         if found is None:

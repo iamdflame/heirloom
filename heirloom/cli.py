@@ -256,6 +256,9 @@ def campaign(
         False, "--continue", help="Poll answers, then re-queue waiting/blocked events."
     ),
     plan_only: bool = typer.Option(False, help="Write the plan and stop."),
+    requeue: list[str] | None = typer.Option(
+        None, help="With --continue: also re-run these CVEs' events (after a harness fix)."
+    ),
 ) -> None:
     """E2: every post-EOL advisory on a line; one PR or evidence issue per CVE."""
     import time
@@ -275,7 +278,7 @@ def campaign(
     if cont:
         for a in answers.poll(s):
             typer.echo(f"answer {a.option} on {a.issue} -> precedent {a.precedent}")
-        typer.echo(f"re-queued: {cmp.reopen(path)}")
+        typer.echo(f"re-queued: {cmp.reopen(path, tuple(requeue or ()))}")
     state = json.loads(path.read_text())
     for ev in state["events"]:
         deps = ",".join(ev.get("depends_on") or []) or "-"

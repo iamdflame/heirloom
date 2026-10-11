@@ -92,3 +92,14 @@ def test_filesystem_and_parsing_stdlib_modules_are_allowed() -> None:
         "from urllib.parse import quote\nfrom unittest import mock\n"
     )
     assert validate({"models.py": MODELS, "tests.py": extra + TESTS}, APP) == []
+
+
+def test_fix_lines_the_upstream_test_diff_shows_are_not_leaks() -> None:
+    from heirloom.pipeline.probe import guarded_lines
+
+    test_diff = (
+        "--- a/tests/cache/tests.py\n+++ b/tests/cache/tests.py\n"
+        "@@ -1,3 +1,4 @@\n from django.utils.cache import (\n+    patch_vary_headers,\n"
+    )
+    added = ["patch_vary_headers,", 'patch_vary_headers(response, ("Authorization",))']
+    assert guarded_lines(added, test_diff) == ['patch_vary_headers(response, ("Authorization",))']

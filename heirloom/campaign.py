@@ -254,13 +254,16 @@ def claim(path: Path, worker: str, budget_ok: Callable[[int], bool]) -> Event | 
     return None
 
 
-def reopen(path: Path) -> list[str]:
-    """Put waiting, blocked, budget-stopped and crashed events back in the queue."""
+def reopen(path: Path, cves: tuple[str, ...] = ()) -> list[str]:
+    """Put waiting, blocked, budget-stopped and crashed events back in the queue (and
+    every event of ``cves``, e.g. after a harness fix)."""
     with locked_state(path) as state:
         ids = []
         for ev in state["events"]:
-            if ev["status"] in (*WAITING, "budget_stop", "harness_error") or (
-                ev["status"] == "running" and not _alive(int(ev.get("pid") or 0))
+            if (
+                ev["cve"] in cves
+                or ev["status"] in (*WAITING, "budget_stop", "harness_error")
+                or (ev["status"] == "running" and not _alive(int(ev.get("pid") or 0)))
             ):
                 ev["status"] = "pending"
                 ids.append(ev["id"])

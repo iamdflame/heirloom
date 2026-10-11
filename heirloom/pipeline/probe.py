@@ -88,6 +88,19 @@ def leak_surface(prompt: str) -> str:
     return prompt[:start] + (prompt[end:] if end >= 0 else "")
 
 
+def guarded_lines(added: list[str], test_diff: str) -> list[str]:
+    """Fix-added lines the guard checks: not those the upstream test diff also shows.
+
+    The porter sees the upstream test diff by design (§3); a fix line it contains
+    (CVE-2026-35193's tests import ``patch_vary_headers,`` exactly as the fix does,
+    CVE-2026-15307's import ``DisallowedRasterLookup``) tells it nothing new. L's own
+    source is left out of the checked surface by :func:`leak_surface`. Any other fix
+    line anywhere in the prompt (advisory, feedback, hints) still trips the guard.
+    """
+    shown = {_norm(x[1:]) for x in test_diff.splitlines() if x[:1] in (" ", "+", "-")}
+    return [a for a in added if a not in shown]
+
+
 def assert_no_leak(prompt: str, added: list[str]) -> int:
     """Raise if any line the fix introduces appears as a whole line of the prompt."""
     lines = {_norm(x) for x in prompt.splitlines()}
@@ -277,7 +290,8 @@ def run(
     def body(span: StageSpan) -> dict[str, Any]:
         span.set("porter_model", model)
         router = Router(ctx.s, ctx.budget())
-        added = fix_added_lines(ctx, fixes_of(loc))
+        test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
+        added = guarded_lines(fix_added_lines(ctx, fixes_of(loc)), test_diff)
         attempt_feedback = feedback
         total = 0.0
         estimated = False  # any call priced from tokens instead of a provider report

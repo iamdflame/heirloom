@@ -88,9 +88,10 @@ def create_issue(repo: str, title: str, body_file: Path) -> str:
     return out.strip().splitlines()[-1]
 
 
-def edit_issue_body(repo: str, number: int, body_file: Path) -> None:
+def edit_issue_body(repo: str, number: int, body_file: Path, title: str | None = None) -> None:
     guard.check(f"gh issue edit {number} on {repo}")
-    gh("issue", "edit", str(number), "--repo", repo, "--body-file", str(body_file))
+    extra = ["--title", title] if title else []
+    gh("issue", "edit", str(number), "--repo", repo, "--body-file", str(body_file), *extra)
 
 
 def comments(repo: str, number: int, *, pr: bool = False) -> list[dict[str, Any]]:
