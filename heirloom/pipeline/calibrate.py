@@ -710,8 +710,11 @@ def feedback_for(cal: dict[str, Any], verdict: Presence) -> str | None:
     if verdict.verdict != "UNPROVEN" or verdict.reason not in RETRYABLE:
         return None
     mapped = cal.get("mapped") or []
-    if verdict.reason == "NO_REACH" and mapped and all(m["how"] == "absent" for m in mapped):
-        return None  # no fix symbol exists on L: no probe can reach it, a retry only costs
+    c1 = verdict.gates.get("C1")
+    if c1 is not None and c1.ok and mapped and all(m["how"] == "absent" for m in mapped):
+        # C1 holds and no fix symbol exists on L: no new probe can reach L's version
+        # of the fix (there is none), so a retry only costs (§10.4 absent-symbol path).
+        return None
 
     def describe(tree: str, runs: list[dict[str, Any]]) -> str:
         outcomes = ", ".join(r["outcome"] for r in runs)

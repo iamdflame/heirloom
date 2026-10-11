@@ -35,7 +35,11 @@ _STATUS = r"(?P<status>ok|FAIL|ERROR|skipped(?: .*)?|expected failure|unexpected
 STATUS_LINE = re.compile(rf"^{_ID} \.\.\. {_STATUS}$")
 ID_ONLY_LINE = re.compile(rf"^{_ID}$")
 TRAILING_STATUS = re.compile(rf"^.* \.\.\. {_STATUS}$")
-SECTION = re.compile(rf"^(?P<kind>FAIL|ERROR): {_ID}(?: \((?P<sub>.*)\))?$")
+# Dotted names too: a test module that fails to import is reported as
+# "ERROR: app.tests (unittest.loader._FailedTest.app.tests)" (a harness error).
+SECTION = re.compile(
+    r"^(?P<kind>FAIL|ERROR): (?P<name>[\w.]+) \((?P<id>[\w.]+)\)(?: \((?P<sub>.*)\))?$"
+)
 RAN = re.compile(r"^Ran (?P<n>\d+) tests? in [\d.]+s$")
 SUMMARY = re.compile(r"^(?P<word>OK|FAILED)(?: \((?P<counts>[^)]*)\))?$")
 ASSERTION = re.compile(r"^(?:[\w.]+\.)?\w*AssertionError\b")

@@ -2,290 +2,525 @@
   "cve": "CVE-2026-53878",
   "line": "4.2.30",
   "tip": "3396992e837d5146270ea8112bb622c83fa4a919",
-  "phase": "attempt 1: porter rules as of 9c967bd plus the GIS hint (no rule against catching ImportError)",
   "ledger": "/home/ubuntu/heirloom/work-b/ledger.sqlite",
-  "logs": "/home/ubuntu/heirloom/work-b/archive/CVE-2026-53878-4.2.30-attempt1",
-  "total_cost_usd": 0.122892,
-  "observation": "Each porter probe catches the ImportError for DomainNameValidator and turns it into an AssertionError, so the probe FAILs on 4.2.30 (C2 holds) instead of ERRORing. Reach then fails because no fix symbol exists on L (UNPROVEN/NO_REACH), and the absent-symbol gate, which needs an ImportError naming the symbol, never applies. The two NO_REACH feedback retries could not help.",
-  "attempts": [
+  "phases": [
     {
-      "probe_attempt": 1,
-      "probe_sha": "45b1fb2c20001f83fac64b4a6934037716c95bd483f03cb2ce421da34b5011a0",
-      "model": "claude-sonnet-4.6",
-      "cost_usd": 0.04035,
-      "run_id": "20261011T093132Z-c1b0",
-      "tests_py": "from django.test import SimpleTestCase\nfrom django.core.exceptions import ValidationError\n\n\nclass DomainNameValidatorNewlineTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection.\n    \"\"\"\n\n    def _get_validator_class(self):\n        try:\n            from django.core.validators import DomainNameValidator\n            return DomainNameValidator\n        except ImportError:\n            return None\n\n    def test_newline_lf_rejected(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\n' without raising \"\n            \"ValidationError — newline injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\r\\\\n' without raising \"\n            \"ValidationError — CRLF injection is possible.\"\n        )\n\n    def test_newline_lf_rejected_no_idna(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\n' \"\n            \"without raising ValidationError — newline injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected_no_idna(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\r\\\\n' \"\n            \"without raising ValidationError — CRLF injection is possible.\"\n        )\n",
-      "l_runs": [
+      "phase": "attempt 1: porter rules as of 9c967bd plus the GIS hint (no rule against catching ImportError)",
+      "logs": "/home/ubuntu/heirloom/work-b/archive/CVE-2026-53878-4.2.30-attempt1",
+      "total_cost_usd": 0.122892,
+      "observation": "Each porter probe catches the ImportError for DomainNameValidator and turns it into an AssertionError, so the probe FAILs on 4.2.30 (C2 holds) instead of ERRORing. Reach then fails because no fix symbol exists on L (UNPROVEN/NO_REACH), and the absent-symbol gate, which needs an ImportError naming the symbol, never applies. The two NO_REACH feedback retries could not help.",
+      "attempts": [
         {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna"
+          "probe_attempt": 1,
+          "probe_sha": "45b1fb2c20001f83fac64b4a6934037716c95bd483f03cb2ce421da34b5011a0",
+          "model": "claude-sonnet-4.6",
+          "cost_usd": 0.04035,
+          "run_id": "20261011T093132Z-c1b0",
+          "tests_py": "from django.test import SimpleTestCase\nfrom django.core.exceptions import ValidationError\n\n\nclass DomainNameValidatorNewlineTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection.\n    \"\"\"\n\n    def _get_validator_class(self):\n        try:\n            from django.core.validators import DomainNameValidator\n            return DomainNameValidator\n        except ImportError:\n            return None\n\n    def test_newline_lf_rejected(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\n' without raising \"\n            \"ValidationError — newline injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\r\\\\n' without raising \"\n            \"ValidationError — CRLF injection is possible.\"\n        )\n\n    def test_newline_lf_rejected_no_idna(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\n' \"\n            \"without raising ValidationError — newline injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected_no_idna(self):\n        DomainNameValidator = self._get_validator_class()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in this Django version; \"\n            \"header injection protection via this validator is absent.\"\n        )\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\r\\\\n' \"\n            \"without raising ValidationError — CRLF injection is possible.\"\n        )\n",
+          "l_runs": [
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent."
+              }
+            }
           ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent."
-          }
-        },
-        {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna"
+          "mapped": [
+            {
+              "body_lines_hit": 0,
+              "how": "absent",
+              "l_lines": null,
+              "l_path": null,
+              "qualname": "DomainNameValidator.__init__",
+              "um_path": "django/core/validators.py"
+            }
           ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent."
-          }
-        },
-        {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna"
-          ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version; header injection protection via this validator is absent."
-          }
-        }
-      ],
-      "mapped": [
-        {
-          "body_lines_hit": 0,
-          "how": "absent",
-          "l_lines": null,
-          "l_path": null,
-          "qualname": "DomainNameValidator.__init__",
-          "um_path": "django/core/validators.py"
-        }
-      ],
-      "reach": {
-        "detail": "no fix symbol exists in L",
-        "ok": false,
-        "reason": "NO_REACH"
-      },
-      "presence": {
-        "calibrated": false,
-        "detail": "no fix symbol exists in L",
-        "gates": {
-          "C1": {
-            "detail": "2 stable failing ids on U⁻",
-            "ok": true,
-            "reason": null
-          },
-          "C2": {
-            "detail": "",
-            "ok": true,
-            "reason": null
-          },
-          "C3": {
+          "reach": {
             "detail": "no fix symbol exists in L",
             "ok": false,
             "reason": "NO_REACH"
+          },
+          "presence": {
+            "calibrated": false,
+            "detail": "no fix symbol exists in L",
+            "gates": {
+              "C1": {
+                "detail": "2 stable failing ids on U⁻",
+                "ok": true,
+                "reason": null
+              },
+              "C2": {
+                "detail": "",
+                "ok": true,
+                "reason": null
+              },
+              "C3": {
+                "detail": "no fix symbol exists in L",
+                "ok": false,
+                "reason": "NO_REACH"
+              }
+            },
+            "reason": "NO_REACH",
+            "verdict": "UNPROVEN"
           }
         },
-        "reason": "NO_REACH",
-        "verdict": "UNPROVEN"
-      }
+        {
+          "probe_attempt": 2,
+          "probe_sha": "deb3a5e92142af113b3534e3b4c0e37c529e81df0800de55cfd57a3e7a6a0fa9",
+          "model": "claude-sonnet-4.6",
+          "cost_usd": 0.040413,
+          "run_id": "20261011T093132Z-c1b0",
+          "tests_py": "import django\nfrom django.test import SimpleTestCase\nfrom django.core.exceptions import ValidationError\n\n\nclass DomainNameValidatorNewlineRejectionTests(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection attacks.\n\n    On Django 4.2, DomainNameValidator does not exist at all, which means\n    there is no protection — the probe fails with AssertionError.\n    On a vulnerable 5.2 build, the validator exists but accepts newlines —\n    the probe also fails with AssertionError.\n    On the fixed build, the validator exists and raises ValidationError for\n    newline-containing inputs — the probe passes.\n    \"\"\"\n\n    def _get_validator_class(self):\n        \"\"\"\n        Return DomainNameValidator if available, else raise AssertionError\n        to signal that the protection is absent (vulnerable Django 4.2).\n        \"\"\"\n        try:\n            from django.core.validators import DomainNameValidator\n            return DomainNameValidator\n        except ImportError:\n            raise AssertionError(\n                \"DomainNameValidator does not exist in this Django version \"\n                f\"({django.get_version()}); header injection protection via \"\n                \"this validator is absent — the vulnerability is present.\"\n            )\n\n    def test_newline_lf_rejected(self):\n        \"\"\"DomainNameValidator must raise ValidationError for 'example.com\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\n' without raising \"\n            \"ValidationError — newline (LF) injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected(self):\n        \"\"\"DomainNameValidator must raise ValidationError for 'example.com\\\\r\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\r\\\\n' without raising \"\n            \"ValidationError — newline (CRLF) injection is possible.\"\n        )\n\n    def test_newline_lf_rejected_no_idna(self):\n        \"\"\"DomainNameValidator(accept_idna=False) must reject 'example.com\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\n' \"\n            \"without raising ValidationError — newline (LF) injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected_no_idna(self):\n        \"\"\"DomainNameValidator(accept_idna=False) must reject 'example.com\\\\r\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\r\\\\n' \"\n            \"without raising ValidationError — newline (CRLF) injection is possible.\"\n        )\n",
+          "l_runs": [
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present."
+              }
+            }
+          ],
+          "mapped": [
+            {
+              "body_lines_hit": 0,
+              "how": "absent",
+              "l_lines": null,
+              "l_path": null,
+              "qualname": "DomainNameValidator.__init__",
+              "um_path": "django/core/validators.py"
+            }
+          ],
+          "reach": {
+            "detail": "no fix symbol exists in L",
+            "ok": false,
+            "reason": "NO_REACH"
+          },
+          "presence": {
+            "calibrated": false,
+            "detail": "no fix symbol exists in L",
+            "gates": {
+              "C1": {
+                "detail": "2 stable failing ids on U⁻",
+                "ok": true,
+                "reason": null
+              },
+              "C2": {
+                "detail": "",
+                "ok": true,
+                "reason": null
+              },
+              "C3": {
+                "detail": "no fix symbol exists in L",
+                "ok": false,
+                "reason": "NO_REACH"
+              }
+            },
+            "reason": "NO_REACH",
+            "verdict": "UNPROVEN"
+          }
+        },
+        {
+          "probe_attempt": 3,
+          "probe_sha": "8731fa1ed4487ade9ae11081fb52e781cf50ba8d25f3675ed795a5621232a6be",
+          "model": "claude-sonnet-4.6",
+          "cost_usd": 0.042129,
+          "run_id": "20261011T093132Z-c1b0",
+          "tests_py": "import django\nfrom django.core.exceptions import ValidationError\nfrom django.test import SimpleTestCase\n\n\ndef _get_domain_name_validator():\n    \"\"\"Return DomainNameValidator class or None if not available.\"\"\"\n    try:\n        from django.core.validators import DomainNameValidator\n        return DomainNameValidator\n    except ImportError:\n        return None\n\n\nclass DomainNameValidatorNewlineInjectionTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection attacks.\n\n    On Django 4.2, DomainNameValidator does not exist at all, which means\n    there is no protection — the vulnerability is present (probe FAILs).\n    On vulnerable Django 5.x, the validator exists but accepts newlines (FAIL).\n    On fixed Django 5.x, the validator rejects newlines (PASS).\n    \"\"\"\n\n    def _assert_validator_rejects_newline(self, value, validator):\n        \"\"\"Assert that the validator raises ValidationError for the given value.\"\"\"\n        raised = False\n        try:\n            validator(value)\n        except ValidationError:\n            raised = True\n        return raised\n\n    def test_domain_name_validator_exists(self):\n        \"\"\"\n        DomainNameValidator must exist. On Django 4.2 it does not exist,\n        which means header injection protection is absent — vulnerability present.\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"header injection protection via this validator is absent — \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n\n    def test_newline_lf_rejected(self):\n        \"\"\"\n        DomainNameValidator must reject 'example.com\\\\n' (LF injection).\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n        validator = DomainNameValidator()\n        raised = self._assert_validator_rejects_newline(\"example.com\\n\", validator)\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\n' without raising \"\n            \"ValidationError — newline (LF) injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected(self):\n        \"\"\"\n        DomainNameValidator must reject 'example.com\\\\r\\\\n' (CRLF injection).\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n        validator = DomainNameValidator()\n        raised = self._assert_validator_rejects_newline(\"example.com\\r\\n\", validator)\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\r\\\\n' without raising \"\n            \"ValidationError — CRLF injection is possible.\"\n        )\n\n    def test_newline_lf_rejected_no_idna(self):\n        \"\"\"\n        DomainNameValidator(accept_idna=False) must reject 'example.com\\\\n'.\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n        validator = DomainNameValidator(accept_idna=False)\n        raised = self._assert_validator_rejects_newline(\"example.com\\n\", validator)\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\n' \"\n            \"without raising ValidationError — newline (LF) injection is possible.\"\n        )\n",
+          "l_runs": [
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present."
+              }
+            },
+            {
+              "outcome": "FAIL",
+              "failing_ids": [
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna"
+              ],
+              "details": {
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; header injection protection via this validator is absent — the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
+                "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present."
+              }
+            }
+          ],
+          "mapped": [
+            {
+              "body_lines_hit": 0,
+              "how": "absent",
+              "l_lines": null,
+              "l_path": null,
+              "qualname": "DomainNameValidator.__init__",
+              "um_path": "django/core/validators.py"
+            }
+          ],
+          "reach": {
+            "detail": "no fix symbol exists in L",
+            "ok": false,
+            "reason": "NO_REACH"
+          },
+          "presence": {
+            "calibrated": false,
+            "detail": "no fix symbol exists in L",
+            "gates": {
+              "C1": {
+                "detail": "2 stable failing ids on U⁻",
+                "ok": true,
+                "reason": null
+              },
+              "C2": {
+                "detail": "",
+                "ok": true,
+                "reason": null
+              },
+              "C3": {
+                "detail": "no fix symbol exists in L",
+                "ok": false,
+                "reason": "NO_REACH"
+              }
+            },
+            "reason": "NO_REACH",
+            "verdict": "UNPROVEN"
+          }
+        }
+      ]
     },
     {
-      "probe_attempt": 2,
-      "probe_sha": "deb3a5e92142af113b3534e3b4c0e37c529e81df0800de55cfd57a3e7a6a0fa9",
-      "model": "claude-sonnet-4.6",
-      "cost_usd": 0.040413,
-      "run_id": "20261011T093132Z-c1b0",
-      "tests_py": "import django\nfrom django.test import SimpleTestCase\nfrom django.core.exceptions import ValidationError\n\n\nclass DomainNameValidatorNewlineRejectionTests(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection attacks.\n\n    On Django 4.2, DomainNameValidator does not exist at all, which means\n    there is no protection — the probe fails with AssertionError.\n    On a vulnerable 5.2 build, the validator exists but accepts newlines —\n    the probe also fails with AssertionError.\n    On the fixed build, the validator exists and raises ValidationError for\n    newline-containing inputs — the probe passes.\n    \"\"\"\n\n    def _get_validator_class(self):\n        \"\"\"\n        Return DomainNameValidator if available, else raise AssertionError\n        to signal that the protection is absent (vulnerable Django 4.2).\n        \"\"\"\n        try:\n            from django.core.validators import DomainNameValidator\n            return DomainNameValidator\n        except ImportError:\n            raise AssertionError(\n                \"DomainNameValidator does not exist in this Django version \"\n                f\"({django.get_version()}); header injection protection via \"\n                \"this validator is absent — the vulnerability is present.\"\n            )\n\n    def test_newline_lf_rejected(self):\n        \"\"\"DomainNameValidator must raise ValidationError for 'example.com\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\n' without raising \"\n            \"ValidationError — newline (LF) injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected(self):\n        \"\"\"DomainNameValidator must raise ValidationError for 'example.com\\\\r\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator()\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\r\\\\n' without raising \"\n            \"ValidationError — newline (CRLF) injection is possible.\"\n        )\n\n    def test_newline_lf_rejected_no_idna(self):\n        \"\"\"DomainNameValidator(accept_idna=False) must reject 'example.com\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\n' \"\n            \"without raising ValidationError — newline (LF) injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected_no_idna(self):\n        \"\"\"DomainNameValidator(accept_idna=False) must reject 'example.com\\\\r\\\\n'.\"\"\"\n        DomainNameValidator = self._get_validator_class()\n        validator = DomainNameValidator(accept_idna=False)\n        raised = False\n        try:\n            validator(\"example.com\\r\\n\")\n        except ValidationError:\n            raised = True\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\r\\\\n' \"\n            \"without raising ValidationError — newline (CRLF) injection is possible.\"\n        )\n",
-      "l_runs": [
+      "phase": "attempt 2: with the missing-API rule (b3d762c)",
+      "logs": "/home/ubuntu/heirloom/work-b/archive/CVE-2026-53878-4.2.30-attempt2",
+      "total_cost_usd": 0.099408,
+      "observation": "The porter now imports DomainNameValidator at module level; on 4.2.30 the probe ERRORs with 'ImportError: cannot import name DomainNameValidator from django.core.validators' (seen in the run logs). The classifier recorded no message because the _FailedTest section name is dotted (hl_cve_2026_53878.tests), so the absent gate saw 'probe ERRORs on L without an error message' and the verdict stayed UNPROVEN/PROBE_ERROR. Two feedback retries produced the same probe.",
+      "attempts": [
         {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna"
+          "probe_attempt": 1,
+          "probe_sha": "da44de536388142c54289f6df3e384c56dd96f3c24af8e9dc547377f863c7484",
+          "model": "claude-sonnet-4.6",
+          "cost_usd": 0.029586,
+          "run_id": "20261011T093547Z-7ed3",
+          "tests_py": "from django.core.validators import DomainNameValidator, validate_domain_name\nfrom django.core.exceptions import ValidationError\nfrom django.test import SimpleTestCase\n\n\nclass DomainNameValidatorNewlineTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection.\n    \"\"\"\n\n    def test_validate_domain_name_rejects_newline(self):\n        \"\"\"validate_domain_name should raise ValidationError for 'example.com\\\\n'.\"\"\"\n        with self.assertRaises(ValidationError):\n            validate_domain_name(\"example.com\\n\")\n\n    def test_validate_domain_name_rejects_crlf(self):\n        \"\"\"validate_domain_name should raise ValidationError for 'example.com\\\\r\\\\n'.\"\"\"\n        with self.assertRaises(ValidationError):\n            validate_domain_name(\"example.com\\r\\n\")\n\n    def test_domain_name_validator_rejects_newline(self):\n        \"\"\"DomainNameValidator(accept_idna=False) must reject 'example.com\\\\n'.\"\"\"\n        validator = DomainNameValidator(accept_idna=False)\n        with self.assertRaises(ValidationError):\n            validator(\"example.com\\n\")\n\n    def test_domain_name_validator_rejects_crlf(self):\n        \"\"\"DomainNameValidator(accept_idna=False) must reject 'example.com\\\\r\\\\n'.\"\"\"\n        validator = DomainNameValidator(accept_idna=False)\n        with self.assertRaises(ValidationError):\n            validator(\"example.com\\r\\n\")\n",
+          "l_runs": [
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            },
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            },
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            }
           ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present."
-          }
-        },
-        {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna"
+          "mapped": [
+            {
+              "body_lines_hit": 0,
+              "how": "absent",
+              "l_lines": null,
+              "l_path": null,
+              "qualname": "DomainNameValidator.__init__",
+              "um_path": "django/core/validators.py"
+            }
           ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present."
-          }
-        },
-        {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna"
-          ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_crlf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineRejectionTests.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in this Django version (4.2.30); header injection protection via this validator is absent — the vulnerability is present."
-          }
-        }
-      ],
-      "mapped": [
-        {
-          "body_lines_hit": 0,
-          "how": "absent",
-          "l_lines": null,
-          "l_path": null,
-          "qualname": "DomainNameValidator.__init__",
-          "um_path": "django/core/validators.py"
-        }
-      ],
-      "reach": {
-        "detail": "no fix symbol exists in L",
-        "ok": false,
-        "reason": "NO_REACH"
-      },
-      "presence": {
-        "calibrated": false,
-        "detail": "no fix symbol exists in L",
-        "gates": {
-          "C1": {
-            "detail": "2 stable failing ids on U⁻",
-            "ok": true,
-            "reason": null
-          },
-          "C2": {
-            "detail": "",
-            "ok": true,
-            "reason": null
-          },
-          "C3": {
+          "reach": {
             "detail": "no fix symbol exists in L",
             "ok": false,
             "reason": "NO_REACH"
-          }
-        },
-        "reason": "NO_REACH",
-        "verdict": "UNPROVEN"
-      }
-    },
-    {
-      "probe_attempt": 3,
-      "probe_sha": "8731fa1ed4487ade9ae11081fb52e781cf50ba8d25f3675ed795a5621232a6be",
-      "model": "claude-sonnet-4.6",
-      "cost_usd": 0.042129,
-      "run_id": "20261011T093132Z-c1b0",
-      "tests_py": "import django\nfrom django.core.exceptions import ValidationError\nfrom django.test import SimpleTestCase\n\n\ndef _get_domain_name_validator():\n    \"\"\"Return DomainNameValidator class or None if not available.\"\"\"\n    try:\n        from django.core.validators import DomainNameValidator\n        return DomainNameValidator\n    except ImportError:\n        return None\n\n\nclass DomainNameValidatorNewlineInjectionTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection attacks.\n\n    On Django 4.2, DomainNameValidator does not exist at all, which means\n    there is no protection — the vulnerability is present (probe FAILs).\n    On vulnerable Django 5.x, the validator exists but accepts newlines (FAIL).\n    On fixed Django 5.x, the validator rejects newlines (PASS).\n    \"\"\"\n\n    def _assert_validator_rejects_newline(self, value, validator):\n        \"\"\"Assert that the validator raises ValidationError for the given value.\"\"\"\n        raised = False\n        try:\n            validator(value)\n        except ValidationError:\n            raised = True\n        return raised\n\n    def test_domain_name_validator_exists(self):\n        \"\"\"\n        DomainNameValidator must exist. On Django 4.2 it does not exist,\n        which means header injection protection is absent — vulnerability present.\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"header injection protection via this validator is absent — \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n\n    def test_newline_lf_rejected(self):\n        \"\"\"\n        DomainNameValidator must reject 'example.com\\\\n' (LF injection).\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n        validator = DomainNameValidator()\n        raised = self._assert_validator_rejects_newline(\"example.com\\n\", validator)\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\n' without raising \"\n            \"ValidationError — newline (LF) injection is possible.\"\n        )\n\n    def test_newline_crlf_rejected(self):\n        \"\"\"\n        DomainNameValidator must reject 'example.com\\\\r\\\\n' (CRLF injection).\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n        validator = DomainNameValidator()\n        raised = self._assert_validator_rejects_newline(\"example.com\\r\\n\", validator)\n        assert raised, (\n            \"DomainNameValidator accepted 'example.com\\\\r\\\\n' without raising \"\n            \"ValidationError — CRLF injection is possible.\"\n        )\n\n    def test_newline_lf_rejected_no_idna(self):\n        \"\"\"\n        DomainNameValidator(accept_idna=False) must reject 'example.com\\\\n'.\n        \"\"\"\n        DomainNameValidator = _get_domain_name_validator()\n        assert DomainNameValidator is not None, (\n            \"DomainNameValidator does not exist in Django {}; \"\n            \"the vulnerability is present.\".format(django.get_version())\n        )\n        validator = DomainNameValidator(accept_idna=False)\n        raised = self._assert_validator_rejects_newline(\"example.com\\n\", validator)\n        assert raised, (\n            \"DomainNameValidator(accept_idna=False) accepted 'example.com\\\\n' \"\n            \"without raising ValidationError — newline (LF) injection is possible.\"\n        )\n",
-      "l_runs": [
-        {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna"
-          ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present."
-          }
-        },
-        {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna"
-          ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present."
-          }
-        },
-        {
-          "outcome": "FAIL",
-          "failing_ids": [
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna"
-          ],
-          "details": {
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_domain_name_validator_exists": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; header injection protection via this validator is absent — the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_crlf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present.",
-            "hl_cve_2026_53878.tests.DomainNameValidatorNewlineInjectionTest.test_newline_lf_rejected_no_idna": "AssertionError: DomainNameValidator does not exist in Django 4.2.30; the vulnerability is present."
-          }
-        }
-      ],
-      "mapped": [
-        {
-          "body_lines_hit": 0,
-          "how": "absent",
-          "l_lines": null,
-          "l_path": null,
-          "qualname": "DomainNameValidator.__init__",
-          "um_path": "django/core/validators.py"
-        }
-      ],
-      "reach": {
-        "detail": "no fix symbol exists in L",
-        "ok": false,
-        "reason": "NO_REACH"
-      },
-      "presence": {
-        "calibrated": false,
-        "detail": "no fix symbol exists in L",
-        "gates": {
-          "C1": {
-            "detail": "2 stable failing ids on U⁻",
-            "ok": true,
+          },
+          "absent": {
+            "detail": "probe ERRORs on L without an error message",
+            "ok": false,
             "reason": null
           },
-          "C2": {
-            "detail": "",
-            "ok": true,
-            "reason": null
-          },
-          "C3": {
+          "presence": {
+            "calibrated": false,
+            "detail": "probe ERROR/TIMEOUT on L",
+            "gates": {
+              "C1": {
+                "detail": "2 stable failing ids on U⁻",
+                "ok": true,
+                "reason": null
+              },
+              "C2": {
+                "detail": "probe ERROR/TIMEOUT on L",
+                "ok": false,
+                "reason": "PROBE_ERROR"
+              },
+              "absent": {
+                "detail": "probe ERRORs on L without an error message",
+                "ok": false,
+                "reason": null
+              }
+            },
+            "reason": "PROBE_ERROR",
+            "verdict": "UNPROVEN"
+          }
+        },
+        {
+          "probe_attempt": 2,
+          "probe_sha": "481aeee54f4892deec397935ce132ed6fb5b688cba754e0c9440925b9e4a4746",
+          "model": "claude-sonnet-4.6",
+          "cost_usd": 0.037728,
+          "run_id": "20261011T093547Z-7ed3",
+          "tests_py": "from django.core.exceptions import ValidationError\nfrom django.core.validators import DomainNameValidator, validate_domain_name\nfrom django.test import SimpleTestCase\n\n\nclass DomainNameValidatorNewlineTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection.\n    \"\"\"\n\n    def test_validate_domain_name_rejects_lf(self):\n        \"\"\"validate_domain_name should raise ValidationError for domain with LF.\"\"\"\n        with self.assertRaises(ValidationError):\n            validate_domain_name(\"example.com\\n\")\n\n    def test_validate_domain_name_rejects_crlf(self):\n        \"\"\"validate_domain_name should raise ValidationError for domain with CRLF.\"\"\"\n        with self.assertRaises(ValidationError):\n            validate_domain_name(\"example.com\\r\\n\")\n\n    def test_domain_name_validator_instance_rejects_lf(self):\n        \"\"\"DomainNameValidator instance should raise ValidationError for LF.\"\"\"\n        validator = DomainNameValidator(accept_idna=False)\n        with self.assertRaises(ValidationError):\n            validator(\"example.com\\n\")\n\n    def test_domain_name_validator_instance_rejects_crlf(self):\n        \"\"\"DomainNameValidator instance should raise ValidationError for CRLF.\"\"\"\n        validator = DomainNameValidator(accept_idna=False)\n        with self.assertRaises(ValidationError):\n            validator(\"example.com\\r\\n\")\n",
+          "l_runs": [
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            },
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            },
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            }
+          ],
+          "mapped": [
+            {
+              "body_lines_hit": 0,
+              "how": "absent",
+              "l_lines": null,
+              "l_path": null,
+              "qualname": "DomainNameValidator.__init__",
+              "um_path": "django/core/validators.py"
+            }
+          ],
+          "reach": {
             "detail": "no fix symbol exists in L",
             "ok": false,
             "reason": "NO_REACH"
+          },
+          "absent": {
+            "detail": "probe ERRORs on L without an error message",
+            "ok": false,
+            "reason": null
+          },
+          "presence": {
+            "calibrated": false,
+            "detail": "probe ERROR/TIMEOUT on L",
+            "gates": {
+              "C1": {
+                "detail": "2 stable failing ids on U⁻",
+                "ok": true,
+                "reason": null
+              },
+              "C2": {
+                "detail": "probe ERROR/TIMEOUT on L",
+                "ok": false,
+                "reason": "PROBE_ERROR"
+              },
+              "absent": {
+                "detail": "probe ERRORs on L without an error message",
+                "ok": false,
+                "reason": null
+              }
+            },
+            "reason": "PROBE_ERROR",
+            "verdict": "UNPROVEN"
           }
         },
-        "reason": "NO_REACH",
-        "verdict": "UNPROVEN"
-      }
+        {
+          "probe_attempt": 3,
+          "probe_sha": "8b0135c50be4b374de495d267b28288bdf49e41985071315e09ffbe4f69e431c",
+          "model": "claude-sonnet-4.6",
+          "cost_usd": 0.032094,
+          "run_id": "20261011T093547Z-7ed3",
+          "tests_py": "from django.core.exceptions import ValidationError\nfrom django.core.validators import DomainNameValidator, validate_domain_name\nfrom django.test import SimpleTestCase\n\n\nclass DomainNameValidatorNewlineTest(SimpleTestCase):\n    \"\"\"\n    CVE-2026-53878: DomainNameValidator must reject domain names containing\n    newline characters to prevent HTTP header injection attacks.\n    \"\"\"\n\n    def test_validate_domain_name_rejects_lf(self):\n        \"\"\"validate_domain_name should raise ValidationError for LF in domain.\"\"\"\n        with self.assertRaises(ValidationError):\n            validate_domain_name(\"example.com\\n\")\n\n    def test_validate_domain_name_rejects_crlf(self):\n        \"\"\"validate_domain_name should raise ValidationError for CRLF in domain.\"\"\"\n        with self.assertRaises(ValidationError):\n            validate_domain_name(\"example.com\\r\\n\")\n\n    def test_domain_name_validator_instance_rejects_lf(self):\n        \"\"\"DomainNameValidator instance should raise ValidationError for LF.\"\"\"\n        validator = DomainNameValidator(accept_idna=False)\n        with self.assertRaises(ValidationError):\n            validator(\"example.com\\n\")\n\n    def test_domain_name_validator_instance_rejects_crlf(self):\n        \"\"\"DomainNameValidator instance should raise ValidationError for CRLF.\"\"\"\n        validator = DomainNameValidator(accept_idna=False)\n        with self.assertRaises(ValidationError):\n            validator(\"example.com\\r\\n\")\n",
+          "l_runs": [
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            },
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            },
+            {
+              "outcome": "ERROR",
+              "reason": "sections (0F/0E) disagree with 'FAILED (errors=1)'",
+              "failing_ids": [],
+              "details": {},
+              "harness_errors": []
+            }
+          ],
+          "mapped": [
+            {
+              "body_lines_hit": 0,
+              "how": "absent",
+              "l_lines": null,
+              "l_path": null,
+              "qualname": "DomainNameValidator.__init__",
+              "um_path": "django/core/validators.py"
+            }
+          ],
+          "reach": {
+            "detail": "no fix symbol exists in L",
+            "ok": false,
+            "reason": "NO_REACH"
+          },
+          "absent": {
+            "detail": "probe ERRORs on L without an error message",
+            "ok": false,
+            "reason": null
+          },
+          "presence": {
+            "calibrated": false,
+            "detail": "probe ERROR/TIMEOUT on L",
+            "gates": {
+              "C1": {
+                "detail": "2 stable failing ids on U⁻",
+                "ok": true,
+                "reason": null
+              },
+              "C2": {
+                "detail": "probe ERROR/TIMEOUT on L",
+                "ok": false,
+                "reason": "PROBE_ERROR"
+              },
+              "absent": {
+                "detail": "probe ERRORs on L without an error message",
+                "ok": false,
+                "reason": null
+              }
+            },
+            "reason": "PROBE_ERROR",
+            "verdict": "UNPROVEN"
+          }
+        }
+      ]
     }
-  ]
+  ],
+  "total_cost_usd": 0.2223
 }

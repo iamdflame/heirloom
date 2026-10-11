@@ -300,8 +300,14 @@ def test_no_porter_retry_when_no_fix_symbol_exists_on_l() -> None:
 
     runs = [{"outcome": "FAIL", "details": {}, "harness_errors": []}]
     cal: dict[str, Any] = {"um": runs, "up": runs, "lt": runs}
-    no_reach = Presence("UNPROVEN", "NO_REACH", {}, "no fix symbol exists in L")
+    c1 = {"C1": Gate(True)}
+    no_reach = Presence("UNPROVEN", "NO_REACH", c1, "no fix symbol exists in L")
+    error_on_l = Presence("UNPROVEN", "PROBE_ERROR", c1, "probe ERROR/TIMEOUT on L")
     absent = [{"how": "absent", "qualname": "DomainNameValidator.__init__"}]
-    assert feedback_for({**cal, "mapped": absent}, no_reach) is None
     present = [*absent, {"how": "same-path", "qualname": "URLValidator.__call__"}]
-    assert feedback_for({**cal, "mapped": present}, no_reach) is not None
+    for verdict in (no_reach, error_on_l):
+        assert feedback_for({**cal, "mapped": absent}, verdict) is None
+        assert feedback_for({**cal, "mapped": present}, verdict) is not None
+    # Without C1 the probe itself is broken on U⁻/U⁺: the porter still gets feedback.
+    no_c1 = Presence("UNPROVEN", "NON_DISCRIMINATING", {"C1": Gate(False)}, "no FAIL on U⁻")
+    assert feedback_for({**cal, "mapped": absent}, no_c1) is not None
