@@ -171,6 +171,67 @@ def backtest(
 
 
 @app.command()
+def detections(
+    create: bool = typer.Option(False, help="Create the five §5 conditional detections."),
+    delete_s4: bool = typer.Option(False, help="Delete the two S4 test detections."),
+    report: bool = typer.Option(True, help="Write hits/trends + local mirror to evals/."),
+) -> None:
+    """neatlogs detections: create, clean up, and report (with the ledger's local mirror)."""
+    import time
+
+    from heirloom.integrations import neatlogs_api as api
+
+    s = config.load()
+    client = api.Api(s)
+    if create:
+        existing = {d["displayName"] for d in client.detections()}
+        for name, rules in api.definitions().items():
+            if name in existing:
+                typer.echo(f"exists: {name}")
+                continue
+            code, _ = client.create(name, rules)
+            typer.echo(f"create {name}: {code}")
+    if delete_s4:
+        for det in api.S4_TEST_DETECTIONS:
+            code, _ = client.delete(det)
+            typer.echo(f"delete {det}: {code}")
+    if report:
+        now = time.time()
+        start = time.strftime("%Y-%m-%dT%H:00:00Z", time.gmtime(now - 86400))
+        end = time.strftime("%Y-%m-%dT%H:00:00Z", time.gmtime(now + 3600))
+        remote = {
+            d["displayName"]: {
+                "id": d["id"],
+                "hits": client.hits(d["id"]),
+                "trends": client.trends(d["id"], start, end),
+            }
+            for d in client.detections()
+            if d["displayName"] in api.definitions()
+        }
+        ledger = Ledger(s.ledger_path)
+        local: dict[str, int] = {}
+        for h in ledger.hits():
+            local[h["detection"]] = local.get(h["detection"], 0) + 1
+        ledger.close()
+        out = {
+            "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "field_template": api.field("{name}"),
+            "neatlogs": remote,
+            "local_mirror": {name: local.get(name, 0) for name in api.definitions()},
+        }
+        path = s.root / "evals" / "detections.json"
+        path.write_text(json.dumps(out, indent=2) + "\n")
+        typer.echo(
+            json.dumps(
+                {
+                    "neatlogs_hits": {k: v["hits"] for k, v in remote.items()},
+                    "local_mirror": out["local_mirror"],
+                }
+            )
+        )
+
+
+@app.command()
 def status(cve_id: str = typer.Argument(..., metavar="CVE"), line: str = "4.2") -> None:
     """Show the ledger for a CVE × line."""
     ledger = Ledger(config.load().ledger_path)

@@ -1,0 +1,99 @@
+{
+  "spike_1b": {
+    "at": "2026-10-11T08:49:25Z",
+    "run": "20261011T084714Z-e852",
+    "line": "eval-4.2.30",
+    "trace_id": "b6559615d4bf0ae0293c983757ac0b99",
+    "finalization": "finalized",
+    "spans": 12,
+    "span_types": [
+      "WORKFLOW",
+      "TOOL",
+      "GUARDRAIL",
+      "AGENT",
+      "LLM"
+    ],
+    "settings": {
+      "mask_max_bytes": 16384,
+      "openinference_hide_inputs_outputs": true,
+      "pii_span_types": [
+        "TOOL",
+        "GUARDRAIL",
+        "CHAIN",
+        "WORKFLOW"
+      ]
+    }
+  },
+  "detection_field_probes": {
+    "at": "2026-10-11T09:19:06Z",
+    "note": "Conditional detections on span_name=presence spans emitted by backtest/eval runs after creation.",
+    "results": [
+      {
+        "field": "heirloom.stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "attributes.heirloom.stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "status (built-in, = OK)",
+        "rule": "= 'OK'",
+        "runOn": "span_name=presence",
+        "hits": 23
+      },
+      {
+        "field": "span.attributes.heirloom.stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "metadata.heirloom.stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "heirloom_stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "attributes[\"heirloom.stage\"]",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "span_attributes.heirloom.stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "custom_attributes.heirloom.stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "attributes.heirloom_stage",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      },
+      {
+        "field": "name",
+        "rule": "= 'presence'",
+        "runOn": "span_name=presence",
+        "hits": 0
+      }
+    ]
+  }
+}
