@@ -187,6 +187,7 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
     spent = 0.0
     router = Router(s, Budget(budget_usd, lambda: spent))
     conflicts: list[str] = []
+    failed: list[str] = []
     for sha in fixes:
         proc = subprocess.run(
             ["git", "-C", str(tree), "cherry-pick", "-n", "-X", "patience", sha],
@@ -203,11 +204,15 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
                     git(tree, "rm", "-q", "-f", "--", path, check=False)
                 continue
             text = (tree / path).read_text()
-            res = router.complete(
-                s.adapt_model,
-                [{"role": "user", "content": V1_PROMPT.format(path=path, text=text[:150_000])}],
-                max_tokens=16000,
-            )
+            try:
+                res = router.complete(
+                    s.adapt_model,
+                    [{"role": "user", "content": V1_PROMPT.format(path=path, text=text[:150_000])}],
+                    max_tokens=16000,
+                )
+            except Exception as exc:  # e.g. the gateway 5xx-ing on a whole-file rewrite
+                failed.append(f"{path}: {str(exc).splitlines()[0][:160]}")
+                continue
             spent += res.cost_usd
             m = re.search(r"```(?:python)?\n(.*?)```", res.text, re.S)
             if m:
@@ -237,9 +242,12 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
         )
         own = r.outcome
     verdict = "AFFECTED" if patch.strip() else "NOT_AFFECTED"
+    if failed:
+        verdict = "ERROR"  # v1 could not produce a patch; excluded from accuracy
     out: dict[str, Any] = {
         "verdict": verdict,
-        "reason": "NONE",
+        "reason": "LLM_RESOLUTION_FAILED" if failed else "NONE",
+        "resolution_failures": failed,
         "own_upstream_tests": own,
         "conflicts": conflicts,
         "escalated": False,
@@ -247,7 +255,9 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
         "cost_unknown": False,
         "minutes": round((time.monotonic() - start) / 60, 2),
     }
-    if case.kind == "positive" and patch.strip():
+    if case.kind == "positive" and failed:
+        out["fellows_test_passes"], out["fellows_test_detail"] = False, "no usable v1 patch"
+    elif case.kind == "positive" and patch.strip():
         ok, detail = fellows_test_passes(s, case, patch, work)
         out["fellows_test_passes"], out["fellows_test_detail"] = ok, detail
     return out
@@ -257,7 +267,7 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
 
 
 def correct(case: Case, verdict: str) -> bool | None:
-    if verdict == "UNPROVEN" or verdict == "SKIPPED":
+    if verdict in ("UNPROVEN", "SKIPPED", "ERROR"):
         return None
     if case.truth == "AFFECTED":
         return verdict == "AFFECTED"
