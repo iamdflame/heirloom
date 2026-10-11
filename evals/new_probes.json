@@ -166,5 +166,31 @@
       }
     ],
     "ledger_cost_usd": 0.232941
+  },
+  {
+    "cve": "CVE-2026-15307",
+    "line": "4.2.30",
+    "run_id": "20261011T140513Z-42de",
+    "verdict": "UNPROVEN",
+    "reason": "PROBE_ERROR",
+    "detail": "probe ERROR/TIMEOUT on U\u207b",
+    "attempts": [
+      {
+        "probe": "f107603cb5235d209e8145b7ac4cdf66640d8e6fea3e264533a6bb78cbce9eba",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      },
+      {
+        "probe": "5802954c4f578da4841d7e292fcd7fd6dd2a1c98e84464f2318319e3817ae2dc",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      },
+      {
+        "probe": "dd2d93038460815eccbfe74ff78d5bba26d063db8e4dd598b3df3c0c4c043670",
+        "verdict": "UNPROVEN",
+        "reason": "PROBE_ERROR"
+      }
+    ],
+    "ledger_cost_usd": 0.210885
   }
 ]
