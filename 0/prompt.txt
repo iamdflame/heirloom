@@ -1,0 +1,35 @@
+You are running HEADLESS: nobody can answer you mid-run, so never wait for input. Make reasonable decisions within the brief, record each one in hackathon.md, and keep going.
+
+Before anything else: run `entire session current` and `entire status`. If the session id shown is f5117257-5211-42ae-823c-32aa228a28d9, or no session is shown, stop immediately and print why.
+
+Read ~/brief/BUILD-BRIEF.md §10.5, §10.6 and §11 (§11 = today's fixes; it overrides). Work in this order, respecting the time boxes:
+
+0. (≤45 min total) Quick fixes from §11:
+   (a) cost accounting from provider-reported cost (OpenRouter usage.cost with usage:{include:true}; claude -p total_cost_usd);
+   (b) coverage concurrency=thread for C3 reach, then re-run only the CVE-2026-3902 backtest pair and update evals/results.json and the README table via the render script;
+   (c) neatlogs flag spans + span-name detections: create the five, delete the two S4 test detections, then confirm that a v1-style flag span produces a hit.
+1. (core, ≤3.5 h) `heirloom campaign --line 4.2 --replay` over all 19 post-EOL CVEs per §10.5:
+   - porter + calibration for the CVEs that have no calibrated probe yet;
+   - ADAPT/VERIFY for AFFECTED ones;
+   - one PR per CVE on my fork;
+   - evidence issues on iamdflame/heirloom for NOT_AFFECTED_PROVEN and UNPROVEN;
+   - the CVE-2026-87890 → CVE-2026-15307 supersession and the CVE-2026-15830 follow-up handled on our own branches/PRs (if stacking runs over its time box, fall back to an annotated dependency note on both PRs);
+   - the `/heirloom answer` poller.
+   When the first genuine question opens as an issue, do not wait. Continue with every CVE that does not depend on its answer. At the very end, print the issue link prominently so I can answer it; I will resume you afterwards to apply it.
+   Keep one real recovery (kill mid-adapt or a test timeout) with its trace.
+2. (≤30 min) Re-run the matrix so the new calibrated probes also cover debian-trixie and ubuntu-noble → evals/matrix.json. Then run `heirloom export --out site/data/` and make sure `heirloom serve` starts (JSON only, no UI).
+
+Budget: the LiteLLM key is exhausted. Overflow to my OpenRouter key is approved up to the existing $25 total cap. Cap THIS campaign at $18 of overflow (keep ~$3 in reserve), using provider-reported costs, and stop cleanly before crossing it. Order the replay so the story CVEs run first: CVE-2026-15307, CVE-2026-87890, CVE-2026-15830, CVE-2026-53878, then the rest. Use the cheapest model that passes the gates for the porter; keep the stronger model for ADAPT. No more PRs for CVE-2026-87975; never `clean --remote`.
+
+Commit in small steps with real messages; push to main as you go; keep pytest, ruff and mypy --strict green.
+
+Finish with:
+- `entire status`, `entire checkpoint list`, and `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- a dated hackathon.md entry (only runs that happened; numbers from the JSON files);
+- a final summary that includes:
+  - campaign numbers per verdict;
+  - PR and issue links;
+  - the question link if any;
+  - overflow spent;
+  - whether these commits carry Entire-Checkpoint trailers;
+  - anything you need from me.

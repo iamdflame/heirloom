@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PBNQ7NQQAXAZADG1G2B7HH",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "evals/l0.py",
+    "evals/render_readme.py",
+    "heirloom/backtest.py",
+    "heirloom/integrations/entire.py",
+    "heirloom/models/router.py",
+    "heirloom/pipeline/adapt.py",
+    "heirloom/pipeline/probe.py",
+    "tests/test_overflow.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 80,
+    "cache_creation_tokens": 152916,
+    "cache_read_tokens": 4170641,
+    "output_tokens": 28456,
+    "api_call_count": 40
+  }
+}
