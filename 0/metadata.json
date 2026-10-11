@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PCS36DJ492QXQRC4N0KR9X",
+  "session_id": "225b7a56-c495-4dd8-b388-71381b6416ff",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-11T21:09:27.670597684Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "heirloom/answers.py",
+    "heirloom/campaign.py",
+    "heirloom/integrations/github.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "faa4930c41eb",
+  "checkpoint_transcript_start": 518,
+  "transcript_lines_at_start": 518,
+  "compact_transcript_start": 103,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 12606,
+    "cache_read_tokens": 2362370,
+    "output_tokens": 5107,
+    "api_call_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-11T21:09:27.564174007Z",
+    "agent_lines": 18,
+    "agent_removed": 19,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 18,
+    "total_lines_changed": 37,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
