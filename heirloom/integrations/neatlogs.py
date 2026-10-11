@@ -4,7 +4,11 @@ Verified against SDK 1.4.26 on 2026-10-11 (see docs/spikes.md):
 * only a WORKFLOW root finalizes; AGENT/CHAIN roots stay pending or dead-letter;
 * ``identify()`` has no ``parent_session_id``: the campaign link is a tag plus
   the ``heirloom.campaign_id`` attribute;
-* the gateway reports zero cost, so ``heirloom.cost_usd`` is set explicitly.
+* the gateway reports zero cost, so ``heirloom.cost_usd`` is set explicitly;
+* large attributes (the ~120 KB porter prompt) are suspected of stalling
+  server-side PII redaction, so (§10.2) a ``mask`` truncates every string
+  attribute over 16 KB, LLM span inputs/outputs are not captured (prompts live in
+  the run artifacts) and PII redaction is limited to non-LLM/AGENT span types.
 
 Every stage span carries all §5 attributes with explicit values (no empty
 strings), and the five detection predicates are evaluated locally so the
@@ -13,6 +17,7 @@ before/after numbers never depend on ingestion timing.
 
 from __future__ import annotations
 
+import hashlib
 import os
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
@@ -20,6 +25,42 @@ from dataclasses import dataclass, field
 from typing import Any
 
 Attr = str | bool | int | float
+
+MAX_ATTR_BYTES = 16 * 1024
+# Span types that keep server-side PII redaction; LLM and AGENT spans are excluded.
+PII_SPAN_TYPES = ["TOOL", "GUARDRAIL", "CHAIN", "WORKFLOW"]
+
+
+def truncate_value(value: Any) -> Any:
+    if not isinstance(value, str):
+        return value
+    raw = value.encode()
+    if len(raw) <= MAX_ATTR_BYTES:
+        return value
+    digest = hashlib.sha256(raw).hexdigest()
+    head = raw[:MAX_ATTR_BYTES].decode(errors="ignore")
+    return f"{head}…[truncated {len(raw) - MAX_ATTR_BYTES} bytes sha256={digest}]"
+
+
+def mask(span: dict[str, Any]) -> dict[str, Any]:
+    """Truncate string attributes over 16 KB on the span and its events.
+
+    Always returns the dict: returning None would make the SDK drop the span.
+    """
+    try:
+        attrs = span.get("attributes")
+        if isinstance(attrs, dict):
+            for k, v in list(attrs.items()):
+                attrs[k] = truncate_value(v)
+        for event in span.get("events") or []:
+            ev = event.get("attributes") if isinstance(event, dict) else None
+            if isinstance(ev, dict):
+                for k, v in list(ev.items()):
+                    ev[k] = truncate_value(v)
+    except Exception:  # a mask must never cost us the span
+        pass
+    return span
+
 
 ATTR_DEFAULTS: dict[str, Attr] = {
     "cve": "NONE",
@@ -120,10 +161,19 @@ class Telemetry:
     def init(self, api_key: str, tags: list[str]) -> None:
         if not api_key or os.environ.get("HEIRLOOM_NO_TELEMETRY"):
             return
+        # OpenInference's default TraceConfig reads these: no prompt/response content
+        # on LiteLLM (porter) spans. Full prompts are kept in the run artifacts.
+        os.environ.setdefault("OPENINFERENCE_HIDE_INPUTS", "true")
+        os.environ.setdefault("OPENINFERENCE_HIDE_OUTPUTS", "true")
         import neatlogs
 
         neatlogs.init(
-            api_key=api_key, workflow_name="heirloom", instrumentations=["litellm"], tags=tags
+            api_key=api_key,
+            workflow_name="heirloom",
+            instrumentations=["litellm"],
+            tags=tags,
+            mask=mask,
+            pii_span_types=PII_SPAN_TYPES,
         )
         self._nl = neatlogs
         self.enabled = True

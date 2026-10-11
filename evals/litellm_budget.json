@@ -1,0 +1,23 @@
+{
+  "snapshots": [
+    {
+      "at": "2026-10-11T08:42:54Z",
+      "endpoint": "https://litellm.vision.aivar.app/key/info",
+      "spend": 2.964089920000001,
+      "max_budget": 20.0,
+      "budget_duration": "30d",
+      "budget_reset_at": "2026-11-01T00:00:00+00:00",
+      "rpm_limit": 60,
+      "models": [
+        "nova-micro",
+        "nova-lite",
+        "nova-pro",
+        "nova-2-lite",
+        "claude-haiku",
+        "claude-sonnet-4.6",
+        "claude-opus-4.6"
+      ],
+      "remaining": 17.0359
+    }
+  ]
+}
