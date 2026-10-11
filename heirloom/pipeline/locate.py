@@ -47,7 +47,8 @@ def advisory_text(ctx: Ctx, fix: str, title: str) -> str:
 def run(ctx: Ctx) -> dict[str, Any]:
     def body(span: StageSpan) -> dict[str, Any]:
         git(ctx.repo, "fetch", "-q", "origin", "main")
-        git(ctx.repo, "fetch", "-q", ctx.s.fork_remote, ctx.spec.base_branch)
+        if ctx.spec.publish and ctx.spec.base_branch:
+            git(ctx.repo, "fetch", "-q", ctx.s.fork_remote, ctx.spec.base_branch)
         archive_ref = rev_parse(ctx.repo, "origin/main")
         advisories = load(ctx.repo, archive_ref)
         if ctx.cve not in advisories:
@@ -66,9 +67,14 @@ def run(ctx: Ctx) -> dict[str, Any]:
             raise StageFailed(f"{fix[:10]} changes no django/ files")
         um = rev_parse(ctx.repo, f"{fix}^")
         tip = rev_parse(ctx.repo, ctx.spec.tip)
-        base = rev_parse(ctx.repo, f"{ctx.s.fork_remote}/{ctx.spec.base_branch}")
-        if not is_ancestor(ctx.repo, tip, base):
-            raise StageFailed(f"{ctx.spec.base_branch} does not contain the line tip {tip[:10]}")
+        if ctx.spec.publish and ctx.spec.base_branch:
+            base = rev_parse(ctx.repo, f"{ctx.s.fork_remote}/{ctx.spec.base_branch}")
+            if not is_ancestor(ctx.repo, tip, base):
+                raise StageFailed(
+                    f"{ctx.spec.base_branch} does not contain the line tip {tip[:10]}"
+                )
+        else:
+            base = tip  # non-publishing lines work on the tip itself, never the fork
         merge_base = git(ctx.repo, "merge-base", um, tip).strip()
         subject = message.splitlines()[0]
         span.set("claim_id", f"{ctx.cve}/{ctx.line}/locate")

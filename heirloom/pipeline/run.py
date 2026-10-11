@@ -5,6 +5,7 @@ VERIFY → BEHAVIOUR → DECIDE → PUBLISH. Resumable: every stage goes through
 from __future__ import annotations
 
 import fcntl
+import json
 import os
 import secrets
 import time
@@ -14,7 +15,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from heirloom.config import LINES, Settings
+from heirloom import guard
+from heirloom.config import LineSpec, Settings
 from heirloom.integrations.neatlogs import Telemetry
 from heirloom.ledger import ConcurrentRunError, Ledger, PausedForReconcile
 from heirloom.pipeline import adapt, behaviour, calibrate, decide, locate, probe, publish, verify
@@ -112,6 +114,12 @@ def pipeline(ctx: Ctx) -> Result:
         verdict=pres["verdict"],
         reason=str(pres["reason"] or "NONE"),
     )
+    if not ctx.spec.publish:
+        base.status = "evaluated"
+        base.message = f"{ctx.spec.kind} line: decision {dec['decision']}; nothing published"
+        if ad is not None and ver is not None:
+            base.message += f"; fix verified={ver['ok']}"
+        return base
     if dec["decision"] == "waiting_human":
         base.status, base.message = "waiting_human", f"question: {dec.get('issue', '')}"
         return base
@@ -145,15 +153,15 @@ def pipeline(ctx: Ctx) -> Result:
     return base
 
 
-def execute(s: Settings, cve: str, line: str, run_id: str | None = None) -> Result:
-    spec = LINES[line]
+def execute(s: Settings, cve: str, spec: LineSpec, run_id: str | None = None) -> Result:
+    line = spec.name
     with lock(s.work / "locks" / f"{cve}-{line}.lock"):
         ledger = Ledger(s.ledger_path)
         if run_id is None:
             latest = ledger.latest_run(cve, line)
             unfinished = latest is not None and latest["status"] not in ("done", "waiting_human")
             run_id = latest["run_id"] if latest is not None and unfinished else new_run_id()
-        ledger.start_run(run_id, cve, line)
+        ledger.start_run(run_id, cve, line, json.dumps(spec.to_json()))
         campaign = f"single-{run_id}"
         tel = Telemetry()
         tel.init(
@@ -163,9 +171,10 @@ def execute(s: Settings, cve: str, line: str, run_id: str | None = None) -> Resu
         ctx = Ctx(s, ledger, tel, spec, cve, line, run_id, campaign_id=campaign)
         status = "failed"
         try:
-            with tel.cve_root(cve, line, run_id, campaign):
+            with tel.cve_root(cve, line, run_id, campaign), guard.publishing(spec):
                 result = pipeline(ctx)
-            status = "done" if result.status in ("published", "no_fix") else result.status
+            done = ("published", "no_fix", "evaluated")
+            status = "done" if result.status in done else result.status
             result.cost_usd = ledger.cost_total(cve, line)
             return result
         except (PausedForReconcile, Unresolvable) as exc:

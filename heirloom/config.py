@@ -3,38 +3,99 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from typing import Any, Literal
 
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
+LineKind = Literal["release", "eval", "distro"]
+
+
 @dataclass(frozen=True)
 class LineSpec:
-    """A target release line: its tip on the fork and the upstream branch whose fix we port."""
+    """A target line: a tip commit plus where its upstream fixes come from.
+
+    ``kind`` is ``release`` (the fork's maintained line), ``eval`` (backtest trees)
+    or ``distro`` (a distribution's patched tree). Only release lines may publish;
+    constructing an eval or distro line with ``publish=True`` is an error.
+    """
 
     name: str
-    tip: str  # last upstream release of the line
-    upstream: str  # branch label in security.txt whose fix commit we use
-    base_branch: str  # fork branch PRs target
+    tip: str  # commit-ish of the line's tip
+    upstream: str  # preferred security.txt branch series whose fix we port
+    base_branch: str | None = None  # fork branch PRs target (publishing lines only)
+    kind: LineKind = "release"
+    publish: bool = False
+    upstream_fallbacks: tuple[str, ...] = ()
+    # Extra regression labels per touched module, on top of the upstream test labels.
     test_labels: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        if self.kind not in ("release", "eval", "distro"):
+            raise ValueError(f"unknown line kind {self.kind!r}")
+        if self.publish and self.kind != "release":
+            raise ValueError(f"{self.kind} line {self.name!r} can never publish")
+        if self.publish and not self.base_branch:
+            raise ValueError(f"publishing line {self.name!r} needs a base_branch")
+
+    @property
+    def upstreams(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys((self.upstream, *self.upstream_fallbacks)))
+
+    def to_json(self) -> dict[str, Any]:
+        d = asdict(self)
+        d["upstream_fallbacks"] = list(self.upstream_fallbacks)
+        d["test_labels"] = {k: list(v) for k, v in self.test_labels.items()}
+        return d
+
+    @classmethod
+    def from_json(cls, d: dict[str, Any]) -> LineSpec:
+        return cls(
+            **{
+                **d,
+                "upstream_fallbacks": tuple(d.get("upstream_fallbacks", ())),
+                "test_labels": {k: tuple(v) for k, v in d.get("test_labels", {}).items()},
+            }
+        )
+
+
+DJANGO_42_LABELS: dict[str, tuple[str, ...]] = {
+    "django/forms/models.py": ("model_forms", "model_formsets", "inline_formsets"),
+    "django/utils/translation/": ("i18n",),
+}
 
 LINES: dict[str, LineSpec] = {
     "4.2": LineSpec(
         name="4.2",
         tip="3396992e837d5146270ea8112bb622c83fa4a919",  # tag 4.2.30
         upstream="5.2",
+        upstream_fallbacks=("5.1", "5.0"),
         base_branch="stable/4.2.x-heirloom",
-        # Extra regression labels per touched module, on top of the upstream test labels.
-        test_labels={
-            "django/forms/models.py": ("model_forms", "model_formsets", "inline_formsets"),
-            "django/utils/translation/": ("i18n",),
-        },
+        kind="release",
+        publish=True,
+        test_labels=DJANGO_42_LABELS,
     )
 }
+
+
+def runtime_line(name: str, tip: str, kind: LineKind, *, like: str = "4.2") -> LineSpec:
+    """A non-publishing line built at runtime (backtest trees, distro trees)."""
+    if kind == "release":
+        raise ValueError("runtime lines are eval or distro lines; release lines live in LINES")
+    base = LINES[like]
+    return LineSpec(
+        name=name,
+        tip=tip,
+        upstream=base.upstream,
+        upstream_fallbacks=base.upstream_fallbacks,
+        kind=kind,
+        publish=False,
+        test_labels=base.test_labels,
+    )
 
 
 @dataclass(frozen=True)

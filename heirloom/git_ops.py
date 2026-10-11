@@ -25,6 +25,14 @@ def git_ok(repo: Path, *args: str) -> bool:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True).returncode == 0
 
 
+def push(repo: Path, *args: str) -> str:
+    """``git push`` behind the publishing guard (eval and distro lines never push)."""
+    from heirloom import guard
+
+    guard.check(f"git push {' '.join(args)}")
+    return git(repo, "push", *args)
+
+
 def rev_parse(repo: Path, ref: str) -> str:
     return git(repo, "rev-parse", "--verify", f"{ref}^{{commit}}").strip()
 

@@ -2,20 +2,33 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import sys
 
 import typer
 
-from heirloom import config
-from heirloom.git_ops import git, git_ok
+from heirloom import config, guard
+from heirloom.config import LINES, LineSpec, runtime_line
+from heirloom.git_ops import git, git_ok, push
 from heirloom.integrations import github
 from heirloom.ledger import Ledger
 from heirloom.pipeline.run import Result, execute
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 
-EXIT = {"published": 0, "no_fix": 0, "waiting_human": 2, "paused": 3}
+EXIT = {"published": 0, "no_fix": 0, "evaluated": 0, "waiting_human": 2, "paused": 3}
+
+
+def line_spec(line: str, tip: str | None, kind: str | None) -> LineSpec:
+    """A configured line by name, or a runtime eval/distro line when --tip is given."""
+    if tip is None:
+        if line not in LINES:
+            raise typer.BadParameter(f"unknown line {line!r}; pass --tip and --kind for a new one")
+        return LINES[line]
+    if kind not in ("eval", "distro"):
+        raise typer.BadParameter("runtime lines need --kind eval or --kind distro")
+    return runtime_line(line, tip, kind)  # type: ignore[arg-type]
 
 
 def _report(r: Result) -> int:
@@ -33,9 +46,14 @@ def _report(r: Result) -> int:
 
 
 @app.command()
-def cve(cve_id: str = typer.Argument(..., metavar="CVE"), line: str = "4.2") -> None:
-    """Bring one CVE to one release line (resumes an unfinished run of the same CVE)."""
-    raise typer.Exit(_report(execute(config.load(), cve_id, line)))
+def cve(
+    cve_id: str = typer.Argument(..., metavar="CVE"),
+    line: str = "4.2",
+    tip: str | None = typer.Option(None, help="Tip commit for a runtime (non-publishing) line."),
+    kind: str | None = typer.Option(None, help="eval or distro (with --tip)."),
+) -> None:
+    """Bring one CVE to one line (resumes an unfinished run of the same CVE and line)."""
+    raise typer.Exit(_report(execute(config.load(), cve_id, line_spec(line, tip, kind))))
 
 
 @app.command()
@@ -55,7 +73,12 @@ def resume(cve_id: str | None = typer.Argument(None, metavar="[CVE]"), line: str
     worst = 0
     for r in runs:
         typer.echo(f"resuming {r['cve']} on {r['line']} (run {r['run_id']}, was {r['status']})")
-        worst = max(worst, _report(execute(s, r["cve"], r["line"], run_id=r["run_id"])))
+        spec = (
+            LineSpec.from_json(json.loads(r["spec"]))
+            if r["spec"]
+            else line_spec(r["line"], None, None)
+        )
+        worst = max(worst, _report(execute(s, r["cve"], spec, run_id=r["run_id"])))
     raise typer.Exit(worst)
 
 
@@ -68,19 +91,11 @@ def clean(
     """Return a CVE × line to a clean state (run artifacts and checkpoints are kept)."""
     s = config.load()
     branch = f"heirloom/{cve_id.lower()}-{line}"
+    if remote and not (line in LINES and LINES[line].publish):
+        raise typer.BadParameter(f"--remote only applies to publishing lines, not {line!r}")
     if remote:
-        found = github.find_pr(s.fork, branch)
-        if found:
-            github.close_pr(
-                s.fork,
-                int(found["number"]),
-                "Closed by `heirloom clean --remote` for a clean-state rerun. The commit, its "
-                "Entire checkpoint and the run artifacts stay available.",
-            )
-            typer.echo(f"closed {found['url']}")
-        if git(s.django_repo, "ls-remote", s.fork_remote, f"refs/heads/{branch}").strip():
-            git(s.django_repo, "push", "-q", s.fork_remote, "--delete", branch)
-            typer.echo(f"deleted {s.fork}:{branch}")
+        with guard.publishing(LINES[line]):
+            _clean_remote(s, cve_id, branch)
     trees = s.cve_dir(cve_id, line) / "trees"
     if trees.exists():
         for t in sorted(trees.iterdir()):
@@ -93,6 +108,22 @@ def clean(
     ledger.clear(cve_id, line)
     ledger.close()
     typer.echo(f"clean: {cve_id} on {line}")
+
+
+def _clean_remote(s: config.Settings, cve_id: str, branch: str) -> None:
+    """Close the PR and delete the fork branch (only reachable for publishing lines)."""
+    found = github.find_pr(s.fork, branch)
+    if found:
+        github.close_pr(
+            s.fork,
+            int(found["number"]),
+            "Closed by `heirloom clean --remote` for a clean-state rerun. The commit, its "
+            "Entire checkpoint and the run artifacts stay available.",
+        )
+        typer.echo(f"closed {found['url']}")
+    if git(s.django_repo, "ls-remote", s.fork_remote, f"refs/heads/{branch}").strip():
+        push(s.django_repo, "-q", s.fork_remote, "--delete", branch)
+        typer.echo(f"deleted {s.fork}:{branch}")
 
 
 @app.command()

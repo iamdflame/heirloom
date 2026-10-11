@@ -168,6 +168,9 @@ class Ledger:
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.executescript(SCHEMA)
+        cols = {r["name"] for r in self.db.execute("PRAGMA table_info(runs)")}
+        if "spec" not in cols:  # line spec JSON, so `resume` can rebuild runtime lines
+            self.db.execute("ALTER TABLE runs ADD COLUMN spec TEXT")
         self.pid = os.getpid() if pid is None else pid
         self._pid_alive = pid_alive
 
@@ -186,14 +189,14 @@ class Ledger:
 
     # runs -----------------------------------------------------------------
 
-    def start_run(self, run_id: str, cve: str, line: str) -> None:
+    def start_run(self, run_id: str, cve: str, line: str, spec: str | None = None) -> None:
         with self._tx() as db:
             db.execute(
-                "INSERT INTO runs (run_id, cve, line, pid, host, started_at, status) "
-                "VALUES (?, ?, ?, ?, ?, ?, 'running') "
+                "INSERT INTO runs (run_id, cve, line, pid, host, started_at, status, spec) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'running', ?) "
                 "ON CONFLICT(run_id) DO UPDATE SET pid=excluded.pid, status='running', "
-                "finished_at=NULL",
-                (run_id, cve, line, self.pid, socket.gethostname(), time.time()),
+                "finished_at=NULL, spec=COALESCE(excluded.spec, runs.spec)",
+                (run_id, cve, line, self.pid, socket.gethostname(), time.time(), spec),
             )
 
     def finish_run(self, run_id: str, status: str) -> None:

@@ -56,6 +56,9 @@ def run(
 
     out = ctx.stage("decide", {"kind": kind, "verdict": pres["verdict"]}, body)
     if out["decision"] == "waiting_human":
+        if not ctx.spec.publish:
+            # Eval and distro lines never ask on GitHub; they record what they would ask.
+            return {**out, "decision": "would_ask"}
         out = {**out, "issue": ask(ctx, kind, scope, pres)}
     return out
 

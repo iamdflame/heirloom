@@ -14,6 +14,7 @@ from typing import Any
 
 from heirloom.claims import Claim, Link, SpanLink, render
 from heirloom.git_ops import git, git_ok
+from heirloom.git_ops import push as git_push
 from heirloom.integrations import entire, github
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.pipeline.context import Ctx, StageFailed, Unresolvable
@@ -101,7 +102,7 @@ def _ensure_checkpoint(ctx: Ctx, checkpoint: str | None) -> dict[str, str] | Non
         local = git(ctx.repo, "for-each-ref", "--format=%(refname)", "refs/entire/checkpoints/")
         ref = next((r for r in local.split() if r.endswith("/" + checkpoint)), None)
         if ref:
-            git(ctx.repo, "push", "-q", ctx.s.fork_remote, f"{ref}:{ref}")
+            git_push(ctx.repo, "-q", ctx.s.fork_remote, f"{ref}:{ref}")
             found = entire.checkpoint_ref(ctx.repo, ctx.s.fork_remote, checkpoint)
     return {"ref": found[0], "sha": found[1]} if found else None
 
@@ -130,7 +131,7 @@ def push(ctx: Ctx, committed: dict[str, Any]) -> dict[str, Any]:
         tree = ctx.tree_path("Lfix")
         entire.enable(tree, ctx.s.fork)  # asserts checkpoints sync to the fork
         if remote is None:
-            git(tree, "push", "-q", ctx.s.fork_remote, f"HEAD:refs/heads/{ctx.branch}")
+            git_push(tree, "-q", ctx.s.fork_remote, f"HEAD:refs/heads/{ctx.branch}")
         out = reconcile()
         if out is None:
             raise StageFailed("push reported success but the branch is not on the fork")
@@ -233,7 +234,7 @@ def artifacts(ctx: Ctx, pushed: dict[str, Any]) -> dict[str, Any]:
             "-m",
             f"Run artifacts: {ctx.cve} on {ctx.line}, run {ctx.run_id}",
         )
-        git(tree, "push", "-q", "origin", f"HEAD:refs/heads/{ctx.s.artifacts_branch}")
+        git_push(tree, "-q", "origin", f"HEAD:refs/heads/{ctx.s.artifacts_branch}")
         out = reconcile()
         if out is None:
             raise StageFailed("artifacts push reported success but the files are not on origin")
@@ -443,6 +444,7 @@ def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
             github.edit_pr_body(ctx.s.fork, int(existing["number"]), body_file)
             return {**existing, "claims_unlinked": unlinked, "reused": True}
         title = d["commit_subject"] + " (candidate backport)"
+        assert ctx.spec.base_branch is not None  # publishing lines always have one
         url = github.create_pr(ctx.s.fork, ctx.spec.base_branch, ctx.branch, title, body_file)
         found = reconcile()
         if found is None:
