@@ -1,0 +1,31 @@
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-35193@c55766703c: evidence UNPROVEN PROBE_ERROR https://github.com/iamdflame/heirloom/issues/5  $0.0
+[w2] CVE-2026-48587@c55766703c (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-48587@c55766703c (new) ...
+[w0] CVE-2026-6907@17b93fa081: harness_error     $0</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-6907@17b93fa081: harness_error     $0</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[Monitor expired after 10m with 9 events delivered. Re-arm it if you still need the watch.]</event>
+</task-notification>
