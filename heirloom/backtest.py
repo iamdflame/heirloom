@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from heirloom.config import Settings, runtime_line
-from heirloom.git_ops import commit_diff, ensure_worktree, git, parse_diff, rev_parse
+from heirloom.git_ops import commit_diff, ensure_worktree, git, git_ok, parse_diff, rev_parse
 from heirloom.ledger import Ledger
 from heirloom.models.router import Budget, Router
 from heirloom.pipeline.calibrate import symbols
@@ -197,8 +197,10 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
             continue
         for path in git(tree, "diff", "--name-only", "--diff-filter=U").split():
             conflicts.append(path)
-            if not path.endswith(".py"):
-                git(tree, "checkout", "--ours", "--", path)
+            if not path.endswith(".py") or not (tree / path).exists():
+                # Release notes etc. (or files 4.2 never had): keep 4.2's side, or drop.
+                if not git_ok(tree, "checkout", "--ours", "--", path):
+                    git(tree, "rm", "-q", "-f", "--", path, check=False)
                 continue
             text = (tree / path).read_text()
             res = router.complete(
