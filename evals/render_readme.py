@@ -26,6 +26,18 @@ def pct(x: float | None) -> str:
     return "n/a" if x is None else f"{100 * x:.0f}%"
 
 
+def cost_note(data: dict[str, Any]) -> str:
+    rows = [r for runs in data.get("runs", {}).values() for r in runs.values()]
+    priced = [r for r in rows if r.get("cost_usd")]
+    est = [r for r in priced if r.get("cost_estimated", True)]
+    return (
+        f"$ figures: {len(priced) - len(est)} of {len(priced)} priced cases use provider-reported "
+        f"cost (OpenRouter `usage.cost`, `claude -p` `total_cost_usd` on OpenRouter); the other "
+        f"{len(est)} are token × list-price estimates from the LiteLLM gateway, which billed "
+        "roughly twice that on 2026-10-11 (see hackathon.md), so treat those as lower bounds."
+    )
+
+
 def table(data: dict[str, Any]) -> str:
     rows = [
         "| Pipeline | Cases | Verdict accuracy (decided) | False NOT_AFFECTED | "
@@ -68,9 +80,8 @@ def table(data: dict[str, Any]) -> str:
     note = (
         f"\n_Set `{data.get('set')}`; rendered from [`evals/results.json`](evals/results.json) "
         "by `evals/render_readme.py`. Accuracy counts only decided cases; UNPROVEN means "
-        "Heirloom declined to claim either way and would ask a human. $ figures are "
-        "Heirloom's own token × list-price estimates; on 2026-10-11 the LiteLLM gateway "
-        "billed roughly twice that (see hackathon.md), so treat them as lower bounds._"
+        "Heirloom declined to claim either way and would ask a human. "
+        f"{cost_note(data)}_"
     )
     return "\n".join(rows) + note + "\n" + "\n".join(per_case)
 

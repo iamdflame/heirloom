@@ -144,6 +144,9 @@ def run_v2(s: Settings, case: Case) -> dict[str, Any]:
         r.key.stage == "adapt" and r.status == "failed" and "interrupted" in (r.error or "")
         for r in rows
     )
+    cost_estimated = any(
+        r.cost_usd > 0 and (r.output or {}).get("cost_estimated", True) for r in rows
+    )
     ledger.close()
     out: dict[str, Any] = {
         "verdict": result.verdict,
@@ -155,6 +158,7 @@ def run_v2(s: Settings, case: Case) -> dict[str, Any]:
         "reused_probe": reuse is not None,
         "cost_usd": round(result.cost_usd, 4),
         "cost_unknown": cost_unknown,
+        "cost_estimated": cost_estimated,
         "minutes": round(minutes, 2),
         "message": result.message,
     }
@@ -185,6 +189,7 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
     series = adv.first_series(("5.2", "5.1", "5.0"))
     fixes = adv.fix_commits(series)
     spent = 0.0
+    estimated = False
     router = Router(s, Budget(budget_usd, lambda: spent))
     conflicts: list[str] = []
     failed: list[str] = []
@@ -214,6 +219,7 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
                 failed.append(f"{path}: {str(exc).splitlines()[0][:160]}")
                 continue
             spent += res.cost_usd
+            estimated = estimated or res.cost_estimated
             m = re.search(r"```(?:python)?\n(.*?)```", res.text, re.S)
             if m:
                 (tree / path).write_text(m[1])
@@ -257,6 +263,7 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
         "escalated": False,
         "cost_usd": round(spent, 4),
         "cost_unknown": False,
+        "cost_estimated": estimated,
         "minutes": round((time.monotonic() - start) / 60, 2),
     }
     if case.kind == "positive" and failed:
@@ -305,6 +312,10 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "usd_per_case": round(sum(known_cost) / len(known_cost), 4) if known_cost else None,
         "usd_total": round(sum(known_cost), 4),
         "cost_unknown_cases": sum(1 for r in rows if r.get("cost_unknown")),
+        # Rows from before the §11 fix carry no flag: their costs were estimates.
+        "cost_estimated_cases": sum(
+            1 for r in rows if r.get("cost_usd") and r.get("cost_estimated", True)
+        ),
         "minutes_per_case": round(sum(r["minutes"] for r in rows if "minutes" in r) / len(rows), 2)
         if rows
         else None,

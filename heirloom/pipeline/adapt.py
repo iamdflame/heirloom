@@ -169,6 +169,9 @@ def run(
             sanitized=sanitized(ctx),
         )
         span.set("cost_usd", round(res.cost_usd, 6))
+        # claude -p's total_cost_usd equals OpenRouter's billed usage; on the LiteLLM
+        # gateway it is Claude Code's own list-price figure, so it counts as an estimate.
+        span.set("cost_estimated", res.provider != "openrouter")
         span.set("claude_session_id", res.session_id)
         span.set("claude_total_cost_usd", res.cost_usd)
         span.set("claude_num_turns", res.num_turns)
@@ -189,6 +192,7 @@ def run(
             "patch_sha": hashlib.sha256(patch.encode()).hexdigest(),
             "session_id": res.session_id,
             "cost_usd": res.cost_usd,
+            "cost_estimated": res.provider != "openrouter",
             "num_turns": res.num_turns,
             "provider": res.provider,
             "seconds": round(res.seconds, 1),

@@ -271,6 +271,7 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
         added = fix_added_lines(ctx, fixes_of(loc))
         attempt_feedback = feedback
         total = 0.0
+        estimated = False  # any call priced from tokens instead of a provider report
         problems: list[str] = []
         for n in range(3):
             prompt = build_prompt(ctx, loc, c0, attempt_feedback)
@@ -281,7 +282,9 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
                 ctx.s.probe_model, [{"role": "user", "content": prompt}], max_tokens=6000
             )
             total += res.cost_usd
+            estimated = estimated or res.cost_estimated
             span.set("cost_usd", round(total, 6))
+            span.set("cost_estimated", estimated)
             ctx.log("probe", f"response-{tag}-{n}.md").write_text(res.text)
             files = parse_blocks(res.text)
             problems = validate(files, ctx.app)
@@ -296,6 +299,8 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
                     "tokens": [res.input_tokens, res.output_tokens],
                     "fix_lines_checked": checked,
                     "attempts": n + 1,
+                    "cost_usd": round(total, 6),
+                    "cost_estimated": estimated,
                 }
             attempt_feedback = (
                 (feedback + "\n\n" if feedback else "")

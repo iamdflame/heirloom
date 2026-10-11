@@ -18,12 +18,16 @@ def settings(tmp_path: Path, **kw: Any) -> config.Settings:
     )
 
 
-def fake_completion(fail_gateway: bool, calls: list[str]) -> Any:
+def fake_completion(fail_gateway: bool, calls: list[str], reported: float | None = None) -> Any:
     def completion(**kw: Any) -> Any:
         calls.append(kw["model"])
         if kw["model"].startswith("openai/") and fail_gateway:
             raise RuntimeError("ExceededBudget: key budget exceeded")
+        if kw["model"].startswith("openrouter/"):
+            assert kw["extra_body"] == {"usage": {"include": True}}
         usage = SimpleNamespace(prompt_tokens=1000, completion_tokens=100)
+        if reported is not None:
+            usage.cost = reported
         msg = SimpleNamespace(content="ok")
         return SimpleNamespace(usage=usage, choices=[SimpleNamespace(message=msg)])
 
@@ -34,20 +38,24 @@ def fake_completion(fail_gateway: bool, calls: list[str]) -> Any:
 def ledger(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     path = tmp_path / "overflow.sqlite"
     monkeypatch.setattr(router, "OVERFLOW_LEDGER", path)
+    monkeypatch.setattr(router, "openrouter_usage", lambda _s: None)
     return path
 
 
 def run(
-    monkeypatch: pytest.MonkeyPatch, s: config.Settings, exhausted: bool, calls: list[str]
-) -> str:
+    monkeypatch: pytest.MonkeyPatch,
+    s: config.Settings,
+    exhausted: bool,
+    calls: list[str],
+    reported: float | None = None,
+) -> router.Completion:
     import litellm
 
-    monkeypatch.setattr(litellm, "completion", fake_completion(True, calls))
+    monkeypatch.setattr(litellm, "completion", fake_completion(True, calls, reported))
     monkeypatch.setattr(router, "key_exhausted", lambda _s: exhausted)
-    out = Router(s, Budget(1.5, lambda: 0.0)).complete(
+    return Router(s, Budget(1.5, lambda: 0.0)).complete(
         "claude-sonnet-4.6", [{"role": "user", "content": "x"}]
     )
-    return out.provider
 
 
 def test_gateway_failure_without_exhausted_key_never_overflows(
@@ -63,8 +71,33 @@ def test_exhausted_key_overflows_and_records_spend(
     tmp_path: Path, ledger: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[str] = []
-    assert run(monkeypatch, settings(tmp_path), exhausted=True, calls=calls) == "openrouter"
+    out = run(monkeypatch, settings(tmp_path), exhausted=True, calls=calls)
+    assert out.provider == "openrouter"
+    # A known-exhausted key is not called at all.
+    assert calls == ["openrouter/anthropic/claude-sonnet-4.6"]
+    # No provider-reported cost in the response: a token x list-price estimate, marked so.
+    assert out.cost_estimated
     assert router.OverflowLedger(ledger).total() == pytest.approx(0.0045)
+
+
+def test_overflow_records_the_provider_reported_cost(
+    tmp_path: Path, ledger: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    out = run(monkeypatch, settings(tmp_path), exhausted=True, calls=calls, reported=0.0123)
+    assert out.cost_usd == pytest.approx(0.0123)
+    assert not out.cost_estimated
+    assert router.OverflowLedger(ledger).total() == pytest.approx(0.0123)
+
+
+def test_overflow_cap_counts_the_keys_billed_usage(
+    tmp_path: Path, ledger: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Our records say $1 but the provider billed $24.99: the cap uses the larger figure.
+    router.OverflowLedger(ledger).add("openrouter", "earlier", 1.0)
+    monkeypatch.setattr(router, "openrouter_usage", lambda _s: 24.99)
+    monkeypatch.setattr(router, "key_exhausted", lambda _s: True)
+    assert router.overflow_allowance(settings(tmp_path)) == pytest.approx(0.01)
 
 
 def test_overflow_stops_at_the_cap(
@@ -74,7 +107,7 @@ def test_overflow_stops_at_the_cap(
     calls: list[str] = []
     with pytest.raises(RuntimeError, match="no overflow"):
         run(monkeypatch, settings(tmp_path), exhausted=True, calls=calls)
-    assert calls == ["openai/claude-sonnet-4.6"]
+    assert calls == []
 
 
 def test_transient_gateway_errors_are_retried_not_overflowed(

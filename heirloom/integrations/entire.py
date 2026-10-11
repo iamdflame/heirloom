@@ -131,20 +131,28 @@ def run_claude(
         ANTHROPIC_MODEL=settings.adapt_model,
         ANTHROPIC_DEFAULT_HAIKU_MODEL=settings.reading_model,
     )
-    providers: list[tuple[str, dict[str, str]]] = [
-        (
-            "litellm-gateway",
-            {
-                "ANTHROPIC_BASE_URL": settings.litellm_base.removesuffix("/v1"),
-                "ANTHROPIC_AUTH_TOKEN": settings.litellm_key,
-            },
-        )
-    ]
-    from heirloom.models.router import OVERFLOW_LEDGER, OverflowLedger, overflow_allowance
+    from heirloom.models.router import (
+        OPENROUTER_MODELS,
+        OVERFLOW_LEDGER,
+        OverflowLedger,
+        overflow_allowance,
+    )
 
+    exhausted = key_exhausted_cached(settings)
+    providers: list[tuple[str, dict[str, str]]] = []
+    if not exhausted:  # a known-exhausted gateway key is not even tried
+        providers.append(
+            (
+                "litellm-gateway",
+                {
+                    "ANTHROPIC_BASE_URL": settings.litellm_base.removesuffix("/v1"),
+                    "ANTHROPIC_AUTH_TOKEN": settings.litellm_key,
+                },
+            )
+        )
     # Overflow only once the LiteLLM key is exhausted, within the global overflow cap.
     allowance = 0.0
-    if settings.openrouter_key and key_exhausted_cached(settings):
+    if settings.openrouter_key and exhausted:
         allowance = overflow_allowance(settings)
     if allowance > 0.05:
         providers.append(
@@ -154,8 +162,20 @@ def run_claude(
                     "ANTHROPIC_BASE_URL": "https://openrouter.ai/api",
                     "ANTHROPIC_AUTH_TOKEN": settings.openrouter_key,
                     "ANTHROPIC_API_KEY": "",
+                    # OpenRouter names the models by vendor/slug.
+                    "ANTHROPIC_MODEL": OPENROUTER_MODELS.get(
+                        settings.adapt_model, settings.adapt_model
+                    ),
+                    "ANTHROPIC_DEFAULT_HAIKU_MODEL": OPENROUTER_MODELS.get(
+                        settings.reading_model, settings.reading_model
+                    ),
                 },
             )
+        )
+    if not providers:
+        raise EntireError(
+            "no provider for claude -p: the LiteLLM key is exhausted and the overflow "
+            f"allowance is ${allowance:.2f}"
         )
     cmd = [
         "claude",
@@ -195,6 +215,8 @@ def run_claude(
                 data = {}
             text = f"{proc.stderr}\n{data.get('result', '')}"
             if provider == "openrouter" and data:
+                # claude -p's total_cost_usd matched the OpenRouter key's billed usage
+                # delta exactly in a 2026-10-11 check ($0.10849875 both ways).
                 OverflowLedger(OVERFLOW_LEDGER).add(
                     provider, "claude -p", float(data.get("total_cost_usd") or 0.0)
                 )

@@ -118,7 +118,7 @@ def check_published() -> dict[str, Any]:
         "checkpoint": checkpoint,
         "cost_usd": round(sum(r["cost_usd"] for r in rows), 4),
         "attempts": {r["stage"]: r["attempt"] for r in rows},
-        "failed_attempts": [f"{r['stage']}#{r['attempt']}: {(r['error'] or '')[:120]}" for r in rows if r["status"] == "failed"],
+        "failed_attempts": [f"{r['stage']}#{r['attempt']}: {(r['error'] or '')[:120]}" for r in rows if r["status"] == "failed"],  # noqa: E501
     }  # fmt: skip
 
 

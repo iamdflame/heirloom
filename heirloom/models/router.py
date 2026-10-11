@@ -1,8 +1,13 @@
 """LiteLLM calls through the gateway, with a hard per-CVE budget.
 
 ``litellm`` is imported lazily so ``neatlogs.init()`` can run first and
-instrument it. The gateway reports ``totalCostUsd: 0``, so cost is computed
-here from token usage at list prices (estimates, recorded on every span).
+instrument it.
+
+Cost (BUILD-BRIEF §11): OpenRouter calls request ``usage: {include: true}`` and
+record the provider-reported ``usage.cost``. The gateway reports
+``totalCostUsd: 0``, so its calls are priced from tokens at list prices and
+marked ``cost_estimated``. The overflow cap counts the larger of our own
+provider-reported records and the OpenRouter key's billed ``usage``.
 """
 
 from __future__ import annotations
@@ -21,7 +26,11 @@ PRICES: dict[str, tuple[float, float]] = {
     "claude-haiku": (1.0, 5.0),
     "nova-lite": (0.06, 0.24),
 }
-OPENROUTER_MODELS = {"claude-sonnet-4.6": "anthropic/claude-sonnet-4.6"}
+OPENROUTER_MODELS = {
+    "claude-sonnet-4.6": "anthropic/claude-sonnet-4.6",
+    "claude-haiku": "anthropic/claude-haiku-4.5",
+}
+OPENROUTER_KEY_URL = "https://openrouter.ai/api/v1/key"
 
 
 class BudgetExceeded(RuntimeError):
@@ -51,6 +60,7 @@ class Completion:
     output_tokens: int
     cost_usd: float
     provider: str
+    cost_estimated: bool = True  # False when the provider reported the cost
 
 
 def cost_of(model: str, input_tokens: int, output_tokens: int) -> float:
@@ -73,13 +83,43 @@ def key_info(settings: Settings) -> dict[str, Any]:
     return {k: info.get(k) for k in ("spend", "max_budget", "budget_reset_at")}
 
 
+_EXHAUSTED: dict[str, tuple[float, bool]] = {}
+EXHAUSTED_TTL = 300.0
+
+
 def key_exhausted(settings: Settings) -> bool:
+    """Whether the LiteLLM key's budget is spent (cached for a few minutes per key)."""
+    import time
+
+    cached = _EXHAUSTED.get(settings.litellm_key)
+    if cached is not None and time.monotonic() - cached[0] < EXHAUSTED_TTL:
+        return cached[1]
     try:
         info = key_info(settings)
     except Exception:
         return False  # cannot prove exhaustion: no overflow
     spend, cap = info.get("spend"), info.get("max_budget")
-    return spend is not None and cap is not None and float(spend) >= float(cap)
+    out = spend is not None and cap is not None and float(spend) >= float(cap)
+    _EXHAUSTED[settings.litellm_key] = (time.monotonic(), out)
+    return out
+
+
+def openrouter_usage(settings: Settings) -> float | None:
+    """USD the OpenRouter key has been billed in total (provider-reported; lags ~1 min)."""
+    if not settings.openrouter_key:
+        return None
+    import httpx
+
+    try:
+        r = httpx.get(
+            OPENROUTER_KEY_URL,
+            headers={"Authorization": f"Bearer {settings.openrouter_key}"},
+            timeout=30,
+        )
+        r.raise_for_status()
+        return float(r.json()["data"]["usage"])
+    except Exception:
+        return None
 
 
 class OverflowLedger:
@@ -109,11 +149,19 @@ class OverflowLedger:
 OVERFLOW_LEDGER = Path.home() / "heirloom" / "work" / "overflow.sqlite"
 
 
+def overflow_spent(settings: Settings) -> float:
+    """Total overflow spend: our provider-reported records or the key's billed usage,
+    whichever is larger (the key's figure lags; ours misses nothing we did not record)."""
+    local = OverflowLedger(OVERFLOW_LEDGER).total()
+    billed = openrouter_usage(settings)
+    return max(local, billed or 0.0)
+
+
 def overflow_allowance(settings: Settings) -> float:
     """USD that may still go to overflow keys: 0 unless the LiteLLM key is exhausted."""
     if not settings.openrouter_key or not key_exhausted(settings):
         return 0.0
-    return max(0.0, settings.max_overflow_usd - OverflowLedger(OVERFLOW_LEDGER).total())
+    return max(0.0, settings.max_overflow_usd - overflow_spent(settings))
 
 
 TRANSIENT = ("internalservererror", "serviceunavailable", "ratelimit", "timeout",
@@ -169,6 +217,8 @@ class Router:
             "timeout": 600,
         }
         try:
+            if key_exhausted(self.settings):
+                raise RuntimeError("LiteLLM key budget exhausted (/key/info)")
             resp = self._gateway(litellm, model, common)
             provider = "litellm-gateway"
         except Exception as exc:
@@ -180,11 +230,18 @@ class Router:
             resp = litellm.completion(
                 model=f"openrouter/{OPENROUTER_MODELS[model]}",
                 api_key=self.settings.openrouter_key,
+                extra_body={"usage": {"include": True}},
                 **common,
             )
             provider = "openrouter"
         usage = resp.usage
-        cost = cost_of(model, int(usage.prompt_tokens), int(usage.completion_tokens))
+        reported: Any = getattr(usage, "cost", None) if provider == "openrouter" else None
+        estimated = reported is None
+        cost = (
+            cost_of(model, int(usage.prompt_tokens), int(usage.completion_tokens))
+            if reported is None
+            else float(reported)
+        )
         if provider == "openrouter":
             OverflowLedger(OVERFLOW_LEDGER).add(provider, model, cost)
         return Completion(
@@ -194,4 +251,5 @@ class Router:
             output_tokens=int(usage.completion_tokens),
             cost_usd=cost,
             provider=provider,
+            cost_estimated=estimated,
         )
