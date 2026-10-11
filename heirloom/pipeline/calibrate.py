@@ -850,8 +850,16 @@ def on_line(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any], tip: str) -> d
             "absent": _gate_json(absent),
         }
 
-    inputs = {"probe": probe["sha"], "fixes": fixes_of(loc), "tip": tip}
-    return ctx.stage("calibrate", inputs, body)
+    return ctx.stage("calibrate", on_line_inputs(probe["sha"], fixes_of(loc), tip), body)
+
+
+# Part of on_line()'s ledger key: evidence measured under another coverage
+# configuration (before §11: main thread only by configuration) is not reused.
+REACH_COVERAGE = "concurrency=thread"
+
+
+def on_line_inputs(probe_sha: str, fixes: list[str], tip: str) -> dict[str, Any]:
+    return {"probe": probe_sha, "fixes": fixes, "tip": tip, "coverage": REACH_COVERAGE}
 
 
 def run(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any]) -> dict[str, Any]:

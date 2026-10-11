@@ -1,3 +1,6 @@
-# Empty on purpose: Django ships tests/.coveragerc with `source = django`,
-# which would override --include.
+# Django ships tests/.coveragerc with `source = django`, which would override
+# --include, so this file sets only what C3 reach needs (BUILD-BRIEF §11):
+# trace every thread, so code that ASGI handlers and sync_to_async run in
+# worker threads counts. runtests runs with --parallel=1 (no multiprocessing).
 [run]
+concurrency = thread

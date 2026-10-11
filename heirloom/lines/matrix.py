@@ -266,7 +266,7 @@ def run_cell(
                     cve,
                     spec.name,
                     "calibrate",
-                    {"probe": probe["sha"], "fixes": fixes, "tip": loc["tip"]},
+                    calibrate.on_line_inputs(probe["sha"], fixes, loc["tip"]),
                 ),
             }
             # Model spend of this cell's own run only. The probe's porter cost belongs to
