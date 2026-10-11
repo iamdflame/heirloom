@@ -68,9 +68,18 @@ def _probe_error(detail: str) -> dict[str, Any]:
 
 
 def calibrated_probe(ledger: Ledger, cve: str, line: str) -> dict[str, Any] | None:
-    """The probe a finished run of (cve, line) calibrated with, for reuse on other lines."""
+    """The discriminating probe of a finished run of (cve, line), for reuse on other lines.
+
+    Reuse needs C1 (FAIL on U⁻, PASS on U⁺, stable ids); C2/C3/C4 are line-specific
+    and are re-checked on the new line by on_line().
+    """
     rows = [r for r in ledger.stages(cve, line) if r.status == "done"]
-    pres = [r for r in rows if r.key.stage == "presence" and (r.output or {}).get("calibrated")]
+    pres = [
+        r
+        for r in rows
+        if r.key.stage == "presence"
+        and ((r.output or {}).get("gates", {}).get("C1") or {}).get("ok")
+    ]
     probes = [r for r in rows if r.key.stage == "probe" and r.output]
     if not pres or not probes:
         return None

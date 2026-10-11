@@ -133,6 +133,7 @@ def backtest(
     cve_ids: list[str] | None = typer.Option(None, "--cve", help="Only these CVEs (repeatable)."),
     kinds: list[str] | None = typer.Option(None, "--kind", help="positive/negative/extra."),
     v1_budget: float = typer.Option(0.5, help="Per-case model budget for v1 conflict resolution."),
+    rerun: bool = typer.Option(False, help="Re-run cases that already have a result row."),
 ) -> None:
     """E1 backtest against the fellows' real 4.2 patches; results -> evals/results.json."""
     from heirloom import backtest as bt
@@ -146,6 +147,11 @@ def backtest(
         for c in bt.cases(s.django_repo)
         if (not cve_ids or c.cve in cve_ids) and (not kinds or c.kind in kinds)
     ]
+    done = json.loads(out.read_text()).get("runs", {}).get(pipeline, {}) if out.exists() else {}
+    if not rerun:
+        todo = [
+            c for c in todo if done.get(f"{c.cve}:{c.kind}", {}).get("verdict") in (None, "SKIPPED")
+        ]
     # Positives first: negatives reuse their calibrated probes.
     todo.sort(key=lambda c: {"positive": 0, "extra": 1, "negative": 2}[c.kind])
     for c in todo:
