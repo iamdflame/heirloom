@@ -103,6 +103,22 @@ def parse_blocks(text: str) -> dict[str, str]:
     return {m[1]: m[2] for m in BLOCK.finditer(text)}
 
 
+# A general hint (no fix content) for advisories in GIS / native-library code (§10.4).
+NATIVE_HINT = (
+    "\nHINT (GIS / native-library code: GDAL, GEOS, GeoIP): native I/O, spatial databases "
+    "and GIS test data are not available to the probe. Use no spatial models; call "
+    "Field.get_prep_value (or the public function under test) directly on unbound fields; "
+    "intercept public constructors (e.g. GDALRaster, GEOSGeometry) with unittest.mock, "
+    "recording the arguments they receive and raising before any native I/O, and assert "
+    "on what was recorded.\n"
+)
+NATIVE_PATHS = ("django/contrib/gis/",)
+
+
+def native_hint(fix_files: list[str]) -> str:
+    return NATIVE_HINT if any(f.startswith(NATIVE_PATHS) for f in fix_files) else ""
+
+
 def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> str:
     test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
     sources: list[str] = []
@@ -127,6 +143,7 @@ def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: st
             "they reference names that only exist after the fix. Do not copy them: write a "
             "behavioural probe that only uses public API and observable behaviour.\n"
         )
+    structural += native_hint(loc["fix_files"])
     retry = f"\n## Feedback on your previous probe\n{feedback}\n" if feedback else ""
     return f"""You are writing a regression probe for a Django security advisory.
 You have NOT been shown the fix. Write a standalone Django test app `tests/{ctx.app}/`
