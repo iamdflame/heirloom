@@ -1,0 +1,66 @@
+<task-notification>
+<task-id>bzx8pvklk</task-id>
+<tool-use-id>toolu_01NvSpe8nEHfXmU3RMU9XFLJ</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/bzx8pvklk.output</output-file>
+<status>killed</status>
+<summary>Background command "Block until campaign workers finish, then show summary" was stopped after reaching its background time limit</summary>
+<note>If the work in progress still needs it, start it again with `run_in_background` and a longer `timeout`. If it already had the longest `timeout` allowed, do not restart it. Either way, report that it was stopped.</note>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5i8mr0q6</task-id>
+<summary>Monitor event: "campaign clean-up pass results"</summary>
+<event>[Monitor expired after 10m with no events delivered. Re-arm it if you still need the watch — and widen the filter if silence was unexpected.]</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bdly8mu6j</task-id>
+<tool-use-id>toolu_01LXm8iPwBdwL6pguHFxikcC</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/bdly8mu6j.output</output-file>
+<status>failed</status>
+<summary>Background command "Wait for the clean-up pass to finish" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bkgb6l08y</task-id>
+<tool-use-id>toolu_017piKcWQXqf8BEDjwwgET91</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/bkgb6l08y.output</output-file>
+<status>failed</status>
+<summary>Background command "Wait for last worker, show campaign summary" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bf2l377wt</task-id>
+<tool-use-id>toolu_01EUYiDJtrdeH3MthNCGGGMy</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/bf2l377wt.output</output-file>
+<status>failed</status>
+<summary>Background command "Wait for clean-up pass to finish" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b92hp702g</task-id>
+<tool-use-id>toolu_01WonyReuwApZ5K83zPuqfDo</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/b92hp702g.output</output-file>
+<status>failed</status>
+<summary>Background command "Wait for the campaign pass to finish" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bx91l1gjw</task-id>
+<tool-use-id>toolu_01WzjcpvfGtcmJE6YuAExSX4</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/bx91l1gjw.output</output-file>
+<status>failed</status>
+<summary>Background command "Wait for campaign workers to exit" failed with exit code 144</summary>
+</task-notification>
