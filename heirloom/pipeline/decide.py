@@ -117,6 +117,16 @@ def _diffs(beh: dict[str, Any] | None, ver: dict[str, Any] | None) -> list[str]:
     return lines
 
 
+def also_waiting(ctx: Ctx, beh: dict[str, Any] | None, ver: dict[str, Any] | None) -> str:
+    return "\n".join(
+        [
+            f"**{ctx.cve}** also waits on this answer (same kind, same scope; asked once).",
+            "",
+            *_diffs(beh, ver),
+        ]
+    )
+
+
 def evidence_lines(ctx: Ctx, marker: str) -> list[str]:
     """Links a person needs to decide: upstream commits, run artifacts, the trace."""
     from heirloom.integrations.neatlogs import trace_url
@@ -150,12 +160,16 @@ def ask(
 
     def reconcile() -> dict[str, Any] | None:
         found = github.find_issue(ctx.s.heirloom_repo, marker)
-        return {"url": found["url"]} if found else None
+        return {"url": found["url"], "number": found["number"]} if found else None
 
     def body(span: StageSpan) -> dict[str, Any]:
         existing = reconcile()
         if existing:
-            return existing
+            # Asked once: this case waits on the same answer; say so on the question.
+            github.comment(
+                ctx.s.heirloom_repo, int(existing["number"]), also_waiting(ctx, beh, ver)
+            )
+            return {"url": existing["url"]}
         options = OPTIONS.get(kind, DEFAULT_OPTIONS)
         diffs = _diffs(beh, ver)
         evidence = evidence_lines(ctx, marker)
