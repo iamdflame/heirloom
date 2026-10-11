@@ -99,6 +99,12 @@ ALLOWED_EVAL = "Read,Edit,Grep,Glob,Bash(python tests/runtests.py *),Bash(git di
 DISALLOWED_EVAL = DISALLOWED + ",Bash(git log *),Bash(git show *)"
 
 
+def key_exhausted_cached(settings: Settings) -> bool:
+    from heirloom.models.router import key_exhausted
+
+    return key_exhausted(settings)
+
+
 def run_claude(
     worktree: Path,
     prompt: str,
@@ -134,7 +140,13 @@ def run_claude(
             },
         )
     ]
-    if settings.openrouter_key:
+    from heirloom.models.router import OVERFLOW_LEDGER, OverflowLedger, overflow_allowance
+
+    # Overflow only once the LiteLLM key is exhausted, within the global overflow cap.
+    allowance = 0.0
+    if settings.openrouter_key and key_exhausted_cached(settings):
+        allowance = overflow_allowance(settings)
+    if allowance > 0.05:
         providers.append(
             (
                 "openrouter",
@@ -164,6 +176,9 @@ def run_claude(
     ]
     last_err = ""
     for provider, extra in providers:
+        if provider == "openrouter":
+            idx = cmd.index("--max-budget-usd") + 1
+            cmd[idx] = f"{min(max_budget_usd, allowance):.2f}"
         for adaptive_off in (False, True):
             env = {**base, **extra}
             if adaptive_off:
@@ -179,6 +194,10 @@ def run_claude(
             except json.JSONDecodeError:
                 data = {}
             text = f"{proc.stderr}\n{data.get('result', '')}"
+            if provider == "openrouter" and data:
+                OverflowLedger(OVERFLOW_LEDGER).add(
+                    provider, "claude -p", float(data.get("total_cost_usd") or 0.0)
+                )
             if data and not data.get("is_error") and data.get("subtype") == "success":
                 return ClaudeResult(
                     ok=True,
