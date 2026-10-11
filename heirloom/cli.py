@@ -245,6 +245,73 @@ def status(cve_id: str = typer.Argument(..., metavar="CVE"), line: str = "4.2") 
         typer.echo("local detection hits: " + ", ".join(h["detection"] for h in hits))
 
 
+@app.command()
+def campaign(
+    line: str = "4.2",
+    replay: bool = typer.Option(False, help="Replay the security archive commit by commit."),
+    workers: int = typer.Option(2, help="Parallel worker processes."),
+    cap: float = typer.Option(18.0, help="Overflow USD this campaign may spend (provider cost)."),
+    campaign_id: str | None = typer.Option(None, "--id", help="Continue this campaign."),
+    cont: bool = typer.Option(
+        False, "--continue", help="Poll answers, then re-queue waiting/blocked events."
+    ),
+    plan_only: bool = typer.Option(False, help="Write the plan and stop."),
+) -> None:
+    """E2: every post-EOL advisory on a line; one PR or evidence issue per CVE."""
+    import time
+
+    from heirloom import answers
+    from heirloom import campaign as cmp
+
+    if not replay:
+        raise typer.BadParameter("only --replay campaigns exist (BUILD-BRIEF §10.5)")
+    if line not in LINES or not LINES[line].publish:
+        raise typer.BadParameter(f"{line!r} is not a publishing line")
+    s = config.load()
+    path = cmp.state_path(s, campaign_id) if campaign_id else None
+    if path is None or not path.exists():
+        path = cmp.create(s, line, cap, campaign_id)
+        typer.echo(f"planned {path}")
+    if cont:
+        for a in answers.poll(s):
+            typer.echo(f"answer {a.option} on {a.issue} -> precedent {a.precedent}")
+        typer.echo(f"re-queued: {cmp.reopen(path)}")
+    state = json.loads(path.read_text())
+    for ev in state["events"]:
+        deps = ",".join(ev.get("depends_on") or []) or "-"
+        typer.echo(f"  {ev['id']:34} {ev['kind']:8} deps={deps:16} {ev['status']}")
+    if plan_only:
+        return
+    procs = cmp.spawn_workers(path, workers, s.work / cmp.STATE_DIR / state["id"])
+    while any(p.poll() is None for p in procs):
+        time.sleep(20)
+    out = cmp.results(s, path)
+    (s.root / "evals" / "results_live.json").write_text(json.dumps(out, indent=2) + "\n")
+    typer.echo(json.dumps(out["summary"], indent=1))
+    for q in out["summary"]["questions"]:
+        typer.echo(f"QUESTION (answer with /heirloom answer <option>): {q}")
+
+
+@app.command("campaign-worker", hidden=True)
+def campaign_worker(path: str, name: str) -> None:
+    from pathlib import Path
+
+    from heirloom import campaign as cmp
+
+    cmp.worker(config.load(), Path(path), name, lambda m: typer.echo(m))
+
+
+@app.command("answers")
+def answers_cmd(
+    apply: bool = typer.Option(True, help="Record precedents and close issues."),
+) -> None:
+    """Poll question issues for `/heirloom answer <option>` comments; store precedents."""
+    from heirloom import answers
+
+    for a in answers.poll(config.load(), apply=apply):
+        typer.echo(f"{a.issue}: {a.kind} on {a.scope} = {a.option} (@{a.author}) {a.precedent}")
+
+
 from heirloom.lines import commands as line_commands  # noqa: E402  (Thread B: distro lines)
 
 app.add_typer(line_commands.distro_app, name="distro")
@@ -257,3 +324,7 @@ def main() -> None:
         app()
     except KeyboardInterrupt:
         sys.exit(130)
+
+
+if __name__ == "__main__":
+    main()

@@ -61,6 +61,15 @@ def run(ctx: Ctx) -> dict[str, Any]:
         git(ctx.repo, "fetch", "-q", "origin", "main")
         if ctx.spec.publish and ctx.spec.base_branch:
             git(ctx.repo, "fetch", "-q", ctx.s.fork_remote, ctx.spec.base_branch)
+            # The fetch above only updates FETCH_HEAD for non-default branches.
+            git(
+                ctx.repo,
+                "fetch",
+                "-q",
+                ctx.s.fork_remote,
+                f"+refs/heads/{ctx.spec.base_branch}:refs/remotes/{ctx.s.fork_remote}/"
+                f"{ctx.spec.base_branch}",
+            )
         archive_ref = rev_parse(ctx.repo, ctx.archive_ref)
         advisories = load(ctx.repo, archive_ref)
         if ctx.cve not in advisories:

@@ -9,7 +9,7 @@ import json
 import os
 import secrets
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +18,7 @@ from typing import Any
 from heirloom import guard
 from heirloom.config import LineSpec, Settings
 from heirloom.integrations.entire import EntireError
-from heirloom.integrations.neatlogs import Telemetry
+from heirloom.integrations.neatlogs import StageSpan, Telemetry
 from heirloom.ledger import ConcurrentRunError, Ledger, PausedForReconcile
 from heirloom.models.router import BudgetExceeded
 from heirloom.pipeline import adapt, behaviour, calibrate, decide, locate, probe, publish, verify
@@ -91,6 +91,11 @@ def calibrated_probe(ledger: Ledger, cve: str, line: str) -> dict[str, Any] | No
     return max(probes, key=lambda r: r.key.attempt).output
 
 
+def _given(probe_: dict[str, Any]) -> Callable[[StageSpan], dict[str, Any]]:
+    """A probe stage body that returns an already calibrated probe (reuse mode)."""
+    return lambda span: probe_
+
+
 def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
     loc = locate.run(ctx)
     if any(f.startswith("django/contrib/gis/") for f in loc["fix_files"]):
@@ -109,7 +114,10 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
         try:
             # The cheaper model first; retries (with calibration feedback) use the stronger.
             model = models[min(attempt, len(models) - 1)]
-            pr_ = reuse_probe or probe.run(ctx, loc, c0, feedback, model=model)
+            if reuse_probe is not None:
+                pr_ = ctx.stage("probe", {"reuse": reuse_probe["sha"]}, _given(reuse_probe))
+            else:
+                pr_ = probe.run(ctx, loc, c0, feedback, model=model)
         except (StageFailed, probe.LeakageError) as exc:
             pres = _probe_error(str(exc))
             break

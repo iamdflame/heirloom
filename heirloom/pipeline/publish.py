@@ -7,8 +7,11 @@ Every step is an effect stage: if the process dies mid-step the ledger marks it
 
 from __future__ import annotations
 
+import fcntl
 import json
 import shutil
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -220,6 +223,11 @@ def artifacts(ctx: Ctx, key: dict[str, Any]) -> dict[str, Any]:
         return {"commit": sha, "path": rel, "base": _base_url(ctx, sha, rel)}
 
     def body(span: StageSpan) -> dict[str, Any]:
+        # One shared artifacts worktree: parallel campaign workers take turns.
+        with _artifacts_lock(ctx):
+            return _publish_artifacts(span)
+
+    def _publish_artifacts(span: StageSpan) -> dict[str, Any]:
         tree = _artifacts_tree(ctx)
         dest = tree / rel
         if dest.exists():
@@ -248,6 +256,18 @@ def artifacts(ctx: Ctx, key: dict[str, Any]) -> dict[str, Any]:
         return out
 
     return ctx.stage("publish.artifacts", key, body, effect=True, reconcile=reconcile)
+
+
+@contextmanager
+def _artifacts_lock(ctx: Ctx) -> Iterator[None]:
+    path = ctx.s.work / "locks" / "artifacts.lock"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w") as fh:
+        fcntl.flock(fh, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(fh, fcntl.LOCK_UN)
 
 
 def _base_url(ctx: Ctx, sha: str, rel: str) -> str:
@@ -596,9 +616,8 @@ def evidence(ctx: Ctx, d: dict[str, Any]) -> dict[str, Any]:
         loc = d["locate"]
         reason = f" ({pres['reason']})" if pres.get("reason") else ""
         escalation = (
-            "\n**A person should review this:** Heirloom could not prove either way and "
-            "published no code. Reply with `/heirloom answer publish-evidence` to accept this "
-            "as the record, or `/heirloom answer skip`.\n"
+            "\n**Escalation:** Heirloom could not prove this either way, so it published no "
+            "code. The claims below show where the evidence ran out.\n"
             if pres["verdict"] == "UNPROVEN"
             else ""
         )

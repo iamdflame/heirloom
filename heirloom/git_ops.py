@@ -12,10 +12,23 @@ class GitError(RuntimeError):
     pass
 
 
+# Another process holds a lock in the shared clone (campaign workers run in parallel).
+LOCKED = re.compile(
+    r"\.lock'?: File exists|cannot lock ref|Unable to create '.*\.lock'|could not lock"
+)
+LOCK_RETRY_DELAYS = (0.5, 1.0, 2.0, 4.0, 8.0)
+
+
 def git(repo: Path, *args: str, check: bool = True, input: str | None = None) -> str:
-    proc = subprocess.run(
-        ["git", "-C", str(repo), *args], capture_output=True, text=True, input=input
-    )
+    import time
+
+    for delay in (*LOCK_RETRY_DELAYS, None):
+        proc = subprocess.run(
+            ["git", "-C", str(repo), *args], capture_output=True, text=True, input=input
+        )
+        if proc.returncode == 0 or delay is None or not LOCKED.search(proc.stderr):
+            break
+        time.sleep(delay)
     if check and proc.returncode != 0:
         raise GitError(f"git {' '.join(args)} failed ({proc.returncode}): {proc.stderr.strip()}")
     return proc.stdout
