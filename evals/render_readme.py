@@ -68,7 +68,9 @@ def table(data: dict[str, Any]) -> str:
     note = (
         f"\n_Set `{data.get('set')}`; rendered from [`evals/results.json`](evals/results.json) "
         "by `evals/render_readme.py`. Accuracy counts only decided cases; UNPROVEN means "
-        "Heirloom declined to claim either way and would ask a human._"
+        "Heirloom declined to claim either way and would ask a human. $ figures are "
+        "Heirloom's own token × list-price estimates; on 2026-10-11 the LiteLLM gateway "
+        "billed roughly twice that (see hackathon.md), so treat them as lower bounds._"
     )
     return "\n".join(rows) + note + "\n" + "\n".join(per_case)
 

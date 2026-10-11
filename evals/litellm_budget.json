@@ -18,6 +18,14 @@
         "claude-opus-4.6"
       ],
       "remaining": 17.0359
+    },
+    {
+      "at": "2026-10-11T15:22:37Z",
+      "spend": 20.35403474500003,
+      "max_budget": 20.0,
+      "budget_reset_at": "2026-11-01T00:00:00+00:00",
+      "remaining": -0.354,
+      "overflow_spend_usd": 3.755
     }
   ]
 }
