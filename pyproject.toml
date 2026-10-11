@@ -1,0 +1,33 @@
+[project]
+name = "heirloom"
+version = "0.1.0"
+description = "An agent that keeps end-of-life software patched."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "typer",
+    "litellm",
+    "neatlogs[litellm]",
+    "httpx",
+    "gitpython",
+    "libcst",
+    "coverage",
+    "fastapi",
+    "uvicorn",
+    "python-dotenv",
+    "pytest",
+    "ruff",
+    "mypy",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
