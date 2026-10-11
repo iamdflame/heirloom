@@ -269,10 +269,12 @@ def run_cell(
                     {"probe": probe["sha"], "fixes": fixes, "tip": loc["tip"]},
                 ),
             }
+            # Model spend of this cell's own run only. The probe's porter cost belongs to
+            # the run that made it (evidence_runs / evals/new_probes.json), not to reuse.
             cost = sum(
                 r.cost_usd
                 for r in [*ledger.stages(cve, spec.name), *ledger.stages(cve, scope)]
-                if r.run_id in (run_id, evidence["reference"], evidence["on_line"])
+                if r.run_id == run_id
             )
         finally:
             ledger.finish_run(run_id, status)
@@ -431,6 +433,7 @@ def run_matrix(
         "cves": list(cves),
         "probes": {cve: src.to_json() for cve, src in sorted(chosen.items())},
         "probes_seen": len(seen),
+        # model spend of this matrix run (reuse only: expected 0)
         "model_cost_usd": round(sum(float(c.get("cost_usd") or 0.0) for c in cells), 6),
         "summary": summarize(cells, lines),
         "cells": cells,
