@@ -1,0 +1,224 @@
+{
+  "what": "A real kill mid-ADAPT during the B4 campaign, and its recovery",
+  "how": "At ~21:09Z the campaign workers were stopped with SIGTERM to their process groups to deploy a harness fix (marker issues found by listing, not search). Worker w0 was inside ADAPT for CVE-2026-35192 (claude -p running). The stage failed as 'SystemExit: 143' (the killed claude -p never reported its cost: cost_unknown). `heirloom campaign --id b4-replay --continue` re-queued the event; the new run reused every finished stage from the ledger, re-ran ADAPT (attempt 2), then VERIFY, BEHAVIOUR, DECIDE and PUBLISH. A later harness bug (KeyError in the PR claims for reused probes) failed publish.pr after the push; the next --continue reconciled: commit, push and artifacts were cached and the PR was created once (#11).",
+  "cve": "CVE-2026-35192",
+  "line": "4.2",
+  "campaign": "b4-replay",
+  "runs": [
+    {
+      "run_id": "20261011T210815Z-e826",
+      "status": "done",
+      "started_at": "2026-10-11T21:08:15Z",
+      "finished_at": "2026-10-11T21:19:24Z"
+    }
+  ],
+  "stages": [
+    {
+      "stage": "locate",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "00000b0f2ae0082898a888d7ec8eea0d",
+      "span_id": "4a745d23c1546c31",
+      "error": null,
+      "started": "21:08:15Z",
+      "finished": "21:08:15Z"
+    },
+    {
+      "stage": "probe",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "00000b0f2ae0082898a888d7ec8eea0d",
+      "span_id": "16393fcfeca3dbe9",
+      "error": null,
+      "started": "21:08:23Z",
+      "finished": "21:08:23Z"
+    },
+    {
+      "stage": "calibrate",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "00000b0f2ae0082898a888d7ec8eea0d",
+      "span_id": "d53ca4d27fd2d7ac",
+      "error": null,
+      "started": "21:08:30Z",
+      "finished": "21:08:34Z"
+    },
+    {
+      "stage": "presence",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "00000b0f2ae0082898a888d7ec8eea0d",
+      "span_id": "53a031eaac1b249c",
+      "error": null,
+      "started": "21:08:34Z",
+      "finished": "21:08:34Z"
+    },
+    {
+      "stage": "adapt",
+      "attempt": 1,
+      "status": "failed",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "00000b0f2ae0082898a888d7ec8eea0d",
+      "span_id": "ceb8e57a9218254e",
+      "error": "SystemExit: 143",
+      "started": "21:08:34Z",
+      "finished": "21:09:16Z"
+    },
+    {
+      "stage": "adapt",
+      "attempt": 2,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.105963,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "abbab343b3b8a326",
+      "error": null,
+      "started": "21:09:36Z",
+      "finished": "21:10:15Z"
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "3b30b71b6d40937a",
+      "error": null,
+      "started": "21:10:15Z",
+      "finished": "21:10:19Z"
+    },
+    {
+      "stage": "verify.baseline",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "90ac70cf47c2d0a4",
+      "error": null,
+      "started": "21:10:15Z",
+      "finished": "21:10:17Z"
+    },
+    {
+      "stage": "behaviour",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "e027e63eec3a8e56",
+      "error": null,
+      "started": "21:10:19Z",
+      "finished": "21:10:22Z"
+    },
+    {
+      "stage": "decide",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "15d33cce698f22e4",
+      "error": null,
+      "started": "21:10:22Z",
+      "finished": "21:10:22Z"
+    },
+    {
+      "stage": "publish.commit",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "c3cb9669b82a6f5c",
+      "error": null,
+      "started": "21:10:22Z",
+      "finished": "21:10:23Z"
+    },
+    {
+      "stage": "publish.push",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "214c6a48c8a80406",
+      "error": null,
+      "started": "21:10:23Z",
+      "finished": "21:10:26Z"
+    },
+    {
+      "stage": "publish.artifacts",
+      "attempt": 1,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "28a8068904621c12",
+      "error": null,
+      "started": "21:10:26Z",
+      "finished": "21:10:27Z"
+    },
+    {
+      "stage": "publish.pr",
+      "attempt": 1,
+      "status": "failed",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "span_id": "15f7fbdcbba68a0a",
+      "error": "KeyError: 'fix_lines_checked'",
+      "started": "21:10:27Z",
+      "finished": "21:10:27Z"
+    },
+    {
+      "stage": "locate",
+      "attempt": 2,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "1a6c4a2717d6478d2bcd78acce1e55e2",
+      "span_id": "89ef58ac6b672601",
+      "error": null,
+      "started": "21:19:21Z",
+      "finished": "21:19:21Z"
+    },
+    {
+      "stage": "probe",
+      "attempt": 2,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "1a6c4a2717d6478d2bcd78acce1e55e2",
+      "span_id": "3d076f8e063fb856",
+      "error": null,
+      "started": "21:19:21Z",
+      "finished": "21:19:21Z"
+    },
+    {
+      "stage": "publish.pr",
+      "attempt": 2,
+      "status": "done",
+      "run_id": "20261011T210815Z-e826",
+      "cost_usd": 0.0,
+      "trace_id": "1a6c4a2717d6478d2bcd78acce1e55e2",
+      "span_id": "67317ab47c92c0fe",
+      "error": null,
+      "started": "21:19:21Z",
+      "finished": "21:19:24Z"
+    }
+  ],
+  "also": {
+    "CVE-2026-15307": "adapt #2 started 21:14:03Z and was killed at 21:16:48Z (SystemExit: 143) when its worker was stopped so it would not file a mis-framed ADAPT_FAILED question; the event resumed from the ledger with the UPSTREAM_TEST_CHANGE classification and asked issue #6."
+  }
+}
