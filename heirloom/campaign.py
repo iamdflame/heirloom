@@ -286,6 +286,7 @@ def finish(path: Path, ev_id: str, **fields: Any) -> None:
     with locked_state(path) as state:
         for ev in state["events"]:
             if ev["id"] == ev_id:
+                ev.pop("error", None)  # a re-run's outcome replaces an earlier crash
                 ev.update(fields, finished=time.time())
 
 

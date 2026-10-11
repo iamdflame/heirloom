@@ -218,6 +218,22 @@ This session was tracked by Entire from the start: `entire session current` show
 - `entire status`: `● Enabled · branch main`, active session `f5117257-5211-42ae-823c-32aa228a28d9`.
 - `entire checkpoint list`: 3 on main. They are this session's temporary checkpoint (`f5117257-521`, latest 09:50) plus the B1 and B2 link checkpoints `01M4M7HFXFT5DBGHYNDES4J73Y` and `01M4MDN1QK7ZJ4B793F1XPZQ9W`.
 
+### 2026-10-11 (session B4, in progress) · §11 fixes, campaign replay
+
+Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless; `entire session current` showed it active (not the old f5117257 conversation). Results are filled in at the end of the session.
+
+**Decisions (headless; recorded as made)**
+- **Provider-reported cost:** OpenRouter calls send `usage: {include: true}` and record `usage.cost`; `claude -p` records `total_cost_usd`. A check on 2026-10-11 found `claude -p` on OpenRouter reported $0.10849875 and the OpenRouter key's billed usage rose by exactly that amount (≈60 s later), so it counts as provider-reported there. Gateway-era costs stay flagged `cost_estimated`. The overflow cap uses the larger of our records and the key's billed `usage` (`GET /api/v1/key`), which also covers killed calls whose cost we never saw.
+- **Campaign cap:** the campaign stores the overflow total at its start ($3.8636) and allows $18 on top. Before claiming each event a worker requires `spent + $1.50 × (running + 1) ≤ $18`, so the campaign stops before it can cross the cap.
+- **Porter model ladder:** the first porter attempt uses `claude-haiku` (Haiku 4.5 on OpenRouter); retries with calibration feedback use `claude-sonnet-4.6`. ADAPT stays on Sonnet 4.6 (`claude -p`).
+- **Coverage:** `concurrency = thread` is in the runner's rcfile and in the calibrate ledger key, so reach evidence measured before §11 is recomputed rather than reused.
+- **Detections:** the built-in condition is `status = OK` (the only built-in field verified to hit on this project). `latency_ms` from the brief is unverified, so it is not used.
+- **UNPROVEN on the release line** publishes an evidence issue, which serves as the escalation. It does not open a blocking question: only real choices (`BEHAVIOUR_DIFF`, `ADAPT_FAILED`) do.
+- **Probe reuse:** porter probes already calibrated on the 4.2.30 tree (AFFECTED or NOT_AFFECTED_PROVEN there) are reused on line 4.2. The UNPROVEN 15307 probe and the hand-written 87890 probe are not reused, so the porter runs for those.
+- **CVE-2026-87975** is recorded as `skipped / ALREADY_PUBLISHED` (PR #9). It gets no new run and no new PR.
+- **Disk:** removed the E1 backtest worktrees (6.8 GB of `work/cve/*-bt-*/trees`); logs and ledger rows are kept.
+- **Parallelism:** 3 worker processes share the Django clone. Git lock contention is retried, and artifacts publishing takes a lock.
+
 ## Demo
 
 ## Known limitations and next steps
