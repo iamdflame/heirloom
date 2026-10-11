@@ -46,3 +46,46 @@ def test_native_hint_only_for_gis_fixes() -> None:
     assert native_hint(["django/forms/models.py"]) == ""
     for phrase in ("no spatial models", "Field.get_prep_value", "unittest.mock"):
         assert phrase.lower() in " ".join(NATIVE_HINT.split()).lower()
+
+
+GUARDED = """\
+from django.test import SimpleTestCase
+
+
+def get_validator():
+    try:
+        from django.core.validators import DomainNameValidator
+        return DomainNameValidator
+    except ImportError:
+        return None
+
+
+class T(SimpleTestCase):
+    def test_x(self):
+        assert get_validator() is not None, "DomainNameValidator does not exist"
+"""
+
+PLAIN = """\
+from django.core.validators import DomainNameValidator
+from django.test import SimpleTestCase
+
+
+class T(SimpleTestCase):
+    def test_x(self):
+        try:
+            DomainNameValidator()("example.com\\n")
+        except Exception:
+            pass
+"""
+
+
+def test_probe_rules_refuse_imports_that_mask_a_missing_api() -> None:
+    """The 53878 porter turned ImportError into an AssertionError (evals/cve_2026_53878.json)."""
+    problems = validate({"models.py": "", "tests.py": GUARDED}, "hl_x")
+    assert any("do not guard imports" in p for p in problems)
+    caught = GUARDED.replace(
+        "        from django.core.validators import DomainNameValidator\n", "        pass\n"
+    ).replace("except ImportError:", "except (ValueError, ModuleNotFoundError):")
+    problems = validate({"models.py": "", "tests.py": caught}, "hl_x")
+    assert any("do not guard imports" in p for p in problems)
+    assert validate({"models.py": "", "tests.py": PLAIN}, "hl_x") == []

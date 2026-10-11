@@ -709,6 +709,9 @@ def feedback_for(cal: dict[str, Any], verdict: Presence) -> str | None:
     """What the porter is told after a failed calibration (never quotes the fix)."""
     if verdict.verdict != "UNPROVEN" or verdict.reason not in RETRYABLE:
         return None
+    mapped = cal.get("mapped") or []
+    if verdict.reason == "NO_REACH" and mapped and all(m["how"] == "absent" for m in mapped):
+        return None  # no fix symbol exists on L: no probe can reach it, a retry only costs
 
     def describe(tree: str, runs: list[dict[str, Any]]) -> str:
         outcomes = ", ".join(r["outcome"] for r in runs)

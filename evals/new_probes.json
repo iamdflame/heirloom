@@ -1,0 +1,28 @@
+[
+  {
+    "cve": "CVE-2026-53878",
+    "line": "4.2.30",
+    "run_id": "20261011T093132Z-c1b0",
+    "verdict": "UNPROVEN",
+    "reason": "NO_REACH",
+    "detail": "no fix symbol exists in L",
+    "attempts": [
+      {
+        "probe": "45b1fb2c20001f83fac64b4a6934037716c95bd483f03cb2ce421da34b5011a0",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      },
+      {
+        "probe": "deb3a5e92142af113b3534e3b4c0e37c529e81df0800de55cfd57a3e7a6a0fa9",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      },
+      {
+        "probe": "8731fa1ed4487ade9ae11081fb52e781cf50ba8d25f3675ed795a5621232a6be",
+        "verdict": "UNPROVEN",
+        "reason": "NO_REACH"
+      }
+    ],
+    "ledger_cost_usd": 0.122892
+  }
+]

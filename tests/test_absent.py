@@ -292,3 +292,16 @@ def test_real_53878_domain_name_validator_is_absent_on_4_2_30() -> None:
     g = absent_gate(DJANGO, {"merge_base": MERGE_BASE}, L_42, pairs, mapped, l_runs())
     assert g.ok, g.detail
     assert ADD_5_1[:10] in g.detail
+
+
+def test_no_porter_retry_when_no_fix_symbol_exists_on_l() -> None:
+    from heirloom.pipeline.calibrate import feedback_for
+    from heirloom.pipeline.presence import Presence
+
+    runs = [{"outcome": "FAIL", "details": {}, "harness_errors": []}]
+    cal: dict[str, Any] = {"um": runs, "up": runs, "lt": runs}
+    no_reach = Presence("UNPROVEN", "NO_REACH", {}, "no fix symbol exists in L")
+    absent = [{"how": "absent", "qualname": "DomainNameValidator.__init__"}]
+    assert feedback_for({**cal, "mapped": absent}, no_reach) is None
+    present = [*absent, {"how": "same-path", "qualname": "URLValidator.__call__"}]
+    assert feedback_for({**cal, "mapped": present}, no_reach) is not None
