@@ -1,0 +1,51 @@
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w1] CVE-2026-15307@7d75c0b928 (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-15830@7d75c0b928 (new) ...
+[w0] CVE-2026-53878@c93a9e3c88 (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bxwwgxd0z</task-id>
+<tool-use-id>toolu_01JAX5rAC3FQn2omXejcRaBH</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/225b7a56-c495-4dd8-b388-71381b6416ff/tasks/bxwwgxd0z.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait until an ADAPT claude -p process starts" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-53878@c93a9e3c88: evidence NOT_AFFECTED_PROVEN NONE https://github.com/iamdflame/heirloom/issues/3  $0.0
+[w0] CVE-2026-35192@17b93fa081 (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-35192@17b93fa081: harness_error     $0
+[w0] CVE-2026-5766@17b93fa081 (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-15830@7d75c0b928: evidence UNPROVEN NO_REACH https://github.com/iamdflame/heirloom/issues/4  $0.456765
+[w2] CVE-2026-15830@904349fcbe (followup) ...</event>
+</task-notification>
