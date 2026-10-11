@@ -143,6 +143,7 @@ def status(cve_id: str = typer.Argument(..., metavar="CVE"), line: str = "4.2") 
 from heirloom.lines import commands as line_commands  # noqa: E402  (Thread B: distro lines)
 
 app.add_typer(line_commands.distro_app, name="distro")
+app.command("matrix")(line_commands.matrix_cmd)
 
 
 def main() -> None:
