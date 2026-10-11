@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import ast
 import difflib
+import functools
 import re
 import subprocess
 from collections.abc import Iterable, Sequence
@@ -34,6 +35,7 @@ from heirloom.git_ops import (
     show_file,
 )
 from heirloom.integrations.neatlogs import StageSpan
+from heirloom.pipeline.absent import absent_gate
 from heirloom.pipeline.context import Ctx, StageFailed
 from heirloom.pipeline.fixes import fix_diff, fix_file_diffs, fixes_of
 from heirloom.pipeline.presence import (
@@ -335,7 +337,11 @@ class Origin:
     detail: str
 
 
-def _blame(repo: Path, rev: str, path: str, line: int) -> tuple[str, str, int]:
+def _blame(
+    repo: Path, rev: str, path: str, line: int, *, copies: bool = False
+) -> tuple[str, str, int]:
+    if copies:
+        return _blame_copies(repo, rev, path, line)
     out = git(repo, "blame", "-w", "-M", "--porcelain", "-L", f"{line},{line}", rev, "--", path)
     head = out.splitlines()[0].split()
     sha, orig_line = head[0], int(head[1])
@@ -346,12 +352,44 @@ def _blame(repo: Path, rev: str, path: str, line: int) -> tuple[str, str, int]:
     return sha, orig_path, orig_line
 
 
-def trace_origin(repo: Path, rev: str, path: str, line: int, *, max_depth: int = 25) -> Origin:
+_ENTRY = re.compile(r"^([0-9a-f]{40}) (\d+) (\d+)")
+
+
+def _blame_copies(repo: Path, rev: str, path: str, line: int) -> tuple[str, str, int]:
+    """``blame -C -C`` (copies from other files count) for the absent-symbol path (§10.4).
+
+    Blames the whole file: with ``-L n,n`` git only sees a one-line block, which is
+    below the copy-detection threshold, so copied code would look newly added.
+    """
+    found = _blame_file_copies(repo, git(repo, "rev-parse", rev).strip(), path).get(line)
+    if found is None:
+        raise StageFailed(f"blame of {rev}:{path} has no line {line}")
+    return found
+
+
+@functools.lru_cache(maxsize=256)
+def _blame_file_copies(repo: Path, rev: str, path: str) -> dict[int, tuple[str, str, int]]:
+    out = git(repo, "blame", "-w", "-M", "-C", "-C", "--line-porcelain", rev, "--", path)
+    lines: dict[int, tuple[str, str, int]] = {}
+    final, sha, orig = 0, "", 0
+    for row in out.splitlines():
+        m = _ENTRY.match(row)
+        if m:
+            sha, orig, final = m[1], int(m[2]), int(m[3])
+            lines[final] = (sha, path, orig)
+        elif row.startswith("filename ") and final:
+            lines[final] = (sha, row[len("filename ") :], orig)
+    return lines
+
+
+def trace_origin(
+    repo: Path, rev: str, path: str, line: int, *, max_depth: int = 25, copies: bool = False
+) -> Origin:
     """Follow blame through commits that *modified* the line until a pure addition."""
     text = (git(repo, "show", f"{rev}:{path}").splitlines() or [""])[line - 1]
     chain: list[str] = []
     for _ in range(max_depth):
-        sha, cpath, cline = _blame(repo, rev, path, line)
+        sha, cpath, cline = _blame(repo, rev, path, line, copies=copies)
         chain.append(sha)
         if not git_ok(repo, "rev-parse", "--verify", f"{sha}^"):
             return Origin(text, tuple(chain), sha, "root commit")
@@ -522,6 +560,7 @@ def evidence_from(cal: dict[str, Any]) -> Evidence:
             for m in cal["mutants"]
         ),
         provenance=gate(cal["provenance"]),
+        absent=gate(cal.get("absent")),
     )
 
 
@@ -597,6 +636,18 @@ def _mutants(
     def run_probe(tree: Path, name: str) -> ProbeRun:
         log = ctx.log("c4", tip[:10], f"{name}.log")
         return ProbeRun.of(runner.run(tree, [ctx.app], log_path=log))
+
+    # (a0) distro lines: the line minus its own patch for this CVE is C4a (§10.4).
+    if ctx.spec.kind == "distro":
+        from heirloom.lines.distro import distro_revert_mutant
+
+        dr = distro_revert_mutant(
+            ctx.repo, ctx.cve, tip, lambda: ctx.tree("Mut", tip, files), run_probe
+        )
+        if dr is not None:
+            out.append(dr)
+            if dr.works:
+                return out
 
     # (a) reverse-apply the fix's django/ hunks onto L, newest commit first
     # (clean index: §9 staging fix).
@@ -729,6 +780,11 @@ def on_line(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any], tip: str) -> d
             for i in range(3)
         ]
         reach = reach_gate(mapped, l_runs[0].coverage)
+        absent: Gate | None = None  # §10.4 absent-symbol path (heirloom.pipeline.absent)
+        errored = all(r.outcome == "ERROR" for r in l_runs)
+        if errored and mapped and all(m.l_symbol is None for m in mapped):
+            l_json = [run_json(r) for r in l_runs]
+            absent = absent_gate(ctx.repo, loc, tip, pairs, mapped, l_json)
         mutants: list[MutantOutcome] = []
         prov: Gate | None = None
         if all(r.outcome == "PASS" for r in l_runs):
@@ -785,6 +841,7 @@ def on_line(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any], tip: str) -> d
                 for m in mutants
             ],
             "provenance": _gate_json(prov),
+            "absent": _gate_json(absent),
         }
 
     inputs = {"probe": probe["sha"], "fixes": fixes_of(loc), "tip": tip}

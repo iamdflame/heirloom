@@ -6,7 +6,10 @@ Pure functions over executed evidence. Nothing here asks a model anything.
 |---------------------|--------------------------------------------------------------------|
 | AFFECTED            | C1 ∧ C2 ∧ C3 ∧ probe FAILs on L with the same failing ids as on U⁻ |
 | NOT_AFFECTED_PROVEN | C1 ∧ C2 ∧ 3× PASS on L ∧ ((C3 ∧ (C4a ∨ C4b caught it)) ∨ C4c)      |
+| NOT_AFFECTED_PROVEN | C1 ∧ 3× ERROR on L ∧ absent-symbol gate (§10.4, pipeline.absent)   |
 | UNPROVEN            | anything else, with a reason code                                  |
+
+On distro lines C4a is the line minus its own patch for the CVE (distro_revert).
 """
 
 from __future__ import annotations
@@ -78,6 +81,9 @@ class Evidence:
     reach: Gate
     mutants: tuple[MutantOutcome, ...] = ()
     provenance: Gate | None = None
+    # §10.4: every fix symbol is absent on L, the probe ERRORs naming it, and
+    # `blame -C -C` provenance ends after the merge base (heirloom.pipeline.absent).
+    absent: Gate | None = None
 
 
 @dataclass(frozen=True)
@@ -139,6 +145,10 @@ def presence(e: Evidence) -> Presence:
         return Presence("UNPROVEN", c1.reason, gates, c1.detail)
     c2 = gates["C2"] = c2_portability(e)
     if not c2.ok:
+        if e.absent is not None:
+            gates["absent"] = e.absent
+            if e.absent.ok and e.lt and all(r.outcome == "ERROR" for r in e.lt):
+                return Presence("NOT_AFFECTED_PROVEN", None, gates, e.absent.detail)
         return Presence("UNPROVEN", c2.reason, gates, c2.detail)
     gates["C3"] = e.reach
     l_outcome = e.lt[0].outcome
