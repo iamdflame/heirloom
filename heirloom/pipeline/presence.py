@@ -28,7 +28,8 @@ Reason = Literal[
     "MUTANT_UNBUILDABLE",
     "FAIL_MISMATCH",
 ]
-MutantMethod = Literal["reverse_apply", "added_condition", "transplant"]
+# distro_revert: on distro lines, the line minus its own patch for the CVE (C4a, §10.4).
+MutantMethod = Literal["distro_revert", "reverse_apply", "added_condition", "transplant"]
 
 
 @dataclass(frozen=True)

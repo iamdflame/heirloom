@@ -140,6 +140,11 @@ def status(cve_id: str = typer.Argument(..., metavar="CVE"), line: str = "4.2") 
         typer.echo("local detection hits: " + ", ".join(h["detection"] for h in hits))
 
 
+from heirloom.lines import commands as line_commands  # noqa: E402  (Thread B: distro lines)
+
+app.add_typer(line_commands.distro_app, name="distro")
+
+
 def main() -> None:
     try:
         app()
