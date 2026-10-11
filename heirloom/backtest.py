@@ -230,9 +230,13 @@ def run_v1(s: Settings, case: Case, budget_usd: float) -> dict[str, Any]:
         }
         module = (d.new_path or "").removeprefix("tests/").removesuffix(".py").replace("/", ".")
         src = (tree / (d.new_path or "")).read_text() if d.new_path else ""
+        try:
+            syms = symbols(src)
+        except SyntaxError:  # an unresolved or broken file: v1 has no usable tests here
+            continue
         up_ids += [
             f"{module}.{x.qualname}"
-            for x in symbols(src)
+            for x in syms
             if "." in x.qualname and x.qualname.rsplit(".", 1)[-1] in added
         ]
     own = None
