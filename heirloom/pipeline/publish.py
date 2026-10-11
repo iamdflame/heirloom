@@ -278,8 +278,7 @@ def claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
     ledger = Link("ledger", f"{base}/ledger.json")
     tag = probe["sha"][:8]
     reach = "; ".join(
-        f"`{m['qualname']}` ({len(cal['covered_lines'].get(m['l_path'] or '', []))} lines hit)"
-        for m in cal["mapped"]
+        f"`{m['qualname']}` ({m['body_lines_hit']} body lines executed)" for m in cal["mapped"]
     )
     c0_text = (
         "Upstream regression tests FAIL 3× on U⁻ and PASS 3× on U⁺ (C0)"
@@ -305,8 +304,8 @@ def claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
         Claim("C0", c0_text, _span(ctx, "c0"), (Link("U⁻ run", _first_log(ctx, base, "c0")),)),
         Claim(
             "P1",
-            f"The porter prompt contains none of the {probe['fix_lines_checked']} lines the fix "
-            "adds (independent probe)",
+            f"Independent probe: the porter prompt contains none of the "
+            f"{probe['fix_lines_checked']} line(s) the fix adds",
             _span(ctx, "probe"),
             (Link("prompt", _first_log(ctx, base, "probe")),),
         ),
@@ -389,6 +388,7 @@ def pr_body(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> tuple[str, int]
     cost = ctx.ledger.cost_total(ctx.cve, ctx.line)
     gates = " ".join(k for k, g in pres["gates"].items() if g and g["ok"])
     fix, sha = loc["fix"], committed["sha"]
+    asked = 1 if d["decide"].get("asked") else 0
     upstream_link = f"[`{fix[:10]}`](https://github.com/django/django/commit/{fix})"
     commit_link = f"[`{sha[:10]}`](https://github.com/{ctx.s.fork}/commit/{sha})"
     body = f"""> **Candidate backport — not an official Django release.**
@@ -404,7 +404,7 @@ def pr_body(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> tuple[str, int]
 | Backport commit | {commit_link} |
 | Verdict | **{pres["verdict"]}** (gates passed: {gates}) |
 | Entire checkpoint | {ckpt} |
-| Run | `{ctx.run_id}` · [artifacts]({art["base"]}) · ${cost:.2f} · escalations: 0 |
+| Run | `{ctx.run_id}` · [artifacts]({art["base"]}) · ${cost:.2f} · escalations: {asked} |
 
 ### Claims
 

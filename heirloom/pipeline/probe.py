@@ -39,7 +39,7 @@ def fix_added_lines(ctx: Ctx, fix: str) -> list[str]:
         for h in f.hunks:
             for line in h.added:
                 text = " ".join(line.split())
-                if len(text) >= 12 and not text.startswith("#"):
+                if len(text) >= 12:  # comments too: they describe the fix
                     out.append(text)
     return out
 

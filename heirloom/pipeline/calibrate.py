@@ -659,6 +659,12 @@ def run(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any]) -> dict[str, Any]:
                     "l_path": m.l_path,
                     "how": m.how,
                     "l_lines": [m.l_symbol.start, m.l_symbol.end] if m.l_symbol else None,
+                    "body_lines_hit": len(
+                        set(range(m.l_symbol.body_start, m.l_symbol.end + 1))
+                        & l_runs[0].coverage.get(m.l_path or "", set())
+                    )
+                    if m.l_symbol
+                    else 0,
                 }
                 for m in mapped
             ],
