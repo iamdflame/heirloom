@@ -1,0 +1,32 @@
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w0] CVE-2026-5766@17b93fa081: harness_error     $0
+[w0] CVE-2026-6907@17b93fa081 (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-15830@904349fcbe: evidence UNPROVEN NO_REACH https://github.com/iamdflame/heirloom/issues/4  $0.365999</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8medgxpo</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-15830@904349fcbe: evidence UNPROVEN NO_REACH https://github.com/iamdflame/heirloom/issues/4  $0.365999
+[w2] CVE-2026-35193@c55766703c (new) ...</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bmis3ow70</task-id>
+<summary>Monitor event: "campaign worker results and errors"</summary>
+<event>[w2] CVE-2026-35193@c55766703c (new) ...
+[w2] CVE-2026-35193@c55766703c: evidence UNPROVEN PROBE_ERROR https://github.com/iamdflame/heirloom/issues/5  $0.0</event>
+</task-notification>

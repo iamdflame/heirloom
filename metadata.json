@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PD3RX6VNJ2HF0C3CXXP13W",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "heirloom/campaign.py",
+    "heirloom/cli.py",
+    "heirloom/integrations/github.py",
+    "heirloom/pipeline/probe.py",
+    "heirloom/pipeline/publish.py",
+    "tests/test_probe_rules.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 15834,
+    "cache_read_tokens": 3011931,
+    "output_tokens": 7499,
+    "api_call_count": 9
+  }
+}
