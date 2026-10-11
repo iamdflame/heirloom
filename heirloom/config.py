@@ -112,6 +112,7 @@ class Settings:
     litellm_key: str
     openrouter_key: str
     max_usd_per_cve: float
+    max_overflow_usd: float  # total spend allowed on overflow keys once LiteLLM is exhausted
     neatlogs_api_key: str
     neatlogs_service_token: str
     neatlogs_project_id: str
@@ -155,6 +156,7 @@ def load(env_file: Path | None = None) -> Settings:
         litellm_key=e("LITELLM_API_KEY", "") or "",
         openrouter_key=e("OPENROUTER_API_KEY", "") or "",
         max_usd_per_cve=float(e("HEIRLOOM_MAX_USD_PER_CVE", "1.50") or "1.50"),
+        max_overflow_usd=float(e("HEIRLOOM_MAX_OVERFLOW_USD", "25") or "25"),
         neatlogs_api_key=e("NEATLOGS_API_KEY", "") or "",
         neatlogs_service_token=e("NEATLOGS_SERVICE_TOKEN", "") or "",
         neatlogs_project_id=e("NEATLOGS_PROJECT_ID", "") or "",

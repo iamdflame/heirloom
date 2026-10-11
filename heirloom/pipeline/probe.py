@@ -12,6 +12,7 @@ import ast
 import hashlib
 import json
 import re
+import sys
 from typing import Any
 
 from heirloom.git_ops import parse_diff, show_file
@@ -24,30 +25,73 @@ FILES = ("models.py", "tests.py")
 BLOCK = re.compile(r"^### (models\.py|tests\.py)\s*\n```(?:python)?\n(.*?)^```", re.M | re.S)
 WALL_CLOCK = re.compile(r"\b(time\.time|perf_counter|monotonic|sleep|timeit)\b")
 MAX_SOURCE_CHARS = 120_000
-ALLOWED_IMPORTS = frozenset(
-    {"django", "unittest", "tracemalloc", "gc", "io", "json", "re", "datetime", "decimal",
-     "uuid", "functools", "itertools", "collections", "string", "copy"}
+# Probes may use Django and the standard library (filesystem CVEs need os/stat/
+# tempfile, ...), except wall-clock time and anything that reaches the network or
+# spawns processes. Checked on the full dotted module name.
+BLOCKED_MODULES = frozenset(
+    {"time", "timeit", "socket", "ssl", "http.client", "http.server", "urllib.request",
+     "ftplib", "smtplib", "poplib", "imaplib", "telnetlib", "xmlrpc", "socketserver",
+     "subprocess", "multiprocessing", "webbrowser", "ctypes", "asyncio.subprocess"}
 )  # fmt: skip
+ALLOWED_ROOTS = frozenset(sys.stdlib_module_names) | {"django"}
+
+
+def import_allowed(module: str) -> bool:
+    parts = module.split(".")
+    if parts[0] not in ALLOWED_ROOTS:
+        return False
+    return not any(".".join(parts[: i + 1]) in BLOCKED_MODULES for i in range(len(parts)))
 
 
 class LeakageError(RuntimeError):
     pass
 
 
+def _norm(line: str) -> str:
+    return " ".join(line.split())
+
+
 def fix_added_lines(ctx: Ctx, fixes: list[str]) -> list[str]:
-    out = []
-    for f in parse_diff(fix_diff(ctx.repo, fixes, "django/")):
-        for h in f.hunks:
-            for line in h.added:
-                text = " ".join(line.split())
-                if len(text) >= 12:  # comments too: they describe the fix
-                    out.append(text)
+    """Lines the fix commits introduce: added lines absent from the file before the commit.
+
+    Comments count (they describe the fix). Re-flowed or moved lines that already exist
+    in the pre-fix file are not new information and would only cause false alarms.
+    """
+    out: list[str] = []
+    for sha in fixes:
+        for f in parse_diff(fix_diff(ctx.repo, [sha], "django/")):
+            before = show_file(ctx.repo, f"{sha}^", f.old_path or f.path) or ""
+            existing = {_norm(x) for x in before.splitlines()}
+            for h in f.hunks:
+                for line in h.added:
+                    text = _norm(line)
+                    if len(text) >= 12 and text not in existing:
+                        out.append(text)
     return out
 
 
+L_SOURCE_HEADER = "## Django 4.2 source of the affected modules"
+FEEDBACK_HEADER = "\n## Feedback on your previous probe"
+
+
+def leak_surface(prompt: str) -> str:
+    """The prompt minus the line's own source and test models.
+
+    Those sections come from the vulnerable tree L, which predates the fix, so they
+    cannot leak it; generic lines there (``except FileExistsError:``) only caused
+    false alarms. The advisory, the upstream test diff and any feedback are checked.
+    """
+    start = prompt.find(L_SOURCE_HEADER)
+    if start < 0:
+        return prompt
+    end = prompt.find(FEEDBACK_HEADER, start)
+    return prompt[:start] + (prompt[end:] if end >= 0 else "")
+
+
 def assert_no_leak(prompt: str, added: list[str]) -> int:
-    flat = " ".join(prompt.split())
-    leaked = [a for a in added if a in flat]
+    """Raise if any line the fix introduces appears as a whole line of the prompt."""
+    lines = {_norm(x) for x in prompt.splitlines()}
+    leaked = [a for a in added if a in lines]
     if leaked:
         raise LeakageError(f"porter prompt contains {len(leaked)} fix line(s): {leaked[0]!r}")
     return len(added)
@@ -74,11 +118,11 @@ def validate(files: dict[str, str], app: str) -> list[str]:
                 if node.level:
                     if mod not in ("models", ""):
                         problems.append(f"{name}:{node.lineno}: relative import of .{mod}")
-                elif mod.split(".")[0] not in ALLOWED_IMPORTS:
+                elif not import_allowed(mod):
                     problems.append(f"{name}:{node.lineno}: unexpected import from {mod}")
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    if alias.name.split(".")[0] not in ALLOWED_IMPORTS:
+                    if not import_allowed(alias.name):
                         problems.append(f"{name}:{node.lineno}: unexpected import {alias.name}")
             if (
                 isinstance(node, ast.Attribute)
@@ -104,6 +148,9 @@ def validate(files: dict[str, str], app: str) -> list[str]:
     return problems
 
 
+IMPORT_ERRORS = frozenset({"ImportError", "ModuleNotFoundError"})
+
+
 def guards_imports(node: ast.Try) -> bool:
     """A try block around an import, or a handler for ImportError/ModuleNotFoundError.
 
@@ -119,8 +166,6 @@ def guards_imports(node: ast.Try) -> bool:
     return False
 
 
-IMPORT_ERRORS = frozenset({"ImportError", "ModuleNotFoundError"})
-
 # Always in the prompt: a probe must not mask a missing API (§10.4 absent-symbol path).
 MISSING_API_RULE = (
     "\nRULE (missing APIs): import the Django API under test at module level, exactly as "
@@ -128,11 +173,6 @@ MISSING_API_RULE = (
     "missing API into an assertion. If the API does not exist in Django 4.2, the import "
     "error there is expected and is evaluated by calibration.\n"
 )
-
-
-def parse_blocks(text: str) -> dict[str, str]:
-    return {m[1]: m[2] for m in BLOCK.finditer(text)}
-
 
 # A general hint (no fix content) for advisories in GIS / native-library code (§10.4).
 NATIVE_HINT = (
@@ -150,9 +190,13 @@ def native_hint(fix_files: list[str]) -> str:
     return NATIVE_HINT if any(f.startswith(NATIVE_PATHS) for f in fix_files) else ""
 
 
-def shown_sources(ctx: Ctx, loc: dict[str, Any]) -> list[tuple[str, str]]:
-    """(path, text) of L's affected modules exactly as the prompt shows them."""
-    out: list[tuple[str, str]] = []
+def parse_blocks(text: str) -> dict[str, str]:
+    return {m[1]: m[2] for m in BLOCK.finditer(text)}
+
+
+def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> str:
+    test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
+    sources: list[str] = []
     budget = MAX_SOURCE_CHARS
     for path in loc["fix_files"]:
         src = show_file(ctx.repo, loc["tip"], path)
@@ -160,52 +204,13 @@ def shown_sources(ctx: Ctx, loc: dict[str, Any]) -> list[tuple[str, str]]:
             continue
         chunk = src[:budget]
         budget -= len(chunk)
-        out.append((path, chunk))
-    return out
-
-
-def test_models(ctx: Ctx, loc: dict[str, Any]) -> list[tuple[str, str]]:
-    """(label, text) of L's upstream test models, as the prompt shows them."""
+        sources.append(f"#### {path} (Django 4.2 tip)\n```python\n{chunk}\n```")
     labels = sorted({t.split(".")[0] for t in loc["upstream_test_ids"]})
-    found = (
-        (label, show_file(ctx.repo, loc["tip"], f"tests/{label}/models.py")) for label in labels
-    )
-    return [(label, m[:20000]) for label, m in found if m]
-
-
-def shown_by_design(ctx: Ctx, loc: dict[str, Any]) -> list[str]:
-    """What the porter is shown by design (§3): L's affected modules, the upstream test
-    diff, and L's upstream test models."""
-    test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
-    return [
-        *(t for _, t in shown_sources(ctx, loc)),
-        test_diff,
-        *(t for _, t in test_models(ctx, loc)),
-    ]
-
-
-def guarded_lines(added: list[str], shown: list[str]) -> list[str]:
-    """Fix-added lines the guard checks: those not verbatim in what the porter is shown by
-    design anyway. A line L already has (CVE-2026-35192 adds a third
-    ``patch_vary_headers(response, ("Cookie",))`` to a module that has two) or that the
-    upstream tests also contain (CVE-2026-15307's tests import DisallowedRasterLookup
-    with the same line as the fix) tells the porter nothing about the fix; any other fix
-    line anywhere in the prompt (advisory, feedback, hints) still trips the guard.
-    """
-    flat = " ".join(" ".join(text.split()) for text in shown)
-    return [a for a in added if a not in flat]
-
-
-def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> str:
-    test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
-    sources = [
-        f"#### {path} (Django 4.2 tip)\n```python\n{chunk}\n```"
-        for path, chunk in shown_sources(ctx, loc)
-    ]
-    models = [
-        f"#### tests/{label}/models.py (Django 4.2)\n```python\n{m}\n```"
-        for label, m in test_models(ctx, loc)
-    ]
+    models = []
+    for label in labels:
+        m = show_file(ctx.repo, loc["tip"], f"tests/{label}/models.py")
+        if m:
+            models.append(f"#### tests/{label}/models.py (Django 4.2)\n```python\n{m[:20000]}\n```")
     structural = ""
     if c0.get("structural"):
         structural = (
@@ -261,15 +266,13 @@ Reply with exactly two fenced code blocks, each preceded by its header line:
 def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> dict[str, Any]:
     def body(span: StageSpan) -> dict[str, Any]:
         router = Router(ctx.s, ctx.budget())
-        all_added = fix_added_lines(ctx, fixes_of(loc))
-        added = guarded_lines(all_added, shown_by_design(ctx, loc))
-        span.set("fix_lines_already_in_l", len(all_added) - len(added))
+        added = fix_added_lines(ctx, fixes_of(loc))
         attempt_feedback = feedback
         total = 0.0
         problems: list[str] = []
         for n in range(3):
             prompt = build_prompt(ctx, loc, c0, attempt_feedback)
-            checked = assert_no_leak(prompt, added)
+            checked = assert_no_leak(leak_surface(prompt), added)
             tag = hashlib.sha256((attempt_feedback or "").encode()).hexdigest()[:8]
             ctx.log("probe", f"prompt-{tag}-{n}.md").write_text(prompt)
             res = router.complete(
@@ -290,7 +293,6 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
                     "provider": res.provider,
                     "tokens": [res.input_tokens, res.output_tokens],
                     "fix_lines_checked": checked,
-                    "fix_lines_already_in_l": len(all_added) - len(added),
                     "attempts": n + 1,
                 }
             attempt_feedback = (

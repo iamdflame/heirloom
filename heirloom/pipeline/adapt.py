@@ -19,12 +19,35 @@ from heirloom.pipeline.context import Ctx, StageFailed
 from heirloom.pipeline.fixes import fix_diff, fixes_of
 
 MAX_HISTORY_CHARS = 6000
+PROMPT_VERSION = 2  # part of the stage inputs: a prompt change re-runs ADAPT
+
+
+def sanitized(ctx: Ctx) -> bool:
+    """Eval/distro lines adapt in a one-commit repo: no future history to leak (§10.3)."""
+    return ctx.spec.kind != "release"
 
 
 def lfix(ctx: Ctx, base: str, probe: dict[str, str], patch: str | None) -> Path:
-    """Reset ``Lfix`` to ``base`` + probe (+ patch). Never call after publish.commit."""
+    """Reset ``Lfix`` to ``base`` + probe (+ patch). Never call after publish.commit.
+
+    Release lines use a worktree of the Django clone on ``heirloom/<cve>-<line>``.
+    Other lines use a fresh repo holding only ``base`` (``git init`` + a depth-1
+    fetch), so the adapter cannot reach any later commit, e.g. the fellows' fix.
+    """
     path = ctx.tree_path("Lfix")
-    if not path.exists():
+    if sanitized(ctx):
+        if not (path / ".git").exists():
+            path.mkdir(parents=True, exist_ok=True)
+            git(path, "init", "-q")
+            git(path, "fetch", "-q", "--depth", "1", f"file://{ctx.repo}", base)
+            git(path, "checkout", "-q", "-B", ctx.branch, "FETCH_HEAD")
+        else:
+            git(path, "checkout", "-q", "-f", "-B", ctx.branch, base)
+            git(path, "reset", "-q", "--hard", base)
+            git(path, "clean", "-q", "-fdx", "-e", ".claude/", "-e", ".entire/")
+        if git(path, "rev-list", "--count", "HEAD").strip() != "1":
+            raise StageFailed(f"sanitized tree {path} holds more than the line tip")
+    elif not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
         git(ctx.repo, "worktree", "prune")
         git(ctx.repo, "worktree", "add", "-q", "-B", ctx.branch, str(path), base)
@@ -35,7 +58,7 @@ def lfix(ctx: Ctx, base: str, probe: dict[str, str], patch: str | None) -> Path:
     ctx.install_probe(path, probe)
     if patch:
         git(path, "apply", "--whitespace=nowarn", "-", input=patch)
-    entire.enable(path, ctx.s.fork)
+    entire.enable(path, ctx.s.fork, publishing=ctx.spec.publish)
     return path
 
 
@@ -95,6 +118,8 @@ Upstream fixed {ctx.cve} on the 5.2 branch with the commit below. Rebuild the sa
 for 4.2 using this codebase's idioms (4.2 lacks some 5.x helpers; do not add them).
 
 Rules:
+- Keep the fix's observable behaviour identical to upstream: the same exception types
+  and the same user-visible messages (copy new or changed message strings verbatim).
 - Edit only files under django/. Do not create, edit or delete anything under tests/.
 - Do not commit or push.
 - The failing probe is tests/{ctx.app}. Check with:
@@ -141,6 +166,7 @@ def run(
             ctx.s,
             max_budget_usd=min(2.0, remaining),
             log_dir=ctx.dir / "logs" / "adapt" / tag,
+            sanitized=sanitized(ctx),
         )
         span.set("cost_usd", round(res.cost_usd, 6))
         span.set("claude_session_id", res.session_id)
@@ -173,4 +199,5 @@ def run(
             "raw": str(res.raw_path),
         }
 
-    return ctx.stage("adapt", {"fix": loc["fix"], "probe": probe["sha"], "hint": hint}, body)
+    inputs = {"fix": loc["fix"], "probe": probe["sha"], "hint": hint, "prompt": PROMPT_VERSION}
+    return ctx.stage("adapt", inputs, body)

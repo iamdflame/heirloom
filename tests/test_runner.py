@@ -147,6 +147,18 @@ def test_subtest_failures_count_per_subtest() -> None:
     assert res.failing_ids == {T1}
 
 
+def test_bracketed_subtest_messages_are_parsed() -> None:
+    """Python 3.12 prints subTest(msg) as `FAIL: test_x (id) [msg]`; msg can be anything."""
+    sections = [
+        section("FAIL", T1, "AssertionError: a").replace(f"({T1})", f'({T1}) [x" from t; --]'),
+        section("FAIL", T1, "AssertionError: b").replace(f"({T1})", f"({T1}) [name\x1b]"),
+    ]
+    out = synth([f"test_one ({T1}) ... FAIL"], sections, 1, "FAILED (failures=2)")
+    res = classify(out, returncode=1)
+    assert res.outcome == "FAIL"
+    assert res.failing_ids == {T1}
+
+
 def test_import_failure_of_probe_app_is_error() -> None:
     failed = "unittest.loader._FailedTest.hl_cve_x"
     out = synth(
@@ -250,3 +262,19 @@ def test_coverage_is_limited_to_include_and_keyed_relative_to_worktree(tmp_path:
     assert list(res.coverage) == ["django/forms/models.py"]
     # save_existing_objects body on 4.2.30 is lines 910-933.
     assert res.coverage["django/forms/models.py"] & set(range(910, 934))
+
+
+@pytest.mark.skipif(
+    not (TEST_PYTHON.exists() and (WORK / "wt" / "L" / "tests" / "hl_cve_2026_87975").exists()),
+    reason="needs the spike worktree and test venv",
+)
+def test_coverage_of_a_file_the_run_never_imports_is_empty(tmp_path: Path) -> None:
+    wt = WORK / "wt" / "L"
+    res = Runner(python=TEST_PYTHON, timeout=300).run(
+        wt,
+        ["hl_cve_2026_87975"],
+        log_path=tmp_path / "run.log",
+        coverage_include=[wt / "django" / "contrib" / "gis" / "gdal" / "raster" / "source.py"],
+    )
+    assert res.outcome == "FAIL"
+    assert res.coverage == {}

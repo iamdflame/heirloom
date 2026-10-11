@@ -71,3 +71,21 @@ def test_mask_survives_odd_span_shapes() -> None:
     odd: dict[str, object] = {"attributes": None, "events": [None, {"attributes": "x"}]}
     assert mask(odd) is odd
     assert mask({}) == {}
+
+
+def test_api_definitions_mirror_the_local_predicates(monkeypatch: object) -> None:
+    from heirloom.integrations import neatlogs_api as api
+
+    assert set(api.definitions()) == set(DETECTIONS)
+    rules = api.definitions()["not_affected_without_calibration"]
+    assert rules == [
+        {
+            "type": "rule",
+            "field": "heirloom.verdict",
+            "operator": "=",
+            "value": "NOT_AFFECTED_PROVEN",
+        },
+        {"type": "rule", "field": "heirloom.calibrated", "operator": "=", "value": False},
+    ]
+    key = api.idempotency_key("x")
+    assert key == api.idempotency_key("x") and key[14] == "4"

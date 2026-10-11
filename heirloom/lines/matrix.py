@@ -200,6 +200,12 @@ def default_cves(s: Settings, since: date = date(2026, 2, 1)) -> list[str]:
 # Cells -------------------------------------------------------------------------
 
 
+def use_gis_settings(ctx: Ctx, loc: dict[str, Any]) -> None:
+    """GIS fixes run against the PostGIS container, as in ``run.pipeline()``."""
+    if any(f.startswith("django/contrib/gis/") for f in loc["fix_files"]):
+        ctx.settings_module = "test_postgis"
+
+
 def _runs(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
     keep = (
         "outcome", "failing_ids", "skipped_ids", "details", "harness_errors", "reason",
@@ -233,6 +239,7 @@ def run_cell(
         try:
             with guard.publishing(spec):  # publish=False: every GitHub/push call refuses
                 loc = locate.run(ctx)
+                use_gis_settings(ctx, loc)
                 reused = {
                     **probe,
                     "origin": src.origin,
@@ -326,6 +333,7 @@ def new_probe(s: Settings, cve: str, spec: LineSpec) -> dict[str, Any]:
         try:
             with guard.publishing(spec):
                 loc = locate.run(ctx)
+                use_gis_settings(ctx, loc)
                 c0 = calibrate.run_c0(ctx, loc)
                 feedback: str | None = None
                 for _ in range(3):

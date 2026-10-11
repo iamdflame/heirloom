@@ -127,6 +127,111 @@ def _clean_remote(s: config.Settings, cve_id: str, branch: str) -> None:
 
 
 @app.command()
+def backtest(
+    set_name: str = typer.Option("django-4.2-2026", "--set"),
+    pipeline: str = typer.Option("v2", help="v2 (full Heirloom) or v1 (naive baseline)."),
+    cve_ids: list[str] | None = typer.Option(None, "--cve", help="Only these CVEs (repeatable)."),
+    kinds: list[str] | None = typer.Option(None, "--kind", help="positive/negative/extra."),
+    v1_budget: float = typer.Option(0.5, help="Per-case model budget for v1 conflict resolution."),
+    rerun: bool = typer.Option(False, help="Re-run cases that already have a result row."),
+) -> None:
+    """E1 backtest against the fellows' real 4.2 patches; results -> evals/results.json."""
+    from heirloom import backtest as bt
+
+    if set_name != bt.SET:
+        raise typer.BadParameter(f"unknown set {set_name!r}")
+    s = config.load()
+    out = s.root / "evals" / "results.json"
+    todo = [
+        c
+        for c in bt.cases(s.django_repo)
+        if (not cve_ids or c.cve in cve_ids) and (not kinds or c.kind in kinds)
+    ]
+    done = json.loads(out.read_text()).get("runs", {}).get(pipeline, {}) if out.exists() else {}
+    if not rerun:
+        todo = [
+            c for c in todo if done.get(f"{c.cve}:{c.kind}", {}).get("verdict") in (None, "SKIPPED")
+        ]
+    # Positives first: negatives reuse their calibrated probes.
+    todo.sort(key=lambda c: {"positive": 0, "extra": 1, "negative": 2}[c.kind])
+    for c in todo:
+        typer.echo(f"{pipeline} {c.cve} {c.kind} L={c.tip[:10]} truth={c.truth} ...")
+        result = bt.run_v2(s, c) if pipeline == "v2" else bt.run_v1(s, c, v1_budget)
+        row = bt.record(out, pipeline, c, result)
+        typer.echo(
+            f"  -> {row['verdict']} ({row.get('reason')}) correct={row['correct']} "
+            f"fellows_test={row.get('fellows_test_passes')} ${row['cost_usd']} "
+            f"{row['minutes']} min"
+        )
+        if pipeline == "v2" and c.truth == "AFFECTED" and row["verdict"] == "NOT_AFFECTED_PROVEN":
+            typer.echo("STOP: false NOT_AFFECTED in v2")
+            raise typer.Exit(4)
+    summary = json.loads(out.read_text())["summary"].get(pipeline)
+    typer.echo(json.dumps(summary, indent=1))
+
+
+@app.command()
+def detections(
+    create: bool = typer.Option(False, help="Create the five §5 conditional detections."),
+    delete_s4: bool = typer.Option(False, help="Delete the two S4 test detections."),
+    report: bool = typer.Option(True, help="Write hits/trends + local mirror to evals/."),
+) -> None:
+    """neatlogs detections: create, clean up, and report (with the ledger's local mirror)."""
+    import time
+
+    from heirloom.integrations import neatlogs_api as api
+
+    s = config.load()
+    client = api.Api(s)
+    if create:
+        existing = {d["displayName"] for d in client.detections()}
+        for name, rules in api.definitions().items():
+            if name in existing:
+                typer.echo(f"exists: {name}")
+                continue
+            code, _ = client.create(name, rules)
+            typer.echo(f"create {name}: {code}")
+    if delete_s4:
+        for det in api.S4_TEST_DETECTIONS:
+            code, _ = client.delete(det)
+            typer.echo(f"delete {det}: {code}")
+    if report:
+        now = time.time()
+        start = time.strftime("%Y-%m-%dT%H:00:00Z", time.gmtime(now - 86400))
+        end = time.strftime("%Y-%m-%dT%H:00:00Z", time.gmtime(now + 3600))
+        remote = {
+            d["displayName"]: {
+                "id": d["id"],
+                "hits": client.hits(d["id"]),
+                "trends": client.trends(d["id"], start, end),
+            }
+            for d in client.detections()
+            if d["displayName"] in api.definitions()
+        }
+        ledger = Ledger(s.ledger_path)
+        local: dict[str, int] = {}
+        for h in ledger.hits():
+            local[h["detection"]] = local.get(h["detection"], 0) + 1
+        ledger.close()
+        out = {
+            "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "field_template": api.field("{name}"),
+            "neatlogs": remote,
+            "local_mirror": {name: local.get(name, 0) for name in api.definitions()},
+        }
+        path = s.root / "evals" / "detections.json"
+        path.write_text(json.dumps(out, indent=2) + "\n")
+        typer.echo(
+            json.dumps(
+                {
+                    "neatlogs_hits": {k: v["hits"] for k, v in remote.items()},
+                    "local_mirror": out["local_mirror"],
+                }
+            )
+        )
+
+
+@app.command()
 def status(cve_id: str = typer.Argument(..., metavar="CVE"), line: str = "4.2") -> None:
     """Show the ledger for a CVE × line."""
     ledger = Ledger(config.load().ledger_path)
