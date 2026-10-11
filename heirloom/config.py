@@ -118,9 +118,14 @@ class Settings:
     neatlogs_project_id: str
     neatlogs_trace_url: str
     probe_model: str
+    porter_first_model: str  # the cheaper model the porter tries first (§11 / B4)
     reading_model: str
     adapt_model: str
     test_timeout: float
+
+    def porter_models(self) -> tuple[str, ...]:
+        """Porter attempt models: the cheaper one first, the stronger one for retries."""
+        return tuple(dict.fromkeys((self.porter_first_model, self.probe_model)))
 
     @property
     def ledger_path(self) -> Path:
@@ -166,6 +171,7 @@ def load(env_file: Path | None = None) -> Settings:
         )
         or "",
         probe_model=e("HEIRLOOM_PROBE_MODEL", "claude-sonnet-4.6") or "claude-sonnet-4.6",
+        porter_first_model=e("HEIRLOOM_PORTER_FIRST_MODEL", "claude-haiku") or "claude-haiku",
         reading_model=e("HEIRLOOM_READING_MODEL", "claude-haiku") or "claude-haiku",
         adapt_model=e("HEIRLOOM_ADAPT_MODEL", "claude-sonnet-4.6") or "claude-sonnet-4.6",
         test_timeout=float(e("HEIRLOOM_TEST_TIMEOUT", "900") or "900"),

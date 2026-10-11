@@ -68,13 +68,21 @@ def run(ctx: Ctx) -> dict[str, Any]:
         adv = advisories[ctx.cve]
         series = adv.first_series(ctx.spec.upstreams)
         fixes = [rev_parse(ctx.repo, sha) for sha in adv.fix_commits(series)]
+        done = [rev_parse(ctx.repo, sha) for sha in ctx.done_fixes]
+        if done:  # a follow-up: port only the commits this line does not carry yet
+            fixes = [sha for sha in fixes if sha not in done]
+            if not fixes:
+                raise StageFailed(f"{ctx.cve}: no fix commit beyond the ones already ported")
         messages = [git(ctx.repo, "log", "-1", "--format=%B", sha) for sha in fixes]
         first = messages[0]
-        if ctx.cve not in first or not (f"Fixed {ctx.cve}" in first or "Backport of" in first):
+        if ctx.cve not in first or not (
+            f"Fixed {ctx.cve}" in first or "Backport of" in first or f"Refs {ctx.cve}" in first
+        ):
             raise StageFailed(
                 f"{fixes[0][:10]} message does not say 'Fixed {ctx.cve}'/'Backport of'"
             )
-        for sha, msg in zip(fixes[1:], messages[1:], strict=True):
+        later = slice(0 if done else 1, None)  # a follow-up's every commit must cite the CVE
+        for sha, msg in zip(fixes[later], messages[later], strict=True):
             if ctx.cve not in msg:  # follow-ups say "Refs CVE-…"
                 raise StageFailed(f"follow-up {sha[:10]} does not mention {ctx.cve}")
         files = sorted(
@@ -123,6 +131,14 @@ def run(ctx: Ctx) -> dict[str, Any]:
             "test_files": test_files,
             "upstream_test_ids": upstream_test_ids(ctx, fixes, test_files),
             "advisory": advisory_text(ctx, fixes, adv.title),
+            "done_fixes": done,
         }
 
-    return ctx.stage("locate", {"cve": ctx.cve, "line": ctx.line, "tip": ctx.spec.tip}, body)
+    inputs: dict[str, Any] = {"cve": ctx.cve, "line": ctx.line, "tip": ctx.spec.tip}
+    if ctx.archive_ref != "origin/main":  # campaign replay: the archive as of that commit
+        inputs["archive"] = ctx.archive_ref
+    if ctx.done_fixes:
+        inputs["done_fixes"] = list(ctx.done_fixes)
+    if ctx.spec.base_branch and ctx.spec.base_branch.startswith("heirloom/"):
+        inputs["base_branch"] = ctx.spec.base_branch  # stacked on an earlier backport
+    return ctx.stage("locate", inputs, body)

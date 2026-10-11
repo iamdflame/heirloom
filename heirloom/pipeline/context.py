@@ -49,6 +49,9 @@ class Ctx:
     run_id: str
     campaign_id: str = "NONE"
     archive_ref: str = "origin/main"  # security.txt revision LOCATE reads (campaign replay)
+    # Fix commits this line already carries (a follow-up ports only the newer ones).
+    done_fixes: tuple[str, ...] = ()
+    note: str = ""  # shown on the PR/issue, e.g. "stacked on #12 (CVE-…)"
     settings_module: str | None = None  # e.g. "test_postgis" once LOCATE sees a GIS fix
     verdict: str = "PENDING"
     calibrated: bool = False

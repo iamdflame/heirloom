@@ -17,6 +17,7 @@ from heirloom.git_ops import git, git_ok
 from heirloom.git_ops import push as git_push
 from heirloom.integrations import entire, github
 from heirloom.integrations.neatlogs import StageSpan
+from heirloom.ledger import canonical_hash
 from heirloom.pipeline.context import Ctx, StageFailed, Unresolvable
 
 KEY_TRAILER = "Heirloom-Key"
@@ -107,13 +108,18 @@ def _ensure_checkpoint(ctx: Ctx, checkpoint: str | None) -> dict[str, str] | Non
     return {"ref": found[0], "sha": found[1]} if found else None
 
 
+def _fast_forward(ctx: Ctx, remote: str, sha: str) -> bool:
+    """Whether pushing ``sha`` over ``remote`` is a fast-forward (a follow-up commit)."""
+    return git_ok(ctx.repo, "merge-base", "--is-ancestor", remote, sha)
+
+
 def push(ctx: Ctx, committed: dict[str, Any]) -> dict[str, Any]:
     sha = committed["sha"]
 
     def reconcile() -> dict[str, Any] | None:
         remote = _remote_sha(ctx)
-        if remote is None:
-            return None
+        if remote is None or (remote != sha and _fast_forward(ctx, remote, sha)):
+            return None  # not pushed yet (a follow-up's branch still has the older commit)
         if remote != sha:
             raise Unresolvable(f"{ctx.branch} on the fork is {remote[:10]}, expected {sha[:10]}")
         return {
@@ -123,14 +129,14 @@ def push(ctx: Ctx, committed: dict[str, Any]) -> dict[str, Any]:
 
     def body(span: StageSpan) -> dict[str, Any]:
         remote = _remote_sha(ctx)
-        if remote not in (None, sha):
+        if remote not in (None, sha) and not _fast_forward(ctx, str(remote), sha):
             raise StageFailed(
-                f"{ctx.branch} already exists on the fork at {remote[:10]}; "
-                "run `heirloom clean --remote` first (never force-pushed)"
+                f"{ctx.branch} already exists on the fork at {str(remote)[:10]}, which "
+                f"{sha[:10]} does not fast-forward; never force-pushed"
             )
         tree = ctx.tree_path("Lfix")
         entire.enable(tree, ctx.s.fork)  # asserts checkpoints sync to the fork
-        if remote is None:
+        if remote != sha:  # new branch, or a fast-forward for a follow-up fix
             git_push(tree, "-q", ctx.s.fork_remote, f"HEAD:refs/heads/{ctx.branch}")
         out = reconcile()
         if out is None:
@@ -201,7 +207,8 @@ def _ledger_dump(ctx: Ctx) -> list[dict[str, Any]]:
     ]
 
 
-def artifacts(ctx: Ctx, pushed: dict[str, Any]) -> dict[str, Any]:
+def artifacts(ctx: Ctx, key: dict[str, Any]) -> dict[str, Any]:
+    """Push the run's logs + ledger to the artifacts branch (``key`` = what they evidence)."""
     rel = f"runs/{ctx.run_id}/{ctx.cve}-{ctx.line}"
 
     def reconcile() -> dict[str, Any] | None:
@@ -240,13 +247,7 @@ def artifacts(ctx: Ctx, pushed: dict[str, Any]) -> dict[str, Any]:
             raise StageFailed("artifacts push reported success but the files are not on origin")
         return out
 
-    return ctx.stage(
-        "publish.artifacts",
-        {"remote_sha": pushed["remote_sha"]},
-        body,
-        effect=True,
-        reconcile=reconcile,
-    )
+    return ctx.stage("publish.artifacts", key, body, effect=True, reconcile=reconcile)
 
 
 def _base_url(ctx: Ctx, sha: str, rel: str) -> str:
@@ -413,7 +414,7 @@ def pr_body(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> tuple[str, int]
 
 Claims without evidence: **{unlinked}**. Span links use the `NEATLOGS_TRACE_URL` template;
 the trace and span ids are shown so they can be looked up directly.
-
+{_notes(ctx, d)}
 ### Probe
 
 `tests/{ctx.app}/` was written by an independent porter that never saw the fix diff and is
@@ -429,6 +430,17 @@ included in the commit as the regression test.
     return body, unlinked
 
 
+def _notes(ctx: Ctx, d: dict[str, Any]) -> str:
+    notes = [n for n in (ctx.note, d.get("decide", {}).get("note")) if n]
+    prec = (d.get("decide") or {}).get("precedent")
+    if prec:
+        notes.append(
+            f"Decision `{d['decide']['decision']}` applies stored precedent "
+            f"**{prec['id']}** ({prec['issue']})."
+        )
+    return "".join(f"\n> **Note:** {n}\n" for n in notes)
+
+
 def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
     def reconcile() -> dict[str, Any] | None:
         found = github.find_pr(ctx.s.fork, ctx.branch)
@@ -442,6 +454,18 @@ def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
         existing = reconcile()
         if existing:
             github.edit_pr_body(ctx.s.fork, int(existing["number"]), body_file)
+            if loc_done := d["locate"].get("done_fixes"):  # a follow-up commit
+                sha = d["commit"]["sha"]
+                github.comment(
+                    ctx.s.fork,
+                    int(existing["number"]),
+                    f"Follow-up: the security archive (`{d['locate']['archive_ref'][:10]}`) "
+                    f"added upstream commit `{d['locate']['fix'][:10]}` for {ctx.cve}. "
+                    f"Heirloom ported it on top of this branch as `{sha[:10]}` "
+                    f"(fast-forward of `{str(loc_done and d['locate']['base'])[:10]}`) and "
+                    "updated the claims above.",
+                    pr=True,
+                )
             return {**existing, "claims_unlinked": unlinked, "reused": True}
         title = d["commit_subject"] + " (candidate backport)"
         assert ctx.spec.base_branch is not None  # publishing lines always have one
@@ -454,6 +478,177 @@ def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
     return ctx.stage(
         "publish.pr",
         {"sha": d["commit"]["sha"], "artifacts": art["commit"]},
+        body,
+        effect=True,
+        reconcile=reconcile,
+    )
+
+
+# evidence (NOT_AFFECTED_PROVEN / UNPROVEN) -----------------------------------------
+
+
+def _gate_text(g: dict[str, Any] | None) -> str:
+    if not g:
+        return "not run"
+    return ("holds" if g["ok"] else f"fails ({g.get('reason') or 'no reason'})") + (
+        f": {g['detail']}" if g.get("detail") else ""
+    )
+
+
+def evidence_claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
+    loc, c0, probe, cal, pres = d["locate"], d["c0"], d["probe"], d["calibrate"], d["presence"]
+    ledger = Link("ledger", f"{base}/ledger.json")
+    out = [
+        Claim(
+            "L1",
+            f"Upstream {loc['series']} fix: "
+            + ", ".join(f"`{f[:10]}`" for f in loc["fixes"])
+            + f" (security archive at `{loc['archive_ref'][:10]}`)",
+            _span(ctx, "locate"),
+            (ledger,),
+        ),
+        Claim(
+            "C0",
+            "Upstream regression tests FAIL 3× on U⁻ and PASS 3× on U⁺"
+            if c0.get("holds")
+            else f"Upstream tests are not usable as the probe ({c0.get('detail') or 'C0 fails'})",
+            _span(ctx, "c0"),
+            (Link("U⁻ run", _first_log(ctx, base, "c0")),),
+        ),
+    ]
+    if probe is None or cal is None:
+        out.append(
+            Claim("P1", f"No usable probe: {pres['detail']}", _span(ctx, "probe"), (ledger,))
+        )
+    else:
+        tag = probe["sha"][:8]
+        gates = pres.get("gates") or {}
+        out += [
+            Claim(
+                "P1",
+                f"Independent probe by `{probe.get('model', '?')}`: the porter prompt contains "
+                f"none of the {probe.get('fix_lines_checked', '?')} line(s) the fix adds",
+                _span(ctx, "probe"),
+                (Link("prompt", _first_log(ctx, base, "probe")),),
+            ),
+            Claim(
+                "C1",
+                f"Discrimination on U⁻/U⁺: {_gate_text(gates.get('C1'))}",
+                _span(ctx, "calibrate"),
+                (
+                    Link("U⁻", _first_log(ctx, base, "calibrate", tag, "Um-0.log")),
+                    Link("U⁺", _first_log(ctx, base, "calibrate", tag, "Up-0.log")),
+                ),
+            ),
+            Claim(
+                "C2",
+                f"Portability to {ctx.line}: {_gate_text(gates.get('C2'))}",
+                _span(ctx, "calibrate"),
+                (Link("L run", _first_log(ctx, base, "calibrate", tag)),),
+            ),
+            Claim(
+                "C3",
+                f"Reach on {ctx.line}: {_gate_text(gates.get('C3'))}; "
+                + "; ".join(
+                    f"`{m['qualname']}` {m['body_lines_hit']} body lines"
+                    for m in cal.get("mapped", [])
+                ),
+                _span(ctx, "calibrate"),
+                (ledger,),
+            ),
+        ]
+        for name in ("C4", "C4a", "C4b", "C4c", "ABSENT"):
+            if gates.get(name):
+                out.append(
+                    Claim(
+                        name,
+                        f"{name}: {_gate_text(gates[name])}",
+                        _span(ctx, "calibrate"),
+                        (ledger,),
+                    )
+                )
+    out.append(
+        Claim(
+            "V1",
+            f"Verdict **{pres['verdict']}**"
+            + (f" ({pres['reason']})" if pres.get("reason") else "")
+            + f": {pres['detail']}",
+            _span(ctx, "presence"),
+            (ledger,),
+        )
+    )
+    return out
+
+
+def evidence(ctx: Ctx, d: dict[str, Any]) -> dict[str, Any]:
+    """One evidence issue on the heirloom repo for a CVE × line, with no code change."""
+    pres = d["presence"]
+    marker = f"heirloom-evidence:{ctx.cve}:{ctx.line}"
+    art = artifacts(ctx, {"evidence": canonical_hash(pres)})
+
+    def reconcile() -> dict[str, Any] | None:
+        found = github.find_issue(ctx.s.heirloom_repo, marker)
+        return {"url": found["url"], "number": found["number"]} if found else None
+
+    def body(span: StageSpan) -> dict[str, Any]:
+        table, unlinked = render(evidence_claims(ctx, d, art["base"]), ctx.s.neatlogs_trace_url)
+        span.set("claims_unlinked", unlinked)
+        loc = d["locate"]
+        reason = f" ({pres['reason']})" if pres.get("reason") else ""
+        escalation = (
+            "\n**A person should review this:** Heirloom could not prove either way and "
+            "published no code. Reply with `/heirloom answer publish-evidence` to accept this "
+            "as the record, or `/heirloom answer skip`.\n"
+            if pres["verdict"] == "UNPROVEN"
+            else ""
+        )
+        fixes = ", ".join(
+            f"[`{f[:10]}`](https://github.com/django/django/commit/{f})" for f in loc["fixes"]
+        )
+        cost = ctx.ledger.cost_total(ctx.cve, ctx.line)
+        repo_link = f"[Heirloom](https://github.com/{ctx.s.heirloom_repo})"
+        text = "\n".join(
+            [
+                f"> Evidence record by {repo_link}: no code change.",
+                "> Facts are decided by executed tests, not by a model. Each claim links to its",
+                "> neatlogs span and its run artifact; a claim missing either is struck.",
+                "",
+                f"**{ctx.cve}** on Django {ctx.line}: **{pres['verdict']}**{reason}",
+                "",
+                f"{loc['title']} ([advisory]({loc['url']}))",
+                "",
+                "| | |",
+                "|---|---|",
+                f"| Upstream fix ({loc['series']}) | {fixes} |",
+                f"| Line tip | `{loc['tip'][:10]}` |",
+                f"| Run | `{ctx.run_id}` · [artifacts]({art['base']}) · ${cost:.2f} |",
+                f"{escalation}{_notes(ctx, d)}",
+                "### Claims",
+                "",
+                table,
+                "",
+                f"Claims without evidence: **{unlinked}**.",
+                "",
+                f"<!-- {marker} -->",
+                "",
+            ]
+        )
+        body_file = ctx.log("publish", "evidence-issue.md")
+        body_file.write_text(text)
+        existing = reconcile()
+        if existing:
+            github.edit_issue_body(ctx.s.heirloom_repo, int(existing["number"]), body_file)
+            return {**existing, "claims_unlinked": unlinked, "reused": True}
+        title = f"[heirloom] {ctx.cve} on Django {ctx.line}: {pres['verdict']}{reason}"
+        url = github.create_issue(ctx.s.heirloom_repo, title, body_file)
+        found = reconcile()
+        if found is None:
+            raise StageFailed(f"gh issue create returned {url} but the issue was not found")
+        return {**found, "claims_unlinked": unlinked, "reused": False}
+
+    return ctx.stage(
+        "publish.evidence",
+        {"presence": canonical_hash(pres), "artifacts": art["commit"]},
         body,
         effect=True,
         reconcile=reconcile,

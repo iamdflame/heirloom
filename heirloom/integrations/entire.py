@@ -134,6 +134,7 @@ def run_claude(
     from heirloom.models.router import (
         OPENROUTER_MODELS,
         OVERFLOW_LEDGER,
+        BudgetExceeded,
         OverflowLedger,
         overflow_allowance,
     )
@@ -173,7 +174,7 @@ def run_claude(
             )
         )
     if not providers:
-        raise EntireError(
+        raise BudgetExceeded(
             "no provider for claude -p: the LiteLLM key is exhausted and the overflow "
             f"allowance is ${allowance:.2f}"
         )

@@ -224,9 +224,8 @@ class Router:
         except Exception as exc:
             allowance = overflow_allowance(self.settings) if model in OPENROUTER_MODELS else 0.0
             if allowance <= 0:
-                raise RuntimeError(
-                    f"LiteLLM gateway failed for {model} (no overflow): {exc}"
-                ) from exc
+                kind = BudgetExceeded if key_exhausted(self.settings) else RuntimeError
+                raise kind(f"LiteLLM gateway failed for {model} (no overflow): {exc}") from exc
             resp = litellm.completion(
                 model=f"openrouter/{OPENROUTER_MODELS[model]}",
                 api_key=self.settings.openrouter_key,

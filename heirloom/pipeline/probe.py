@@ -265,8 +265,17 @@ Reply with exactly two fenced code blocks, each preceded by its header line:
 {retry}"""
 
 
-def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> dict[str, Any]:
+def run(
+    ctx: Ctx,
+    loc: dict[str, Any],
+    c0: dict[str, Any],
+    feedback: str | None,
+    model: str | None = None,
+) -> dict[str, Any]:
+    model = model or ctx.s.probe_model
+
     def body(span: StageSpan) -> dict[str, Any]:
+        span.set("porter_model", model)
         router = Router(ctx.s, ctx.budget())
         added = fix_added_lines(ctx, fixes_of(loc))
         attempt_feedback = feedback
@@ -278,9 +287,7 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
             checked = assert_no_leak(leak_surface(prompt), added)
             tag = hashlib.sha256((attempt_feedback or "").encode()).hexdigest()[:8]
             ctx.log("probe", f"prompt-{tag}-{n}.md").write_text(prompt)
-            res = router.complete(
-                ctx.s.probe_model, [{"role": "user", "content": prompt}], max_tokens=6000
-            )
+            res = router.complete(model, [{"role": "user", "content": prompt}], max_tokens=6000)
             total += res.cost_usd
             estimated = estimated or res.cost_estimated
             span.set("cost_usd", round(total, 6))
@@ -309,5 +316,13 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
             )
         raise StageFailed(f"porter produced no valid probe: {problems}")
 
-    inputs = {"locate": loc["fix"], "c0": c0.get("structural"), "feedback": feedback}
+    inputs: dict[str, Any] = {
+        "locate": loc["fix"],
+        "c0": c0.get("structural"),
+        "feedback": feedback,
+    }
+    if model != ctx.s.probe_model:  # keeps earlier ledger rows (default model) reusable
+        inputs["model"] = model
+    if loc.get("done_fixes"):
+        inputs["fixes"] = loc["fixes"]  # a follow-up probes only the newer commits
     return ctx.stage("probe", inputs, body)

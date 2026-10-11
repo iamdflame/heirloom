@@ -88,3 +88,36 @@ def create_issue(repo: str, title: str, body_file: Path) -> str:
     guard.check(f"gh issue create on {repo}")
     out = gh("issue", "create", "--repo", repo, "--title", title, "--body-file", str(body_file))
     return out.strip().splitlines()[-1]
+
+
+def edit_issue_body(repo: str, number: int, body_file: Path) -> None:
+    guard.check(f"gh issue edit {number} on {repo}")
+    gh("issue", "edit", str(number), "--repo", repo, "--body-file", str(body_file))
+
+
+def comments(repo: str, number: int, *, pr: bool = False) -> list[dict[str, Any]]:
+    """Comments on an issue or PR: [{author: {login}, body, url, createdAt}]."""
+    out = gh("pr" if pr else "issue", "view", str(number), "--repo", repo, "--json", "comments")
+    data: dict[str, Any] = json.loads(out or "{}")
+    return list(data.get("comments") or [])
+
+
+def comment(repo: str, number: int, body: str, *, pr: bool = False) -> None:
+    """Comment on an issue or PR, once: a body already posted verbatim is not repeated."""
+    guard.check(f"gh {'pr' if pr else 'issue'} comment {number} on {repo}")
+    if any(c.get("body", "").strip() == body.strip() for c in comments(repo, number, pr=pr)):
+        return
+    gh("pr" if pr else "issue", "comment", str(number), "--repo", repo, "--body", body)
+
+
+def close_issue(repo: str, number: int, comment_text: str) -> None:
+    guard.check(f"gh issue close {number} on {repo}")
+    gh("issue", "close", str(number), "--repo", repo, "--comment", comment_text)
+
+
+def open_issues(repo: str, search: str) -> list[dict[str, Any]]:
+    out = gh(
+        "issue", "list", "--repo", repo, "--state", "open", "--search", search,
+        "--json", "number,url,title,body", "--limit", "100",
+    )  # fmt: skip
+    return list(json.loads(out or "[]"))

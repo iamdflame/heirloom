@@ -134,7 +134,9 @@ def test_pipeline_on_non_publishing_line_stops_before_publish(
 
     monkeypatch.setattr(locate, "run", lambda ctx: LOC)
     monkeypatch.setattr(calibrate, "run_c0", lambda ctx, loc: {"structural": False})
-    monkeypatch.setattr(probe, "run", lambda ctx, loc, c0, fb: {"sha": "p", "files": {}})
+    monkeypatch.setattr(
+        probe, "run", lambda ctx, loc, c0, fb, model=None: {"sha": "p", "files": {}}
+    )
     monkeypatch.setattr(calibrate, "run", lambda ctx, loc, pr: {"feedback": None})
     monkeypatch.setattr(calibrate, "run_presence", lambda ctx, cal: AFFECTED)
     monkeypatch.setattr(adapt, "run", lambda *a: {"patch_sha": "x", "patch": ""})
