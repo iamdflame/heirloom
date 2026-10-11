@@ -27,8 +27,12 @@ def _entire(worktree: Path, *args: str) -> str:
     return proc.stdout
 
 
-def enable(worktree: Path, fork: str) -> None:
-    """Enable Entire in a fork worktree; checkpoints must sync to the fork, never upstream."""
+def enable(worktree: Path, fork: str, *, publishing: bool = True) -> None:
+    """Enable Entire in a pipeline tree.
+
+    On publishing lines checkpoints must sync to the fork, never upstream: refuse to
+    continue otherwise. Non-publishing trees never push, so they skip that check.
+    """
     local = worktree / ".entire" / "settings.local.json"
     if not local.exists():
         _entire(
@@ -39,7 +43,7 @@ def enable(worktree: Path, fork: str) -> None:
         data["commit_linking"] = "always"
         local.write_text(json.dumps(data, indent=2) + "\n")
     remote = data.get("strategy_options", {}).get("checkpoint_remote", {})
-    if remote.get("repo") != fork:
+    if publishing and remote.get("repo") != fork:
         _entire(worktree, "configure", "--checkpoint-remote", f"github:{fork}")
     exclude = Path(git(worktree, "rev-parse", "--git-common-dir").strip())
     if not exclude.is_absolute():
@@ -50,7 +54,7 @@ def enable(worktree: Path, fork: str) -> None:
     if missing:
         exclude.write_text(current + "".join(f"{p}\n" for p in missing))
     status = _entire(worktree, "status")
-    if f"dedicated checkpoint remote ({fork})" not in status:
+    if publishing and f"dedicated checkpoint remote ({fork})" not in status:
         raise EntireError(f"checkpoints would not sync to {fork}: {status.strip()}")
 
 
@@ -90,6 +94,9 @@ ALLOWED = (
     "Bash(git diff *),Bash(git show *),Bash(git log *)"
 )
 DISALLOWED = "WebFetch,WebSearch,Bash(git commit *),Bash(git push *)"
+# Eval lines (§10.3 leakage guard): no history tools at all, in a sanitized one-commit repo.
+ALLOWED_EVAL = "Read,Edit,Grep,Glob,Bash(python tests/runtests.py *),Bash(git diff *)"
+DISALLOWED_EVAL = DISALLOWED + ",Bash(git log *),Bash(git show *)"
 
 
 def run_claude(
@@ -100,6 +107,7 @@ def run_claude(
     max_budget_usd: float,
     log_dir: Path,
     max_turns: int = 40,
+    sanitized: bool = False,
 ) -> ClaudeResult:
     """``claude -p`` in an Entire-enabled worktree (never ``--bare``: it disables hooks)."""
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -144,9 +152,9 @@ def run_claude(
         "--permission-mode",
         "acceptEdits",
         "--allowedTools",
-        ALLOWED,
+        ALLOWED_EVAL if sanitized else ALLOWED,
         "--disallowedTools",
-        DISALLOWED,
+        DISALLOWED_EVAL if sanitized else DISALLOWED,
         "--max-turns",
         str(max_turns),
         "--max-budget-usd",

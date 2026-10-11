@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import re
+from pathlib import Path
 from typing import Any
 
-from heirloom.git_ops import git, is_ancestor, parse_diff, rev_parse, show_file
+from heirloom.git_ops import commit_diff, git, is_ancestor, parse_diff, rev_parse, show_file
 from heirloom.integrations.neatlogs import StageSpan
 from heirloom.pipeline.calibrate import symbols
 from heirloom.pipeline.context import Ctx, StageFailed
@@ -13,27 +13,35 @@ from heirloom.pipeline.fixes import fix_diff
 from heirloom.sources.django_security import load
 
 
+def changed_test_ids(repo: Path, commits: list[str], files: list[str]) -> list[str]:
+    """Dotted ids of the test methods the commits add OR modify.
+
+    Fixes often tighten existing tests instead of adding new ones (e.g. the fellows'
+    4.2 commit for CVE-2026-1287), so every changed new-side line counts. Each
+    commit's hunks are located in that commit's own version of the file.
+    """
+    ids: set[str] = set()
+    for sha in commits:
+        for d in parse_diff(commit_diff(repo, sha, *files)) if files else []:
+            if not d.new_path or not d.new_path.endswith(".py"):
+                continue
+            syms = [
+                x
+                for x in symbols(show_file(repo, sha, d.new_path) or "")
+                if "." in x.qualname and x.qualname.rsplit(".", 1)[-1].startswith("test")
+            ]
+            module = d.new_path.removeprefix("tests/").removesuffix(".py").replace("/", ".")
+            for h in d.hunks:
+                for n in range(h.new_start, h.new_start + h.new_count):
+                    inside = [x for x in syms if x.start <= n <= x.end]
+                    if inside:
+                        ids.add(f"{module}.{max(inside, key=lambda x: x.start).qualname}")
+    return sorted(ids)
+
+
 def upstream_test_ids(ctx: Ctx, fixes: list[str], test_files: list[str]) -> list[str]:
-    """Dotted ids of the test methods the fix commits add, located with ast on U⁺."""
-    ids: list[str] = []
-    if not test_files:
-        return ids
-    up = fixes[-1]
-    for f in parse_diff(fix_diff(ctx.repo, fixes, *test_files)):
-        if not f.new_path or not f.new_path.endswith(".py"):
-            continue
-        src = show_file(ctx.repo, up, f.new_path) or ""
-        added = {
-            m[1]
-            for h in f.hunks
-            for line in h.added
-            if (m := re.match(r"\s*def (test\w*)\(", line))
-        }
-        module = f.new_path.removeprefix("tests/").removesuffix(".py").replace("/", ".")
-        for s in symbols(src):
-            if s.qualname.rsplit(".", 1)[-1] in added and "." in s.qualname:
-                ids.append(f"{module}.{s.qualname}")
-    return sorted(set(ids))
+    """Test methods the upstream fix commits add or modify."""
+    return changed_test_ids(ctx.repo, fixes, test_files)
 
 
 def advisory_text(ctx: Ctx, fixes: list[str], title: str) -> str:
