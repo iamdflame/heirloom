@@ -241,7 +241,7 @@ def artifacts(ctx: Ctx, pushed: dict[str, Any]) -> dict[str, Any]:
 
     return ctx.stage(
         "publish.artifacts",
-        {"run": ctx.run_id, "remote_sha": pushed["remote_sha"]},
+        {"remote_sha": pushed["remote_sha"]},
         body,
         effect=True,
         reconcile=reconcile,
