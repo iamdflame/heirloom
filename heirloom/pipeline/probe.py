@@ -23,6 +23,10 @@ FILES = ("models.py", "tests.py")
 BLOCK = re.compile(r"^### (models\.py|tests\.py)\s*\n```(?:python)?\n(.*?)^```", re.M | re.S)
 WALL_CLOCK = re.compile(r"\b(time\.time|perf_counter|monotonic|sleep|timeit)\b")
 MAX_SOURCE_CHARS = 120_000
+ALLOWED_IMPORTS = frozenset(
+    {"django", "unittest", "tracemalloc", "gc", "io", "json", "re", "datetime", "decimal",
+     "uuid", "functools", "itertools", "collections", "string", "copy"}
+)  # fmt: skip
 
 
 class LeakageError(RuntimeError):
@@ -66,11 +70,15 @@ def validate(files: dict[str, str], app: str) -> list[str]:
                     r"(^|\.)_[a-z]", mod
                 ):
                     problems.append(f"{name}:{node.lineno}: imports a private name from {mod}")
-                if mod.startswith("tests.") or (mod and mod.split(".")[0] not in (
-                    "django", "", "unittest", "tracemalloc", "gc", "io", "json", "re",
-                    "datetime", "decimal", "uuid", "functools", "itertools", "collections",
-                )):  # fmt: skip
+                if node.level:
+                    if mod not in ("models", ""):
+                        problems.append(f"{name}:{node.lineno}: relative import of .{mod}")
+                elif mod.split(".")[0] not in ALLOWED_IMPORTS:
                     problems.append(f"{name}:{node.lineno}: unexpected import from {mod}")
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name.split(".")[0] not in ALLOWED_IMPORTS:
+                        problems.append(f"{name}:{node.lineno}: unexpected import {alias.name}")
             if (
                 isinstance(node, ast.Attribute)
                 and node.attr.startswith("_")
