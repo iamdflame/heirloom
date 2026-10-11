@@ -331,7 +331,7 @@ def new_probe(s: Settings, cve: str, spec: LineSpec) -> dict[str, Any]:
                 for _ in range(3):
                     try:
                         pr = porter.run(ctx, loc, c0, feedback)
-                    except (StageFailed, BudgetExceeded) as exc:
+                    except (StageFailed, BudgetExceeded, porter.LeakageError) as exc:
                         pres = {**pres, "detail": f"{type(exc).__name__}: {exc}"}
                         break
                     cal = calibrate.run(ctx, loc, pr)

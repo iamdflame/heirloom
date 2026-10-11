@@ -150,9 +150,9 @@ def native_hint(fix_files: list[str]) -> str:
     return NATIVE_HINT if any(f.startswith(NATIVE_PATHS) for f in fix_files) else ""
 
 
-def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> str:
-    test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
-    sources: list[str] = []
+def shown_sources(ctx: Ctx, loc: dict[str, Any]) -> list[tuple[str, str]]:
+    """(path, text) of L's affected modules exactly as the prompt shows them."""
+    out: list[tuple[str, str]] = []
     budget = MAX_SOURCE_CHARS
     for path in loc["fix_files"]:
         src = show_file(ctx.repo, loc["tip"], path)
@@ -160,7 +160,26 @@ def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: st
             continue
         chunk = src[:budget]
         budget -= len(chunk)
-        sources.append(f"#### {path} (Django 4.2 tip)\n```python\n{chunk}\n```")
+        out.append((path, chunk))
+    return out
+
+
+def guarded_lines(added: list[str], shown: list[tuple[str, str]]) -> list[str]:
+    """Fix-added lines the guard checks: those not already verbatim in the L source shown.
+
+    A line L already has (CVE-2026-35192 adds a third ``patch_vary_headers(response,
+    ("Cookie",))`` to a module that has two) tells the porter nothing about the fix.
+    """
+    l_flat = " ".join(" ".join(text.split()) for _, text in shown)
+    return [a for a in added if a not in l_flat]
+
+
+def build_prompt(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> str:
+    test_diff = fix_diff(ctx.repo, fixes_of(loc), *loc["test_files"], context=3)
+    sources = [
+        f"#### {path} (Django 4.2 tip)\n```python\n{chunk}\n```"
+        for path, chunk in shown_sources(ctx, loc)
+    ]
     labels = sorted({t.split(".")[0] for t in loc["upstream_test_ids"]})
     models = []
     for label in labels:
@@ -222,7 +241,9 @@ Reply with exactly two fenced code blocks, each preceded by its header line:
 def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None) -> dict[str, Any]:
     def body(span: StageSpan) -> dict[str, Any]:
         router = Router(ctx.s, ctx.budget())
-        added = fix_added_lines(ctx, fixes_of(loc))
+        all_added = fix_added_lines(ctx, fixes_of(loc))
+        added = guarded_lines(all_added, shown_sources(ctx, loc))
+        span.set("fix_lines_already_in_l", len(all_added) - len(added))
         attempt_feedback = feedback
         total = 0.0
         problems: list[str] = []
@@ -249,6 +270,7 @@ def run(ctx: Ctx, loc: dict[str, Any], c0: dict[str, Any], feedback: str | None)
                     "provider": res.provider,
                     "tokens": [res.input_tokens, res.output_tokens],
                     "fix_lines_checked": checked,
+                    "fix_lines_already_in_l": len(all_added) - len(added),
                     "attempts": n + 1,
                 }
             attempt_feedback = (

@@ -49,14 +49,12 @@ def new_probe_cmd(
     spec = matrix.line_spec(s, line, DISTRO_RECORD)
     if spec.kind != "eval":
         raise typer.BadParameter("the porter reads an eval line (a tag), never a distro tree")
-    results = []
     for cve in cves:
         r = matrix.new_probe(s, cve, spec)
-        results.append(r)
         typer.echo(f"{cve} on {line}: {r['verdict']} {r['reason'] or ''} ${r['ledger_cost_usd']}")
-    if out is not None:
-        old = json.loads(out.read_text()) if out.exists() else []
-        out.write_text(json.dumps([*old, *results], indent=2) + "\n")
+        if out is not None:  # after every CVE, so a crash later loses nothing
+            old = json.loads(out.read_text()) if out.exists() else []
+            out.write_text(json.dumps([*old, r], indent=2) + "\n")
 
 
 def matrix_cmd(
