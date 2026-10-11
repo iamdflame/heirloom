@@ -332,33 +332,35 @@ def reusable_probe(s: Settings, cve: str) -> dict[str, Any] | None:
         return None
     if src.line_verdict not in ("AFFECTED", "NOT_AFFECTED_PROVEN"):
         return None
+    record, where = probe_record([p for p in ledgers if p.exists()], src.sha)
     return {
-        **probe_record([p for p in ledgers if p.exists()], src.sha),
+        **record,
         **bodies[src.sha],
         "origin": src.origin,
-        "reused_from": {"ledger": src.ledger, "line": src.line, "run": src.run_id},
+        # Where the porter wrote and calibrated it (not a later reuse of it).
+        "reused_from": where or {"ledger": src.ledger, "line": src.line, "run": src.run_id},
     }
 
 
-def probe_record(ledgers: list[Path], sha: str) -> dict[str, Any]:
+def probe_record(ledgers: list[Path], sha: str) -> tuple[dict[str, Any], dict[str, str]]:
     """The porter's own probe output (model, leakage check, ...) for a probe sha, not a
-    later reuse's copy."""
+    later reuse's copy, and where it was made (ledger, line, run)."""
     import sqlite3
 
     for ledger in ledgers:
         conn = sqlite3.connect(f"file:{ledger}?mode=ro", uri=True)
         try:
-            for (out,) in conn.execute(
-                "SELECT output_json FROM stages WHERE stage='probe' AND status='done' "
-                "AND output_json LIKE ? ORDER BY finished_at",
+            for out, line, run in conn.execute(
+                "SELECT output_json, line, run_id FROM stages WHERE stage='probe' "
+                "AND status='done' AND output_json LIKE ? ORDER BY finished_at",
                 (f'%"{sha}"%',),
             ):
                 data = json.loads(out or "{}")
                 if data.get("sha") == sha and "reused_from" not in data:
-                    return dict(data)
+                    return dict(data), {"ledger": str(ledger), "line": line, "run": run}
         finally:
             conn.close()
-    return {}
+    return {}, {}
 
 
 def _pr_number(url: str) -> int | None:

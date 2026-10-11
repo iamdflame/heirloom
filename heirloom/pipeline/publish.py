@@ -542,8 +542,9 @@ def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
 
     return ctx.stage(
         "publish.pr",
-        # body 2: C2/V1 link the tip-named calibration logs (were struck as unlinked)
-        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 2},
+        # body 2: C2/V1 link the tip-named calibration logs (were struck as unlinked);
+        # body 3: P1 names a reused probe's original calibration run
+        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 3},
         body,
         effect=True,
         reconcile=reconcile,

@@ -115,7 +115,8 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
             # The cheaper model first; retries (with calibration feedback) use the stronger.
             model = models[min(attempt, len(models) - 1)]
             if reuse_probe is not None:
-                inputs = {"reuse": reuse_probe["sha"], "record": 2}  # 2: the full record
+                # record 3: the porter's full record and its original run
+                inputs = {"reuse": reuse_probe["sha"], "record": 3}
                 pr_ = ctx.stage("probe", inputs, _given(reuse_probe))
             else:
                 pr_ = probe.run(ctx, loc, c0, feedback, model=model)
