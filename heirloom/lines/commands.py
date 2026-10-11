@@ -68,8 +68,11 @@ def matrix_cmd(
     """PRESENCE for lines × CVEs with each CVE's calibrated probe (no model calls)."""
     s = config.load()
     specs = [matrix.line_spec(s, name, DISTRO_RECORD) for name in _split(lines)]
-    wanted = _split(cves) or matrix.default_cves(s)
     ledgers = [s.ledger_path, *(ledger or [])]
+    wanted = _split(cves)
+    if not wanted:  # the 2026 advisories, plus any other CVE that has a reusable probe
+        wanted = matrix.default_cves(s)
+        wanted += sorted(set(matrix.probe_sources(ledgers)[0]) - set(wanted))
     result = matrix.run_matrix(s, specs, wanted, ledgers, log=typer.echo)
     out.write_text(json.dumps(result, indent=2) + "\n")
     typer.echo(f"wrote {out}: {json.dumps(result['summary']['verdicts_by_line'])}")
