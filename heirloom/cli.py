@@ -312,6 +312,27 @@ def answers_cmd(
         typer.echo(f"{a.issue}: {a.kind} on {a.scope} = {a.option} (@{a.author}) {a.precedent}")
 
 
+@app.command()
+def serve(host: str = "127.0.0.1", port: int = 8077) -> None:
+    """Read-only JSON API over the ledger and evals/*.json (no UI)."""
+    import uvicorn
+
+    from heirloom.api import create_app
+
+    uvicorn.run(create_app(config.load()), host=host, port=port, log_level="warning")
+
+
+@app.command()
+def export(out: str = typer.Option("site/data", help="Directory for the JSON snapshot.")) -> None:
+    """Write the read API's documents as static JSON files."""
+    from pathlib import Path
+
+    from heirloom.api import export as do_export
+
+    files = do_export(config.load(), Path(out))
+    typer.echo(f"wrote {len(files)} files under {out}")
+
+
 from heirloom.lines import commands as line_commands  # noqa: E402  (Thread B: distro lines)
 
 app.add_typer(line_commands.distro_app, name="distro")

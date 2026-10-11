@@ -294,6 +294,21 @@ def _first_log(ctx: Ctx, base: str, *parts: str) -> str:
     return ""
 
 
+def _probe_claim(probe: dict[str, Any]) -> str:
+    checked = probe.get("fix_lines_checked", "?")
+    text = (
+        f"Independent probe by `{probe.get('model', '?')}`: the porter prompt contains none "
+        f"of the {checked} line(s) the fix adds"
+    )
+    reused = probe.get("reused_from")
+    if reused:
+        text += (
+            f"; reused from its calibration run `{reused.get('run', '?')}` on "
+            f"{reused.get('line', '?')} (C1 re-established here)"
+        )
+    return text
+
+
 def claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
     loc, c0, probe, cal, pres = d["locate"], d["c0"], d["probe"], d["calibrate"], d["presence"]
     adapt, ver, beh, dec, pushed = d["adapt"], d["verify"], d["behaviour"], d["decide"], d["push"]
@@ -326,10 +341,11 @@ def claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
         Claim("C0", c0_text, _span(ctx, "c0"), (Link("U⁻ run", _first_log(ctx, base, "c0")),)),
         Claim(
             "P1",
-            f"Independent probe: the porter prompt contains none of the "
-            f"{probe['fix_lines_checked']} line(s) the fix adds",
+            _probe_claim(probe),
             _span(ctx, "probe"),
-            (Link("prompt", _first_log(ctx, base, "probe")),),
+            (Link("prompt", _first_log(ctx, base, "probe")),)
+            if not probe.get("reused_from")
+            else (ledger,),
         ),
         Claim(
             "C1",
@@ -546,10 +562,11 @@ def evidence_claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
         out += [
             Claim(
                 "P1",
-                f"Independent probe by `{probe.get('model', '?')}`: the porter prompt contains "
-                f"none of the {probe.get('fix_lines_checked', '?')} line(s) the fix adds",
+                _probe_claim(probe),
                 _span(ctx, "probe"),
-                (Link("prompt", _first_log(ctx, base, "probe")),),
+                (Link("prompt", _first_log(ctx, base, "probe")),)
+                if not probe.get("reused_from")
+                else (ledger,),
             ),
             Claim(
                 "C1",

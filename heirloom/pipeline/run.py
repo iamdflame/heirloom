@@ -115,7 +115,8 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
             # The cheaper model first; retries (with calibration feedback) use the stronger.
             model = models[min(attempt, len(models) - 1)]
             if reuse_probe is not None:
-                pr_ = ctx.stage("probe", {"reuse": reuse_probe["sha"]}, _given(reuse_probe))
+                inputs = {"reuse": reuse_probe["sha"], "record": 2}  # 2: the full record
+                pr_ = ctx.stage("probe", inputs, _given(reuse_probe))
             else:
                 pr_ = probe.run(ctx, loc, c0, feedback, model=model)
         except (StageFailed, probe.LeakageError) as exc:
