@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QT8T37JZ2E7WAR6DEZ907B",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "site/web/PROGRESS.md",
+    "site/web/index.html",
+    "site/web/src/components/Campaign.tsx",
+    "site/web/src/components/Examines.tsx",
+    "site/web/src/components/HeroVisual.tsx",
+    "site/web/src/components/Receipt.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 13455,
+    "cache_read_tokens": 2753871,
+    "output_tokens": 6936,
+    "api_call_count": 12
+  }
+}
