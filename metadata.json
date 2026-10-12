@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4QXB4N1D0X2YB7TCE7SCQJ1",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
     "video/public/rosette-ground.svg",
     "video/scripts/link-captures.mjs",
@@ -29,13 +29,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 42,
-    "cache_creation_tokens": 33434,
-    "cache_read_tokens": 3408525,
-    "output_tokens": 11770,
-    "api_call_count": 21
+    "input_tokens": 82,
+    "cache_creation_tokens": 80425,
+    "cache_read_tokens": 7747091,
+    "output_tokens": 32023,
+    "api_call_count": 41
   }
 }
