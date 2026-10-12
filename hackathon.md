@@ -451,5 +451,5 @@ Started headless at 01:40 UTC. `entire session current` showed `ea42def1-7e83-47
 
 **EVIDENCE.md (step 4):** each item on the evidence list is mapped to links. Build-in-public is a marked placeholder.
 
-**Tests that actually ran (B6):** pytest **197 passed**; `ruff check heirloom tests` clean; `ruff format --check heirloom tests` 67 files formatted; `mypy --strict heirloom tests` no issues in 67 files. Plus the targeted DoD subset (10 passed). Final re-run at the end of B6 (≈02:2x UTC): 197 passed, ruff clean, 67 files formatted, mypy --strict clean. README re-render produced no diff.
+**Tests that actually ran (B6):** pytest **197 passed**; `ruff check heirloom tests` clean; `ruff format --check heirloom tests` 67 files formatted; `mypy --strict heirloom tests` no issues in 67 files. Plus the targeted DoD subset (10 passed). Final re-run at the end of B6 (01:57 UTC): 197 passed, ruff clean, 67 files formatted, mypy --strict clean. README re-render produced no diff.
 
