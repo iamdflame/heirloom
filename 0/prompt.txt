@@ -1,0 +1,27 @@
+You are running HEADLESS. Never wait for input and never end your turn to wait for a notification: poll in loops instead. Hard time box: 60 minutes. Commit and push your branch after each milestone.
+
+First run `entire session current` and stop if no session is shown or the id is f5117257-5211-42ae-823c-32aa228a28d9.
+
+You are B8-3D, working in the git worktree ~/heirloom-3d on branch `site-3d`. Another session (B8a) is restyling the rest of the site on `main` in ~/heirloom at the same time. **Only create or modify files under `site/web/src/three/`, `site/web/three-demo.html`, `site/web/scripts/render-poster.mjs` and `site/web/public/hero-poster*`, plus `package.json`/lockfile for new deps.** For any preview server use port 4300 (B8a uses 4173).
+
+Read ~/brief/FRONTEND-BRIEF-v2.md (sections "Direction", beats 1 and 12, and "Assets → 3D").
+
+Build `site/web/src/three/HeroScene.tsx`: a real-time 3D brass watch movement for the hero.
+- Stack: `three`, `@react-three/fiber`, `@react-three/drei` (install in site/web after `npm ci`).
+- A **procedural gear train**: 5–7 gears, correctly meshing (matching tooth pitch, opposite rotations, speed proportional to 1/teeth). Build each with THREE.Shape (involute-like teeth, spokes or cut-outs, a hub), ExtrudeGeometry with a bevel.
+- A central **medallion**: a disc engraved with a guilloché rosette (canvas-generated texture used as bumpMap/normalMap) and a serif "H" hallmark.
+- PBR brass: MeshPhysicalMaterial, metalness 1, roughness 0.25–0.35, colour around #C8A86A, with a darker #8A6F3E variant on some parts and clearcoat on the medallion.
+- Light it with `RoomEnvironment` through PMREMGenerator (no downloads), plus one warm key light. A subtle ContactShadow. Background stays transparent (the page is ink #08090A).
+- Props:
+  - `progress` (0–1, scroll-driven: gears speed up a little and the camera dollies in slightly);
+  - `variant: "hero" | "finale"` (finale: zoomed out, slowing to a stop);
+  - pointer parallax (±4°).
+- Performance: dpr [1, 1.5]; pause the frameloop when off-screen (IntersectionObserver → frameloop "never"); dispose on unmount. Export a `canRender3D()` helper (WebGL available AND not prefers-reduced-motion AND viewport ≥ 768 px). The default export lazy-loads cleanly. Measure the chunk's gzip size.
+- `three-demo.html` + `src/three/demo.tsx`: an isolated page showing the scene on ink, for screenshots.
+- `scripts/render-poster.mjs` (Playwright): render the demo at 1600x1000 and 900x1100 (mobile crop) to `public/hero-poster.webp`/`.avif` and `public/hero-poster-m.webp`/`.avif`, each ≤180 kB (use sharp).
+
+**Iterate on the look at least 3 times:** screenshot, Read the PNG, critique, improve. Target a premium watchmaking render (a high-end mechanical movement close-up): real brass, not plastic yellow; crisp bevels; believable highlights; a balanced composition with negative space on the left for the headline. Record each critique in `site/web/src/three/NOTES.md`.
+
+Finish:
+- commit and push branch `site-3d`;
+- print the chunk gzip size, the poster sizes, the usage (`<HeroScene progress={p} variant="hero"/>` and `canRender3D()`), and the last commit with its Entire-Checkpoint trailer.
