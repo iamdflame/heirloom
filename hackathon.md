@@ -351,7 +351,7 @@ Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless at 20:43 UTC. `
 
 ## Known limitations and next steps
 
-- **Waiting on a human (B4):** question [#6](https://github.com/iamdflame/heirloom/issues/6) (`UPSTREAM_TEST_CHANGE`) holds CVE-2026-15307 and CVE-2026-84429; CVE-2026-87890 is blocked behind 15307. Answer with `/heirloom answer <option>`, then run `heirloom campaign --line 4.2 --replay --id b4-replay --continue`. That stores the precedent, re-queues the three, and (for `adopt-upstream-tests`) runs the adoption path, which has not run yet.
+- **Question #6 (resolved in B5):** answered `adopt-upstream-tests`; stored as precedent P001 and applied by CVE-2026-15307 (PR #20) and CVE-2026-84429 (PR #19); CVE-2026-87890 then published stacked as PR #21. Nothing waits on a human now.
 - **Budget:**
   - The LiteLLM key is exhausted ($20.35 of $20 until 2026-11-01).
   - Overflow: the OpenRouter key's billed usage is $8.09 of the $25 cap (the B4 campaign spent $4.22 of its $18 cap).
@@ -369,11 +369,20 @@ Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless at 20:43 UTC. `
     - CVE-2026-7666's fix is in the SMTP backend, and probes may not open sockets; a local SMTP fixture would be a design change.
     - CVE-2026-77050's porter probes ERROR on U⁺ (S1 needed a tracemalloc probe).
     - CVE-2026-35193 and CVE-2026-15337: the probes do not discriminate.
-- **Not run yet:** the follow-up fast-forward and the stacked PR (both depend on a published first fix).
-- **Not done:** the `docs/outreach/` drafts (§10.7, planned for B5).
+- **Not run yet:** the follow-up fast-forward (no follow-up event has had a published first fix). The stacked PR path ran in B5 (PR #21 on #20).
+- **Outreach:** four drafts in `docs/outreach/` (B5b); none filed.
+- **`entire review` findings left (B6):** medium #1, `rerender` calls `campaign.prepare`, which can recompute the stacked base and the reusable probe instead of replaying what the original run used, so a re-render may raise `ReplayMiss` or render a different note (fix: persist spec, head, reuse and note on the campaign event; >10 min, not done). Lows not fixed: `reach_feedback` can print an empty "Not executed" list; the reach retry does not re-check the budget cap; `relink` hardcodes line 4.2 and one failed `gh view` aborts the loop.
+- **Not live:** no EC2 `watch` timer (systemd or cron) runs; the ledger, work tree and artifacts worktree stay on the build box. The read API runs only locally (`heirloom serve`); `site/data/` is the static export.
+- **Not verified:** Entire redaction (CLI 0.11.4 exposes no setting); B6 scanned every object in every ref for `.env` secret values instead (0 hits).
+- **Owner items:** walkthrough video, screenshots in `docs/`, `#neatHack` build-in-public links, and `/code-review` (high) on this repo (only `entire review` ran).
 - **Housekeeping:** install `gettext` (needs approval) to un-skip i18n extraction tests.
 
 ## Submission
+
+- README first screen: [README.md](README.md); evidence map: [EVIDENCE.md](EVIDENCE.md); DoD check: [docs/DOD-status.md](docs/DOD-status.md).
+- **Build-in-public links tagged #neatHack (PLACEHOLDER: owner to fill; nothing was posted from the build machine):**
+  - [ ] …
+  - [ ] …
 
 ## B5b: headless continuation (2026-10-12, session 0a27285b)
 
@@ -417,3 +426,30 @@ Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless at 20:43 UTC. `
 - Verified the 87890 outcome: PR #21 AFFECTED, stacked on PR #20's branch, with the merge-first note. The `--requeue` re-run itself did nothing new (4 s, $0.00).
 - Saved `entire review` (one sonnet reviewer + judge, 6 B5 commits), `entire recap` (0 sessions; server-analysed) and two `entire checkpoint explain` outputs under docs/entire/.
 - Wrote the four outreach drafts and the business plan. Filed nothing. No PRs for 87975; no `clean --remote`; no `.env` values printed. The $18 overflow cap: campaign spend recorded in `b4-replay.json` is $4.67 of $18, and this step spent no campaign money (the review and one probe `claude -p` call ran on this session's account).
+
+## B6: hardening, README and evidence (2026-10-12, session ea42def1)
+
+Started headless at 01:40 UTC. `entire session current` showed `ea42def1-7e83-4778-8eee-e5ca17bee164`, active, not f5117257. No model-spending runs, no new PRs, no `clean --remote`, no `.env` values printed.
+
+**Loose ends (step 1)**
+- **Issue #10** (CVE-2026-87890 UNPROVEN, NO_REACH, run `20261012T000126Z-90e8`): I edited it in place. It now opens with "Superseded by iamdflame/django#21", names the reach-retry run `20261012T002657Z-0879` (presence #4 still NO_REACH; the reach-retry probe #4 reached `BaseSpatialField.get_prep_value` and `GDALRaster.check_raster_lookup_value`; presence #5 calibrated → AFFECTED), its ledger, trace `a64e2127…` and checkpoint, and keeps the original record below. The title was updated and the issue closed.
+- **`evals/results_live.json`** was committed in its final state: 13 AFFECTED, 5 UNPROVEN, 1 NOT_AFFECTED_PROVEN; 12 published, 6 evidence, 1 skipped; 13 PRs; 6 evidence issues (#10 dropped); escalation 26.3%; ledger $3.91; campaign spend $4.67 of the $18 cap.
+- **Noble probe logs:** I published 9 raw logs of the 87890 matrix probe (`2e97ddd6`) to the `artifacts` branch at `matrix/b4-20261011/CVE-2026-87890/` (commit `82c16032`): `Um`/`Up`/`L` on 4.2.30 and `L` on noble. They were checked against every `.env` value (0 hits; the only sensitive-looking content is local paths). The Ubuntu draft now links them, and both raw URLs return 200.
+- **`entire review` mediums:** #2 is fixed (`_asking` returns the asking CVE, orders its query, and "no new question" appears only when the ledger shows another CVE asked), together with the `[#]()` low, plus a test. #1 (`rerender`/`prepare`) is listed under known limitations because it is more than 10 minutes of work.
+
+**DoD (step 2):** [docs/DOD-status.md](docs/DOD-status.md) has 23 PASS, 5 PARTIAL, 3 FAIL and 1 NOT LIVE. Fixes made because items failed:
+- `gh` (120 s), `git` (900 s; push 300 s), `entire` (300 s) and `claude -p` (1800 s) had no timeouts. Each now raises its module's error, and `tests/test_timeouts.py` covers them.
+- The CLI prints `heirloom: error: …` instead of a traceback.
+- `heirloom cve` on a publishing line checks the fork and its base branch before any model spend.
+- The per-CVE budget guard has a unit test (`tests/test_budget_guard.py`). No real run has hit the cap.
+- Added `heirloom report --cve` (local replay from the ledger, with a test) and an MIT `LICENSE`.
+- Bad-input checks that ran: unknown CVE, unknown line, missing sha, unreachable fork (by remote name and by URL). The unknown-CVE check left one failed `locate` row for CVE-2099-0001 in the ledger.
+- The read API was queried locally on ports 8078 and 8079.
+- **Correction recorded:** the DoD says CVE-2026-87890 reused the precedent. In the ledger it was CVE-2026-84429 (PR #19). 87890 was stacked on 15307 instead.
+
+**README (step 3):** `evals/render_readme.py` now renders three blocks: the first screen, the full E1 table, and a campaign detail block (per-CVE table, full 3-line matrix, detections). New: `evals/export_campaign_evidence.py` writes `evals/campaign_evidence.json` from the ledger. It covers fail→pass for all 13 PRs (13 of 13 FAIL×3 → PASS×3), the single question #6 (asked by 15307; 84429 waited on it) and precedent P001 (applied by #20 and #19). The Ubuntu sentence is verbatim. The ×3 counts come from the matrix cell's runs.
+
+**EVIDENCE.md (step 4):** each item on the evidence list is mapped to links. Build-in-public is a marked placeholder.
+
+**Tests that actually ran (B6):** pytest **197 passed**; `ruff check heirloom tests` clean; `ruff format --check heirloom tests` 67 files formatted; `mypy --strict heirloom tests` no issues in 67 files. Plus the targeted DoD subset (10 passed). Re-run at the end of the session; the result is recorded in the final commit.
+
