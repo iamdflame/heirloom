@@ -46,6 +46,9 @@ is identical (PSNR inf: nothing advances on real time), then `runFor` 1 s → fr
 - **Resolution at DSF ≠ 1**: raw `Page.captureScreenshot` returns CSS pixels, so the first GitHub/web takes came out
   1536×864 and SHM 390×844. Now each frame asks for the viewport (`Page.getLayoutMetrics` page offsets) as a clip at
   `scale: dsf` → 1920×1080 and 1170×2532. Clips are written to `.ID.part.mp4` and renamed on success.
+  **The re-shoot at full resolution did not fit the time box** (stopped to give SH01 the CPU): GH01–GH06, EOL01 and
+  CFO01 are still 1536×864 (the 125 % layout, upscale ×1.25 in Remotion) and SHM is 390×844. Re-run with
+  `node shots.mjs -j 4 SHM GH01 GH02 GH03 GH04 GH05 GH06 EOL01 CFO01` (~5 min on an idle box).
 - Killing one encoder crashed the pool once (an unhandled rejection): the encoder promise is now caught per shot.
 - **SH06** overshot the pinned gear train (gears slid under the nav at the end): it now ends at the pin's end (13 800).
 - **SH07** overshot (the sticky heading went under the nav): it now ends at 15 470.
@@ -69,3 +72,8 @@ is identical (PSNR inf: nothing advances on real time), then `runFor` 1 s → fr
   `node shots.mjs -j 1 SH11` against `vite preview --port 4400`, and `node shots.mjs -j 1 R3D01 R3D02 R3D03` against
   `vite --port 4401` in `site/web` (camera paths `three-demo.html?shot=orbit|macro|speed`). Run them one at a time on
   an idle box: ~10–20 min each. Meanwhile SH01 (the live hero movement), SHM and the graded b-roll cover the movement.
+
+## For V-MO
+- At 1920×1080 the live hero movement overlaps the tail of the headline ("software," / "honest."): that is the real
+  site at that size (SH01/SH02). Crop or push in on the right if it reads as a collision.
+- GitHub/web clips are 1536×864: scale ×1.25 to fill 1080p.
