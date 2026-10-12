@@ -1,0 +1,47 @@
+You are running HEADLESS. Never wait for input and never end your turn to wait for a notification: poll in loops instead. Hard time box: 75 minutes. Commit and push after each milestone.
+
+First run `entire session current` and stop if no session is shown or the id is f5117257-5211-42ae-823c-32aa228a28d9.
+
+You are B8b, working in the git worktree ~/heirloom-3d on branch `site-3d`. Read ~/brief/FRONTEND-BRIEF-v2.md (the spec) and site/web/src/three/NOTES.md.
+
+State:
+- Branch `site-3d` (24d7396) has the finished 3D hero: `src/three/HeroScene.tsx` with `canRender3D()`, the `progress`/`variant`/`still`/`onReady`/`fallback` props, and `public/hero-poster{,-m}.{webp,avif}`.
+- Session B8a is still polishing beats 1–6 on `main` in ~/heirloom (design system, photos, hero with a `HeroVisual.tsx` slot, the "Watch it work" campaign, finding, register, receipt). It deploys to Vercel production at https://heirloom-proof.vercel.app.
+- Use port 4300 for any preview server (B8a uses 4173).
+
+Milestones:
+1. (≤10 min) `git fetch origin && git merge origin/main` into `site-3d` (it brings in B8a's design system and beats 1–6). Resolve any conflicts, then `cd site/web && npm ci && npm run build` must pass.
+2. (≤15 min) Wire the 3D:
+   - `HeroVisual.tsx` lazy-loads `HeroScene` when `canRender3D()` is true, with `progress` from the hero's scroll progress;
+   - it shows `hero-poster` (picture with avif/webp, `-m` on mobile) as the LCP image and the fallback, and cross-fades to the live scene on `onReady`;
+   - add the **finale** (beat 12): the movement zoomed out, slowing to a stop as you reach the end, plus "Every verdict is a test run you can open." and the CTA.
+   - Also from review: the large medallion face reads slightly flat yellow. Give it a little more roughness/clearcoat variation, or a darker engraved-groove contrast, so it reads as real brass. Keep it subtle.
+3. (≤35 min) Beats 7–11 per the brief, in the v2 design system (Instrument Serif / Geist / Geist Mono, ink and brass, guilloché bands, Motion + Lenis), every number from site.json:
+   - **7, "The movement":** a gear train of five SVG gears turning with scroll (Locate → Probe → Calibrate → Adapt & verify → Decide & publish), each lighting up with its one-line proof, and the giant serif rule "Never trust a test that hasn't failed.";
+   - **8, the question:** the real issue #6 exchange as an elegant thread (question → owner answer `adopt-upstream-tests` → precedent P001 sealed with an animated hallmark stamp → #20 applied, #19 reused without asking, #21 stacked; each card flips in), with timestamps and links from `site.query`;
+   - **9, proof in numbers:** huge count-up numerals (0 false "not affected" vs 1 for the naive pipeline as a split versus card with a red/green reveal, 13 candidate backports, 19 advisories, model cost per CVE from data);
+   - **10, economics:** three cfo.ai scenario cards with a gentle tilt and mini-charts from the inputs; hypotheses labelled; links to the three Pages;
+   - **11, evidence locker:** a darkened photographic backdrop, PR cards (13) and issue cards (6) fanning in, Entire/neatlogs command snippets that type out, with copy buttons, and endoflife.date.
+   Then **stated limits** and the **footer colophon**: photo credits from ASSETS.md, "Built with neatlogs · Entire · cfo.ai during neatHack", MIT, repo. Every nav anchor must resolve.
+4. (≤5 min) Re-render the OG card in the new style (hero poster + headline + counts) and point canonical/OG URLs at https://heirloom-proof.vercel.app.
+5. (≤15 min) QA: `node scripts/qa.mjs v2b` (update selectors as needed).
+   - Read the PNGs at 1440 and 390, plus one mid-campaign shot and the receipt.
+   - Fix the top defects.
+   - Targets: axe 0 serious/critical, console 0, keyboard flow PASS, Lighthouse mobile perf ≥80 and the rest ≥95.
+6. (≤10 min) Merge into main and deploy:
+   - `git fetch origin && git merge origin/main` once more (B8a may have pushed polish), resolve conflicts, build;
+   - then in ~/heirloom-3d: `git push origin site-3d:main` (fast-forward; if rejected, merge again and retry);
+   - deploy from ~/heirloom-3d/site/web: copy ~/heirloom/site/web/.vercel into it if it's missing, then `vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod`;
+   - `heirloom-proof.vercel.app` is a project production domain, so it follows the latest production deploy. Verify it with curl (200 and a new-build string).
+   Update README.md's live link to https://heirloom-proof.vercel.app. Make the GitHub Pages workflow publish a tiny redirect page to that URL. Add a dated hackathon.md entry with real QA numbers. Run `python3 ~/brief/secretscan.py`; every surface must be clean.
+
+Rules:
+- Copy plain and honest: "candidate backports"; the exact Ubuntu claim sentence; no exploitability claim.
+- Never print .env values.
+- Keep pytest, ruff and mypy green if you touch Python (you shouldn't).
+
+Finish with:
+- the live URL status;
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- the QA numbers;
+- any remaining defects.
