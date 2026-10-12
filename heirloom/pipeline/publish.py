@@ -324,11 +324,10 @@ def _l_log(loc: dict[str, Any], i: int) -> str:
 
 
 def _probe_claim(probe: dict[str, Any]) -> str:
-    checked = probe.get("fix_lines_checked", "?")
-    text = (
-        f"Independent probe by `{probe.get('model', '?')}`: the porter prompt contains none "
-        f"of the {checked} line(s) the fix adds"
-    )
+    model, checked = probe.get("model"), probe.get("fix_lines_checked")
+    who = f"`{model}`" if model else "the porter (model not recorded)"
+    lines = f"the {checked} line(s)" if checked is not None else "the lines"
+    text = f"Independent probe by {who}: the porter prompt contains none of {lines} the fix adds"
     reused = probe.get("reused_from")
     if reused:
         text += (
@@ -544,7 +543,8 @@ def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
         "publish.pr",
         # body 2: C2/V1 link the tip-named calibration logs (were struck as unlinked);
         # body 3: P1 names a reused probe's original calibration run
-        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 3},
+        # body 4: span links in the real NEATLOGS_TRACE_URL format (orgId, projectId)
+        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 4},
         body,
         effect=True,
         reconcile=reconcile,
@@ -562,9 +562,32 @@ def _gate_text(g: dict[str, Any] | None) -> str:
     )
 
 
+NA_ABSENT = "n/a (absent-symbol path)"
+
+
+def _absent_path(pres: dict[str, Any]) -> bool:
+    """The verdict rests on the absent-symbol proof: reach and portability on the line
+    are undefined there (the probe ERRORs by importing a symbol the line lacks)."""
+    return bool(((pres.get("gates") or {}).get("absent") or {}).get("ok"))
+
+
+def _c0_claim(ctx: Ctx, c0: dict[str, Any], base: str, absent: bool) -> Claim:
+    ledger = Link("ledger", f"{base}/ledger.json")
+    if c0.get("holds"):
+        text = "Upstream regression tests FAIL 3× on U⁻ and PASS 3× on U⁺"
+    elif absent:
+        text = f"{NA_ABSENT}: upstream tests not used as the probe ({c0.get('detail') or '-'})"
+    else:
+        text = f"Upstream tests are not usable as the probe ({c0.get('detail') or 'C0 fails'})"
+    run = _first_log(ctx, base, "c0")
+    # No U⁻ run when the fix adds no tests: the ledger's c0 record is the artifact.
+    return Claim("C0", text, _span(ctx, "c0"), (Link("U⁻ run", run),) if run else (ledger,))
+
+
 def evidence_claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
     loc, c0, probe, cal, pres = d["locate"], d["c0"], d["probe"], d["calibrate"], d["presence"]
     ledger = Link("ledger", f"{base}/ledger.json")
+    absent = _absent_path(pres)
     out = [
         Claim(
             "L1",
@@ -574,14 +597,7 @@ def evidence_claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
             _span(ctx, "locate"),
             (ledger,),
         ),
-        Claim(
-            "C0",
-            "Upstream regression tests FAIL 3× on U⁻ and PASS 3× on U⁺"
-            if c0.get("holds")
-            else f"Upstream tests are not usable as the probe ({c0.get('detail') or 'C0 fails'})",
-            _span(ctx, "c0"),
-            (Link("U⁻ run", _first_log(ctx, base, "c0")),),
-        ),
+        _c0_claim(ctx, c0, base, absent),
     ]
     if probe is None or cal is None:
         out.append(
@@ -610,31 +626,44 @@ def evidence_claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
             ),
             Claim(
                 "C2",
-                f"Portability to {ctx.line}: {_gate_text(gates.get('C2'))}",
+                f"Portability to {ctx.line}: "
+                + (
+                    f"{NA_ABSENT}: the probe ERRORs on {ctx.line} importing the absent symbol"
+                    if absent
+                    else _gate_text(gates.get("C2"))
+                ),
                 _span(ctx, "calibrate"),
                 (Link("L run", _first_log(ctx, base, "calibrate", tag)),),
             ),
             Claim(
                 "C3",
-                f"Reach on {ctx.line}: {_gate_text(gates.get('C3'))}; "
-                + "; ".join(
-                    f"`{m['qualname']}` {m['body_lines_hit']} body lines"
-                    for m in cal.get("mapped", [])
+                f"Reach on {ctx.line}: "
+                + (
+                    f"{NA_ABSENT}: the fixed code does not exist on {ctx.line}"
+                    if absent
+                    else f"{_gate_text(gates.get('C3'))}; "
+                    + "; ".join(
+                        f"`{m['qualname']}` {m['body_lines_hit']} body lines"
+                        for m in cal.get("mapped", [])
+                    )
                 ),
                 _span(ctx, "calibrate"),
                 (ledger,),
             ),
         ]
-        for name in ("C4", "C4a", "C4b", "C4c", "ABSENT"):
+        for name in ("C4", "C4a", "C4b", "C4c"):
             if gates.get(name):
-                out.append(
-                    Claim(
-                        name,
-                        f"{name}: {_gate_text(gates[name])}",
-                        _span(ctx, "calibrate"),
-                        (ledger,),
-                    )
+                text = NA_ABSENT if absent else _gate_text(gates[name])
+                out.append(Claim(name, f"{name}: {text}", _span(ctx, "calibrate"), (ledger,)))
+        if absent:
+            out.append(
+                Claim(
+                    "A0",
+                    f"Absent-symbol proof: {_gate_text(gates['absent'])}",
+                    _span(ctx, "calibrate"),
+                    (ledger,),
                 )
+            )
     out.append(
         Claim(
             "V1",
@@ -717,7 +746,8 @@ def evidence(ctx: Ctx, d: dict[str, Any]) -> dict[str, Any]:
 
     return ctx.stage(
         "publish.evidence",
-        {"presence": canonical_hash(pres), "artifacts": art["commit"]},
+        # body 2: absent-path gates read n/a; P1 names the porter; trace URL with org/project
+        {"presence": canonical_hash(pres), "artifacts": art["commit"], "body": 2},
         body,
         effect=True,
         reconcile=reconcile,
