@@ -173,6 +173,18 @@ for (const [w, h, name] of [
   await ctx.close();
 }
 
+// ---------- every in-page anchor resolves (nav, mobile menu, CTAs, receipt links) ----------
+{
+  const { p, ctx } = await page();
+  report.anchors = await p.evaluate(() => {
+    const hrefs = [...new Set([...document.querySelectorAll('a[href^="#"]')].map((a) => a.getAttribute('href')))];
+    const receipts = new Set([...document.querySelectorAll('[data-row]')].map((e) => e.getAttribute('data-row')));
+    const bad = hrefs.filter((h) => !(document.getElementById(h.slice(1)) || receipts.has(h.slice(1))));
+    return { checked: hrefs.length, unresolved: bad };
+  });
+  await ctx.close();
+}
+
 // ---------- 404 ----------
 {
   const { p, ctx } = await page({ hash: '' });
@@ -235,6 +247,7 @@ console.log(
       console_sample: report.console.slice(0, 5),
       keyboard: report.keyboard,
       deep_link: report.deep_link,
+      anchors: report.anchors,
       replay_middle: report.replay_middle,
       replay_playing: report.replay_playing,
       lighthouse: report.lighthouse,

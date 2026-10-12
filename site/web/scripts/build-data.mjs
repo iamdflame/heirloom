@@ -325,6 +325,19 @@ const backtest = Object.fromEntries(
     ];
   }),
 );
+// the cases each pipeline wrongly called not affected
+const falseNA = Object.fromEntries(
+  ['v1', 'v2'].map((k) => [
+    k,
+    Object.values(need(results, ['runs', k], 'results.json runs'))
+      .filter((c) => c.truth === 'AFFECTED' && String(c.verdict).startsWith('NOT_AFFECTED'))
+      .map((c) => c.cve),
+  ]),
+);
+for (const k of ['v1', 'v2']) {
+  if (falseNA[k].length !== backtest[k].false_not_affected) fail(`results.json: ${k} false_not_affected disagrees with its runs`);
+  backtest[k].false_not_affected_cves = falseNA[k];
+}
 if (backtestExport.summary?.v2?.cases !== backtest.v2.cases) fail('site/data/backtest.json disagrees with evals/results.json');
 
 // ---------- economics (business-plan inputs table) ----------
@@ -356,6 +369,15 @@ const planResults = [];
 }
 
 // ---------- detections ----------
+const flagCheck = read(join(EVALS, 'detections_flag_check.json'));
+const detectionCheck = {
+  name: need(flagCheck, 'detection.name', 'detections_flag_check.json'),
+  run_id: need(flagCheck, 'run_id', 'detections_flag_check.json'),
+  trace_id: need(flagCheck, 'trace_id', 'detections_flag_check.json'),
+  at: need(flagCheck, 'at', 'detections_flag_check.json'),
+  confirmed: Boolean(flagCheck.confirmed),
+  hits_after: flagCheck.neatlogs_hits_after,
+};
 const det = Object.entries(need(detections, 'neatlogs', 'detections.json')).map(([name, d]) => ({ name, hits: d.hits }));
 
 // ---------- Fig. 2: the Ubuntu finding (the stacked CVE on noble) ----------
@@ -397,6 +419,13 @@ if (stacked && stackedOn) {
     claim,
     draft: repoFile('docs/outreach/ubuntu-cve-2026-87890.md'),
     amends_noble: cellsBy.get(`${stackedOn.cve}|ubuntu-noble`)?.verdict,
+    ...(opt(cellsBy.get(`${stackedOn.cve}|ubuntu-noble`)?.reason) ? { amends_noble_reason: cellsBy.get(`${stackedOn.cve}|ubuntu-noble`).reason } : {}),
+    // when the three-line matrix ran the probe on noble
+    probe_date: need(
+      (matrix.parts ?? []).find((x) => x.lines?.includes('ubuntu-noble')) ?? fail('matrix.json has no noble part'),
+      'generated_at',
+      'matrix.json parts',
+    ),
   };
 }
 
@@ -462,6 +491,7 @@ const site = {
   query,
   backtest,
   detections: det,
+  detection_check: detectionCheck,
   economics: {
     inputs,
     pages: cfoPages,
@@ -584,6 +614,8 @@ export interface Finding {
   claim: string;
   draft: string;
   amends_noble?: MatrixVerdict;
+  amends_noble_reason?: string;
+  probe_date: string;
 }
 
 export interface Site {
@@ -638,8 +670,10 @@ export interface Site {
     unproven: number;
     escalation_rate: number;
     usd_per_case: number;
+    false_not_affected_cves: string[];
   }>;
   detections: { name: string; hits: number }[];
+  detection_check: { name: string; run_id: string; trace_id: string; at: string; confirmed: boolean; hits_after: number };
   economics: {
     inputs: { name: string; base: string; bear: string; bull: string; status: string }[];
     pages: { name: string; url: string }[];

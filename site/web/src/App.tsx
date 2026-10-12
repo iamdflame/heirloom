@@ -5,6 +5,12 @@ import { Nav } from './components/Nav';
 import { Footer } from './components/Footer';
 import { Hero } from './components/Hero';
 import { Register } from './components/Register';
+import { Finding } from './components/Finding';
+import { Method } from './components/Method';
+import { Query } from './components/Query';
+import { Backtest, Economics, Limits } from './components/Results';
+import { Verify } from './components/Verify';
+import { Asterism } from './components/Section';
 import { rowByAnchor, site } from './lib/site';
 
 const Receipt = lazy(() => import('./components/Receipt'));
@@ -24,6 +30,9 @@ export default function App() {
   useEffect(() => {
     const sync = () => {
       const h = fromHash();
+      // a plain #HL-4.2-… link (Fig. 2, Method) opened it: return focus there on close
+      if (h && document.activeElement instanceof HTMLElement && document.activeElement !== document.body)
+        trigger.current = document.activeElement;
       setAnchor(h);
       if (h) setEverOpened(true);
     };
@@ -67,6 +76,16 @@ export default function App() {
         <main id="main" className="mx-auto max-w-[84rem] px-5 md:px-10">
           <Hero />
           <Register onOpen={open} />
+          <Asterism />
+          <Finding />
+          <Method />
+          <Query />
+          <Asterism />
+          <Backtest />
+          <Limits />
+          <Economics />
+          <Asterism />
+          <Verify />
         </main>
         <Footer generatedAt={site.generated_at} />
         {everOpened && (

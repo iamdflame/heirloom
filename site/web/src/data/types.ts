@@ -84,6 +84,8 @@ export interface Finding {
   claim: string;
   draft: string;
   amends_noble?: MatrixVerdict;
+  amends_noble_reason?: string;
+  probe_date: string;
 }
 
 export interface Site {
@@ -138,8 +140,10 @@ export interface Site {
     unproven: number;
     escalation_rate: number;
     usd_per_case: number;
+    false_not_affected_cves: string[];
   }>;
   detections: { name: string; hits: number }[];
+  detection_check: { name: string; run_id: string; trace_id: string; at: string; confirmed: boolean; hits_after: number };
   economics: {
     inputs: { name: string; base: string; bear: string; bull: string; status: string }[];
     pages: { name: string; url: string }[];
