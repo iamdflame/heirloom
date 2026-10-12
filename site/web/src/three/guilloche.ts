@@ -7,6 +7,8 @@ import * as THREE from 'three';
 export interface Engraving {
   bump: THREE.CanvasTexture;
   rough: THREE.CanvasTexture;
+  /** albedo: darker cuts (polish compound and patina sit in the grooves), a faint radial falloff */
+  color: THREE.CanvasTexture;
   dispose(): void;
 }
 
@@ -91,19 +93,46 @@ export function engraveMedallion(size = 1024): Engraving {
   r.fill();
   r.globalAlpha = 0.6;
   r.drawImage(soft, -c, -c);
+  // a little hand-finish variation: low-frequency satin blotches so the field is not one even sheen
+  r.globalAlpha = 0.07;
+  for (let i = 0; i < 90; i++) {
+    const a = (i * 2.399963) % (Math.PI * 2);
+    const d = R * 0.95 * Math.sqrt(((i * 37) % 90) / 90);
+    r.fillStyle = i % 2 ? '#fff' : '#000';
+    r.beginPath();
+    r.arc(d * Math.cos(a), d * Math.sin(a), R * (0.08 + ((i * 13) % 7) * 0.02), 0, Math.PI * 2);
+    r.fill();
+  }
+
+  const colC = document.createElement('canvas');
+  colC.width = colC.height = size;
+  const k = colC.getContext('2d')!;
+  const g = k.createRadialGradient(c, c, 0, c, c, R);
+  g.addColorStop(0, '#fff');
+  g.addColorStop(0.75, '#f2f2f2');
+  g.addColorStop(1, '#d8d8d8');
+  k.fillStyle = g;
+  k.fillRect(0, 0, size, size);
+  k.globalCompositeOperation = 'multiply';
+  k.globalAlpha = 0.42;
+  k.drawImage(soft, 0, 0);
 
   const bump = new THREE.CanvasTexture(soft);
   const rough = new THREE.CanvasTexture(roughC);
-  for (const t of [bump, rough]) {
+  const color = new THREE.CanvasTexture(colC);
+  color.colorSpace = THREE.SRGBColorSpace;
+  for (const t of [bump, rough, color]) {
     t.anisotropy = 8;
     t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
   }
   return {
     bump,
     rough,
+    color,
     dispose() {
       bump.dispose();
       rough.dispose();
+      color.dispose();
     },
   };
 }

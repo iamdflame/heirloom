@@ -16,8 +16,8 @@ export function Nav() {
           <Hallmark size={30} draw />
           <span className="font-display text-[1.45rem] leading-none tracking-[-0.01em]">Heirloom</span>
         </a>
-        <ul className="ml-2 hidden items-center gap-7 md:flex">
-          {SECTIONS.map(([id, name]) => (
+        <ul className="ml-2 hidden items-center gap-6 lg:flex">
+          {SECTIONS.filter((x) => x[2]).map(([id, name]) => (
             <li key={id}>
               <a className="text-[0.9rem] text-muted no-underline hover-ink" href={`#${id}`}>
                 {name}
@@ -35,7 +35,7 @@ export function Nav() {
           </a>
           <button
             type="button"
-            className="press inline-flex h-11 w-11 items-center justify-center rounded-full text-muted md:hidden"
+            className="press inline-flex h-11 w-11 items-center justify-center rounded-full text-muted lg:hidden"
             aria-label="Open menu"
             aria-expanded={open}
             onClick={() => setOpen(true)}

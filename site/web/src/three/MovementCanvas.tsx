@@ -103,12 +103,13 @@ function Medallion({ brass, deep }: { brass: THREE.Material; deep: THREE.Materia
   const H = 0.24;
   const parts = useMemo(() => {
     const eng = engraveMedallion(2048);
-    for (const t of [eng.bump, eng.rough]) {
+    for (const t of [eng.bump, eng.rough, eng.color]) {
       t.repeat.set(1 / (2 * R), 1 / (2 * R));
       t.offset.set(0.5, 0.5);
     }
     const face = new THREE.MeshPhysicalMaterial({
       color: '#C29E5E',
+      map: eng.color,
       metalness: 1,
       roughness: 1,
       roughnessMap: eng.rough,
@@ -116,6 +117,7 @@ function Medallion({ brass, deep }: { brass: THREE.Material; deep: THREE.Materia
       bumpScale: 3,
       clearcoat: 0.35,
       clearcoatRoughness: 0.3,
+      clearcoatRoughnessMap: eng.rough,
     });
     const disc = new THREE.Shape();
     disc.absarc(0, 0, R, 0, Math.PI * 2, false);

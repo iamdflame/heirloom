@@ -1,4 +1,5 @@
 import { Hallmark } from './Hallmark';
+import { WaveBand } from './Guilloche';
 import { site } from '@/lib/site';
 import { WRAP } from '@/lib/layout';
 
@@ -11,10 +12,11 @@ const PHOTOS: [string, string][] = [
   ['Igor bispo', 'https://unsplash.com/photos/close-up-of-a-luxury-watch-face-LaFLlEKx1c0'],
 ];
 
-/** Colophon (B8b extends it into the finale). */
+/** Colophon: who built it with what, the data's age, photo credits (ASSETS.md), type, licence and source. */
 export function Footer({ generatedAt }: { generatedAt?: string }) {
   return (
-    <footer className="border-t border-rule bg-surface/40">
+    <footer className="bg-surface/40">
+      <WaveBand className="h-6 opacity-40" />
       <div className={`${WRAP} grid gap-10 py-16 md:grid-cols-12`}>
         <div className="flex items-start gap-4 md:col-span-5">
           <Hallmark size={52} />
@@ -24,12 +26,15 @@ export function Footer({ generatedAt }: { generatedAt?: string }) {
             <p className="mt-2 font-mono text-[0.72rem] text-muted">
               Record {site.record} · {site.object}
             </p>
+            <p className="mt-6 text-[0.95rem] text-ink/85">
+              Built with neatlogs · Entire · cfo.ai during neatHack
+            </p>
           </div>
         </div>
         <dl className="grid gap-x-6 gap-y-3 text-sm text-muted md:col-span-7 md:grid-cols-[7rem_1fr]">
           <dt className="label">Built</dt>
           <dd>
-            With neatlogs · Entire · cfo.ai during neatHack, <span className="whitespace-nowrap">Oct 10–12 2026</span>
+            neatHack, <span className="whitespace-nowrap">Oct 10–12 2026</span>; the 3D movement is procedural three.js
           </dd>
           {generatedAt && (
             <>

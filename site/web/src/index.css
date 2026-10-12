@@ -166,3 +166,9 @@
 
 /* the receipt's hallmark: a brass glint sweeping across it */
 .hallmark-shimmer::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgb(var(--brass-hi) / 0.55) 50%, transparent 65%); background-size: 250% 100%; animation: shimmer 2.6s var(--ease-out) 400ms 2 both; mix-blend-mode: screen; }
+
+/* beat 10: scenario cards lean toward the pointer (set by Economics.tsx) */
+.tilt { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 300ms var(--ease-out); will-change: transform; }
+.locker-card { transition: border-color 200ms var(--ease-out), transform 200ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .locker-card:hover { border-color: rgb(var(--brass) / 0.6); transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .tilt { transform: none !important; } }

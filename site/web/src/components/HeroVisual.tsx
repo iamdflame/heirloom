@@ -1,58 +1,97 @@
-import { m, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react';
-import { useEffect } from 'react';
-import { Photo } from './Photo';
-import { Hallmark } from './Hallmark';
+import { useEffect, useState } from 'react';
+import { m, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from 'motion/react';
+import HeroScene, { canRender3D } from '@/three/HeroScene';
+import { cn } from '@/lib/utils';
+
+const BASE = import.meta.env.BASE_URL;
+
+/** The pre-rendered frame of the 3D movement: the LCP image, and the whole visual on mobile, reduced motion and no-WebGL. */
+export function Poster({ name, mobile, priority, className }: { name: string; mobile?: string; priority?: boolean; className?: string }) {
+  return (
+    <picture>
+      {mobile && <source type="image/avif" media="(max-width: 767px)" srcSet={`${BASE}${mobile}.avif`} />}
+      {mobile && <source type="image/webp" media="(max-width: 767px)" srcSet={`${BASE}${mobile}.webp`} />}
+      <source type="image/avif" srcSet={`${BASE}${name}.avif`} />
+      <img
+        src={`${BASE}${name}.webp`}
+        alt=""
+        width={1600}
+        height={1000}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        {...(priority ? { fetchpriority: 'high' } : {})}
+        className={cn('block h-full w-full object-cover', className)}
+      />
+    </picture>
+  );
+}
 
 /**
- * The hero's visual slot (right two thirds). For now: the graded brass-gears photograph with a slow
- * guilloché rosette and the hallmark over it. The real-time 3D movement (src/three/HeroScene) and its
- * poster replace the photo here after the site-3d merge.
+ * Mounts the live movement once the page is idle (WebGL, ≥768 px, motion allowed), with the poster
+ * underneath; the poster fades out when the scene's first frames are on screen.
+ */
+export function LiveMovement({
+  progress,
+  variant,
+  poster,
+  mobile,
+  priority,
+  posterClass,
+}: {
+  progress: MotionValue<number>;
+  variant: 'hero' | 'finale';
+  poster: string;
+  mobile?: string;
+  priority?: boolean;
+  posterClass?: string;
+}) {
+  const [live, setLive] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [p, setP] = useState(0);
+  useMotionValueEvent(progress, 'change', (v) => setP(Math.round(v * 200) / 200));
+  useEffect(() => {
+    if (!canRender3D()) return;
+    // after first paint and load, so the three.js chunk never competes with the LCP poster
+    const go = () => setLive(true);
+    const idle = () => ('requestIdleCallback' in window ? window.requestIdleCallback(go, { timeout: 2500 }) : setTimeout(go, 600));
+    if (document.readyState === 'complete') idle();
+    else window.addEventListener('load', idle, { once: true });
+    return () => window.removeEventListener('load', idle);
+  }, []);
+  return (
+    <>
+      <div className={cn('absolute inset-0 transition-opacity duration-[900ms] ease-out', ready && 'opacity-0')} data-poster={variant}>
+        <Poster name={poster} mobile={mobile} priority={priority} className={posterClass} />
+      </div>
+      {live && <HeroScene progress={p} variant={variant} onReady={() => setReady(true)} />}
+    </>
+  );
+}
+
+/**
+ * The hero's visual: the real-time 3D brass movement (src/three), over its poster. On scroll the train
+ * turns faster and the camera dollies in; the pointer tilts the rig (inside the scene).
  */
 export function HeroVisual() {
   const reduce = useReducedMotion();
   const { scrollY } = useScroll();
-  // on scroll: the camera "dollies in" and the line-work turns faster
-  const scale = useTransform(scrollY, [0, 900], [1.04, 1.22]);
+  const progress = useTransform(scrollY, (y) => Math.min(1, Math.max(0, y / (typeof window === 'undefined' ? 900 : window.innerHeight))));
   const turn = useTransform(scrollY, [0, 900], [0, 40]);
-  const mx = useSpring(0, { stiffness: 60, damping: 20 });
-  const my = useSpring(0, { stiffness: 60, damping: 20 });
-  const px = useTransform(mx, (v) => v * -18);
-  const py = useTransform(my, (v) => v * -12);
-  useEffect(() => {
-    if (reduce || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    const move = (e: PointerEvent) => {
-      mx.set(e.clientX / window.innerWidth - 0.5);
-      my.set(e.clientY / window.innerHeight - 0.5);
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    return () => window.removeEventListener('pointermove', move);
-  }, [reduce, mx, my]);
-
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden lg:left-[32%]">
-      <m.div className="absolute inset-0" style={reduce ? undefined : { scale, x: px, y: py }}>
-        <Photo
-          name="gears-dark"
-          priority
-          sizes="(min-width: 1024px) 68vw, 100vw"
-          className="h-full w-full object-[60%_50%] opacity-80 lg:opacity-100"
-        />
-      </m.div>
-      {/* the engraved rosette, centred on the photo's main wheel */}
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <LiveMovement progress={progress} variant="hero" poster="hero-poster" mobile="hero-poster-m" priority posterClass="object-[70%_50%] md:object-[100%_50%]" />
+      {/* a faint engraved rosette over the medallion side, turning with scroll */}
       <m.div
-        className="absolute left-1/2 top-1/2 aspect-square w-[min(88vh,62vw)] -translate-x-1/2 -translate-y-1/2 opacity-40 mix-blend-screen max-lg:w-[110vw]"
+        className="absolute right-[-12%] top-1/2 hidden aspect-square w-[min(92vh,58vw)] -translate-y-1/2 opacity-[0.12] mix-blend-screen lg:block"
         style={reduce ? undefined : { rotate: turn }}
       >
-        <img src={`${import.meta.env.BASE_URL}guilloche/rosette.svg`} alt="" width={800} height={800} decoding="async" className="spin-slow h-full w-full" />
+        <img src={`${BASE}guilloche/rosette.svg`} alt="" width={800} height={800} decoding="async" loading="lazy" className="h-full w-full" />
       </m.div>
-      <div className="absolute bottom-[12%] right-[8%] hidden opacity-70 lg:block">
-        <Hallmark size={92} draw />
-      </div>
       {/* fades into the ink: left edge (text side), top (nav) and bottom (next section) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/60 to-transparent lg:via-paper/10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-paper/90 via-paper/30 to-transparent lg:from-paper/70 lg:via-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-paper to-transparent" />
       <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-paper/80 to-transparent" />
-      <div className="absolute inset-0 bg-paper/50 lg:hidden" />
+      <div className="absolute inset-0 bg-paper/55 md:hidden" />
     </div>
   );
 }

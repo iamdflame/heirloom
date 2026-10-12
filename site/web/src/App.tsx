@@ -9,7 +9,13 @@ import { Finding } from './components/Finding';
 import { Examines } from './components/Examines';
 import { Campaign } from './components/Campaign';
 import { useSmoothScroll } from './components/fx';
-// Beats 7–12 (B8b): Method, Query, Results (Backtest, Limits, Economics) and Verify are restyled next.
+import { Movement } from './components/Movement';
+import { Question } from './components/Question';
+import { Numbers } from './components/Numbers';
+import { Economics } from './components/Economics';
+import { Locker } from './components/Locker';
+import { Limits } from './components/Limits';
+import { Finale } from './components/Finale';
 import { rowByAnchor, site } from './lib/site';
 import { MAIN_CLASS } from './lib/layout';
 
@@ -81,6 +87,13 @@ export default function App() {
           <Campaign />
           <Finding />
           <Register onOpen={open} />
+          <Movement />
+          <Question />
+          <Numbers />
+          <Economics />
+          <Locker />
+          <Limits />
+          <Finale />
         </main>
         <Footer generatedAt={site.generated_at} />
         {everOpened && (
