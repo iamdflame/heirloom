@@ -285,6 +285,18 @@ function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progre
   );
 }
 
+// fiber v8 still builds a THREE.Clock, which three r18x flags as deprecated on every canvas;
+// drop that one known warning so the console stays clean (everything else passes through).
+if (typeof console !== 'undefined' && !(console.warn as { heirloom?: boolean }).heirloom) {
+  const warn = console.warn.bind(console);
+  const filtered = (...a: unknown[]) => {
+    if (typeof a[0] === 'string' && a[0].startsWith('THREE.Clock: This module has been deprecated')) return;
+    warn(...a);
+  };
+  (filtered as { heirloom?: boolean }).heirloom = true;
+  console.warn = filtered;
+}
+
 export default function MovementCanvas({ progress = 0, variant = 'hero', still = false, className, onReady }: HeroSceneProps) {
   const host = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);

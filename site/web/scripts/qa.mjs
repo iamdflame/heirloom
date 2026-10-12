@@ -16,7 +16,7 @@ const URL_ = `http://localhost:${PORT}/`;
 const report = { cycle, at: new Date().toISOString(), screenshots: [], axe: [], console: [], keyboard: null, lighthouse: null, budgets: null };
 
 // ---------- serve dist ----------
-const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: WEB, stdio: 'pipe' });
+const server = spawn(process.execPath, [`${WEB}node_modules/vite/bin/vite.js`, 'preview', '--port', String(PORT), '--strictPort'], { cwd: WEB, stdio: 'pipe' });
 const stop = () => server.kill('SIGTERM');
 process.on('exit', stop);
 for (let i = 0; i < 60; i++) {

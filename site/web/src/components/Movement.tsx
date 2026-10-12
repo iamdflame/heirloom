@@ -87,13 +87,13 @@ export function Movement() {
                   className={cn(
                     'rounded-[10px] border px-4 py-2.5 md:py-3 transition-[opacity,border-color,background-color] duration-500 ease-out',
                     i === step ? 'plate border-brass/60' : 'border-rule bg-surface/40',
-                    i > step && 'opacity-45',
+                    i > step && 'text-ink/60',
                   )}
                   aria-current={i === step ? 'step' : undefined}
                 >
                   <p className="font-mono text-[0.7rem] tracking-[0.14em] text-brass">{String(i + 1).padStart(2, '0')}</p>
                   <h3 className="mt-1 text-[1.05rem] font-medium leading-snug">{s.name}</h3>
-                  <p className={cn('mt-1.5 text-[0.88rem] leading-snug text-ink/80', i !== step && 'max-md:hidden')}>{s.proof}</p>
+                  <p className={cn('mt-1.5 text-[0.88rem] leading-snug', i > step ? 'text-muted' : 'text-ink/80', i !== step && 'max-md:hidden')}>{s.proof}</p>
                 </li>
               ))}
             </ol>

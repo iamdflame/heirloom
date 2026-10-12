@@ -32,7 +32,8 @@ async function encode(png, file, fmt) {
   throw new Error(`${file}: cannot get under ${MAX} bytes`);
 }
 
-const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: WEB, stdio: 'ignore' });
+// run vite's own bin (not npx) so SIGTERM reaches the server itself
+const server = spawn(process.execPath, [`${WEB}node_modules/vite/bin/vite.js`, '--port', String(PORT), '--strictPort'], { cwd: WEB, stdio: 'ignore' });
 try {
   for (let i = 0; i < 120; i++) {
     try {

@@ -26,8 +26,8 @@ export function Locker() {
   return (
     <section id="evidence" aria-labelledby="evidence-h" className="relative isolate overflow-hidden py-24 md:py-36">
       <div aria-hidden className="absolute inset-0 -z-10">
-        <Photo name="archive" sizes="100vw" className="h-full w-full opacity-35" />
-        <div className="absolute inset-0 bg-gradient-to-b from-paper via-paper/80 to-paper" />
+        <Photo name="archive" sizes="100vw" className="h-full w-full opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-paper via-paper/55 to-paper" />
       </div>
       <div className={WRAP}>
         <p className="eyebrow">Evidence locker</p>

@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 
 const WEB = new URL('..', import.meta.url).pathname;
 const PORT = 4301;
-const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: WEB, stdio: 'ignore' });
+const server = spawn(process.execPath, [`${WEB}node_modules/vite/bin/vite.js`, 'preview', '--port', String(PORT), '--strictPort'], { cwd: WEB, stdio: 'ignore' });
 try {
   for (let i = 0; i < 60; i++) {
     try {

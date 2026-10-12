@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { m, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from 'motion/react';
+import { useMotionValueEvent, useScroll, useTransform, type MotionValue } from 'motion/react';
 import HeroScene, { canRender3D } from '@/three/HeroScene';
 import { cn } from '@/lib/utils';
 
@@ -73,20 +73,11 @@ export function LiveMovement({
  * turns faster and the camera dollies in; the pointer tilts the rig (inside the scene).
  */
 export function HeroVisual() {
-  const reduce = useReducedMotion();
   const { scrollY } = useScroll();
   const progress = useTransform(scrollY, (y) => Math.min(1, Math.max(0, y / (typeof window === 'undefined' ? 900 : window.innerHeight))));
-  const turn = useTransform(scrollY, [0, 900], [0, 40]);
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <LiveMovement progress={progress} variant="hero" poster="hero-poster" mobile="hero-poster-m" priority posterClass="object-[70%_50%] md:object-[100%_50%]" />
-      {/* a faint engraved rosette over the medallion side, turning with scroll */}
-      <m.div
-        className="absolute right-[-12%] top-1/2 hidden aspect-square w-[min(92vh,58vw)] -translate-y-1/2 opacity-[0.12] mix-blend-screen lg:block"
-        style={reduce ? undefined : { rotate: turn }}
-      >
-        <img src={`${BASE}guilloche/rosette.svg`} alt="" width={800} height={800} decoding="async" loading="lazy" className="h-full w-full" />
-      </m.div>
       {/* fades into the ink: left edge (text side), top (nav) and bottom (next section) */}
       <div className="absolute inset-0 bg-gradient-to-r from-paper/90 via-paper/30 to-transparent lg:from-paper/70 lg:via-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-paper to-transparent" />

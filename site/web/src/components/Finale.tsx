@@ -19,7 +19,7 @@ export function Finale() {
         <LiveMovement progress={scrollYProgress} variant="finale" poster="finale-poster" posterClass="object-[50%_40%]" />
         <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-paper to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-paper to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgb(var(--paper)/0.78),rgb(var(--paper)/0.35)_55%,transparent_80%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_55%,rgb(var(--paper)/0.9),rgb(var(--paper)/0.7)_55%,rgb(var(--paper)/0.25)_100%)]" />
       </div>
       <div className={cn(WRAP, 'text-center')}>
         <Reveal>
