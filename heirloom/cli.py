@@ -53,7 +53,24 @@ def cve(
     kind: str | None = typer.Option(None, help="eval or distro (with --tip)."),
 ) -> None:
     """Bring one CVE to one line (resumes an unfinished run of the same CVE and line)."""
-    raise typer.Exit(_report(execute(config.load(), cve_id, line_spec(line, tip, kind))))
+    s, spec = config.load(), line_spec(line, tip, kind)
+    if spec.kind == "release":
+        _check_fork(s, spec)
+    raise typer.Exit(_report(execute(s, cve_id, spec)))
+
+
+def _check_fork(s: config.Settings, spec: LineSpec) -> None:
+    """Fail before any model spend when the fork cannot be reached or lacks the base."""
+    from heirloom.git_ops import GitError
+
+    try:
+        out = git(s.django_repo, "ls-remote", s.fork_remote, f"refs/heads/{spec.base_branch}",
+                  timeout=60)  # fmt: skip
+    except GitError as exc:
+        msg = f"fork remote {s.fork_remote!r} ({s.fork}) unreachable: {exc}"
+        raise typer.BadParameter(msg) from None
+    if not out.strip():
+        raise typer.BadParameter(f"fork {s.fork} has no branch {spec.base_branch!r}")
 
 
 @app.command()
@@ -409,10 +426,17 @@ app.command("new-probe")(line_commands.new_probe_cmd)
 
 
 def main() -> None:
+    import os
+
     try:
         app()
     except KeyboardInterrupt:
         sys.exit(130)
+    except Exception as exc:  # no stack traces in CLI output; HEIRLOOM_DEBUG=1 shows them
+        if os.environ.get("HEIRLOOM_DEBUG"):
+            raise
+        typer.echo(f"heirloom: error: {type(exc).__name__}: {exc}", err=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

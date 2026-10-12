@@ -19,13 +19,30 @@ LOCKED = re.compile(
 LOCK_RETRY_DELAYS = (0.5, 1.0, 2.0, 4.0, 8.0)
 
 
-def git(repo: Path, *args: str, check: bool = True, input: str | None = None) -> str:
+GIT_TIMEOUT = 900.0  # seconds; generous for fetches of the Django clone
+PUSH_TIMEOUT = 300.0
+
+
+def git(
+    repo: Path,
+    *args: str,
+    check: bool = True,
+    input: str | None = None,
+    timeout: float = GIT_TIMEOUT,
+) -> str:
     import time
 
     for delay in (*LOCK_RETRY_DELAYS, None):
-        proc = subprocess.run(
-            ["git", "-C", str(repo), *args], capture_output=True, text=True, input=input
-        )
+        try:
+            proc = subprocess.run(
+                ["git", "-C", str(repo), *args],
+                capture_output=True,
+                text=True,
+                input=input,
+                timeout=timeout,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise GitError(f"git {' '.join(args)} timed out after {timeout:.0f}s") from exc
         if proc.returncode == 0 or delay is None or not LOCKED.search(proc.stderr):
             break
         time.sleep(delay)
@@ -43,7 +60,7 @@ def push(repo: Path, *args: str) -> str:
     from heirloom import guard
 
     guard.check(f"git push {' '.join(args)}")
-    return git(repo, "push", *args)
+    return git(repo, "push", *args, timeout=PUSH_TIMEOUT)
 
 
 def rev_parse(repo: Path, ref: str) -> str:

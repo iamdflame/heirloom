@@ -20,8 +20,20 @@ class EntireError(RuntimeError):
     pass
 
 
+CLAUDE_TIMEOUT = 1800.0  # seconds per headless claude -p (ADAPT)
+ENTIRE_TIMEOUT = 300.0
+
+
 def _entire(worktree: Path, *args: str) -> str:
-    proc = subprocess.run(["entire", *args], cwd=worktree, capture_output=True, text=True)
+    try:
+        proc = subprocess.run(
+            ["entire", *args], cwd=worktree, capture_output=True, text=True,
+            timeout=ENTIRE_TIMEOUT,
+        )  # fmt: skip
+    except subprocess.TimeoutExpired as exc:
+        raise EntireError(
+            f"entire {' '.join(args)}: timed out after {ENTIRE_TIMEOUT:.0f}s"
+        ) from exc
     if proc.returncode != 0:
         raise EntireError(f"entire {' '.join(args)}: {proc.stderr.strip() or proc.stdout.strip()}")
     return proc.stdout
@@ -206,7 +218,13 @@ def run_claude(
                 env["CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING"] = "1"
             raw = log_dir / f"claude-{provider}{'-noadaptive' if adaptive_off else ''}.json"
             start = time.monotonic()
-            proc = subprocess.run(cmd, cwd=worktree, env=env, capture_output=True, text=True)
+            try:
+                proc = subprocess.run(
+                    cmd, cwd=worktree, env=env, capture_output=True, text=True,
+                    timeout=CLAUDE_TIMEOUT,
+                )  # fmt: skip
+            except subprocess.TimeoutExpired as exc:
+                raise EntireError(f"claude -p timed out after {CLAUDE_TIMEOUT:.0f}s") from exc
             seconds = time.monotonic() - start
             raw.write_text(proc.stdout)
             (raw.with_suffix(".stderr")).write_text(proc.stderr)
