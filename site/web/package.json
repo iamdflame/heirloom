@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "data": "node scripts/build-data.mjs",
-    "dev": "npm run data && vite",
-    "build": "npm run data && tsc -b && vite build",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173 --strictPort",
     "test": "vitest run",
     "qa": "node scripts/qa.mjs"

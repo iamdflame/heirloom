@@ -1,0 +1,131 @@
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 500;
+  src: url('/fonts/newsreader-latin-opsz-wght400-500.woff2') format('woff2-variations');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/ibm-plex-mono-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('/fonts/ibm-plex-mono-latin-500.woff2') format('woff2');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens are RGB triplets so Tailwind can apply alpha. Light is canonical. */
+:root {
+  color-scheme: light;
+  --paper: 247 247 244;
+  --ink: 23 24 26;
+  --muted: 102 100 94;
+  --rule: 218 217 211;
+  --surface: 255 255 255;
+  --ledger: 238 242 234;
+  --ledger-rule: 201 214 227;
+  --margin: 200 70 61;
+  --margin-alpha: 0.6;
+  --seal: 200 70 61;
+  --fix-fg: 31 71 32;    --fix-bg: 216 239 223;
+  --na-fg: 25 65 104;    --na-bg: 211 227 252;
+  --unp-fg: 122 74 0;    --unp-bg: 246 230 196;
+  --aff-fg: 155 28 28;   --aff-bg: 251 225 209;
+  --np-fg: 102 100 94;   --np-bg: 236 235 230;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: 18 19 21;
+  --ink: 236 234 228;
+  --muted: 161 158 150;
+  --rule: 43 44 47;
+  --surface: 26 27 30;
+  --ledger: 22 32 26;
+  --ledger-rule: 36 56 74;
+  --margin: 200 70 61;
+  --margin-alpha: 0.5;
+  --seal: 229 119 108;
+  --fix-fg: 191 232 204; --fix-bg: 23 53 35;
+  --na-fg: 198 219 250;  --na-bg: 24 43 69;
+  --unp-fg: 242 212 155; --unp-bg: 58 42 14;
+  --aff-fg: 246 194 176; --aff-bg: 74 30 24;
+  --np-fg: 185 182 174;  --np-bg: 38 39 42;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: 18 19 21;
+    --ink: 236 234 228;
+    --muted: 161 158 150;
+    --rule: 43 44 47;
+    --surface: 26 27 30;
+    --ledger: 22 32 26;
+    --ledger-rule: 36 56 74;
+    --margin: 200 70 61;
+    --margin-alpha: 0.5;
+    --seal: 229 119 108;
+    --fix-fg: 191 232 204; --fix-bg: 23 53 35;
+    --na-fg: 198 219 250;  --na-bg: 24 43 69;
+    --unp-fg: 242 212 155; --unp-bg: 58 42 14;
+    --aff-fg: 246 194 176; --aff-bg: 74 30 24;
+    --np-fg: 185 182 174;  --np-bg: 38 39 42;
+  }
+}
+
+@layer base {
+  html {
+    background: rgb(var(--paper));
+    color: rgb(var(--ink));
+    font-family: theme('fontFamily.serif');
+    font-optical-sizing: auto;
+    font-variant-numeric: tabular-nums lining-nums;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+    scroll-padding-top: 4.5rem;
+  }
+  body { font-size: 1.0625rem; line-height: 1.6; }
+  h1, h2, h3, h4 { text-wrap: balance; letter-spacing: -0.015em; font-weight: 500; }
+  p, li, figcaption, dd { text-wrap: pretty; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  a { text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+  ::selection { background: rgb(var(--na-bg)); color: rgb(var(--ink)); }
+}
+
+@layer components {
+  /* field labels: mono small caps, inline */
+  .label { font-family: theme('fontFamily.mono'); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(var(--muted)); }
+  .link { color: inherit; text-decoration-line: underline; text-decoration-color: rgb(var(--ink) / 0.35); }
+  .press { transition: transform 160ms ease-out; }
+  .press:active { transform: scale(0.97); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link { transition: text-decoration-color 120ms ease-out; }
+  .link:hover { text-decoration-color: rgb(var(--ink)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-underline { transition: text-decoration-color 120ms ease-out; }
+  .hover-underline:hover { text-decoration-color: rgb(var(--ink)); }
+  .hover-ink { transition: color 120ms ease-out; }
+  .hover-ink:hover { color: rgb(var(--ink)); }
+}
