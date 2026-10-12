@@ -1,0 +1,80 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QVD6DJ6GGFZAGZCBZZXZN5",
+  "session_id": "8d366f77-6471-451c-aa3f-c93d3a9fd621",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-12T10:44:21.324872175Z",
+  "branch": "site-3d",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "hackathon.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "e054b7df7716",
+  "checkpoint_transcript_start": 413,
+  "transcript_lines_at_start": 413,
+  "compact_transcript_start": 85,
+  "token_usage": {
+    "input_tokens": 52,
+    "cache_creation_tokens": 23355,
+    "cache_read_tokens": 4943675,
+    "output_tokens": 8542,
+    "api_call_count": 26
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01QPM582kXniP4Yu99R8KoQd",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "dataviz"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "f8cea421cdb1",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 140,
+        "end": 141,
+        "entry_ids": [
+          "dc54d8c0-0377-44bc-8d68-007a8042dba9"
+        ],
+        "tool_use_id": "toolu_01QPM582kXniP4Yu99R8KoQd"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01QPM582kXniP4Yu99R8KoQd"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: dataviz",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "initial_attribution": {
+    "calculated_at": "2026-10-12T10:44:21.028058521Z",
+    "agent_lines": 10,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 10,
+    "total_lines_changed": 10,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

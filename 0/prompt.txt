@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>btkb05u6h</task-id>
+<tool-use-id>toolu_012cKbfthFQikSrHx7WmFGWP</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom-3d/8d366f77-6471-451c-aa3f-c93d3a9fd621/tasks/btkb05u6h.output</output-file>
+<status>completed</status>
+<summary>Background command "cd ~/heirloom-3d/site/web &amp;&amp; node scripts/qa.mjs v2d &gt; /tmp/qa3.log 2&gt;&amp;1; echo EXIT $? &gt;&gt; /tmp/qa3.log" completed (exit code 0)</summary>
+</task-notification>
