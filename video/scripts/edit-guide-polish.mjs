@@ -137,7 +137,7 @@ Drop files named \`<name>.mp3\` into \`video/public/audio/sfx/\` and add \`{scen
 |---|---|
 | BR01 | S01 background (macro movement) |
 | BR02 / R3D01 | S04 logo reveal background (R3D01 when V-CAP's 3D render is present) |
-| SH01 / SH02 | S04 site hero (SH02 opens on the same hero when SH01 is missing) |
+| SH01 + SHM | S04 site hero window, with the mobile capture as a phone layer over it |
 | SH04 | S03 right window: the site's finding section (plates lock, calibrated probe) |
 | SH05 | S05 register → CVE-2026-6907 × 4.2.30 → receipt (on “For each advisory”) |
 | SH02 → SH03 | S06 opening: hero scrolls to “Watch it work”, then the campaign dial |
@@ -146,7 +146,7 @@ Drop files named \`<name>.mp3\` into \`video/public/audio/sfx/\` and add \`{scen
 | SH08 / GH01 / GH05 | S08: proof numbers, PR #13 claims (span links), the Entire-Checkpoint: trailer |
 | SH09 / CFO01 | S09 economics cards, cfo.ai Base page |
 | SH11 / BR03 | S10 finale (the site finale frame when SH11 is missing) |
-| not used | EOL01 (no slot in the brief; light page), SH06 (method gear train), SHM (mobile), R3D02/R3D03 (not delivered in time) |
+| not used | EOL01 (no slot in the brief; light page), SH06 (method gear train) · not delivered by V-CAP: SH11, R3D01–R3D03 |
 
 ## What changed in the polish pass
 
