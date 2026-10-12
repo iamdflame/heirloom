@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4QZ3DGR8CBEQR4NXABJXV9X",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     "site/web/src/three/MovementCanvas.tsx",
     "video/capture/capture.mjs",
@@ -23,13 +23,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 34,
-    "cache_creation_tokens": 59945,
-    "cache_read_tokens": 1965127,
-    "output_tokens": 4570,
-    "api_call_count": 17
+    "input_tokens": 36,
+    "cache_creation_tokens": 61100,
+    "cache_read_tokens": 2273215,
+    "output_tokens": 5035,
+    "api_call_count": 18
   }
 }
