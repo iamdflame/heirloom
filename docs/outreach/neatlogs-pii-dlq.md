@@ -15,11 +15,11 @@
 
 2. The dead-lettered trace's export returns `409 TRACE_FINALIZATION_FAILED` ("could not be finalized for span projection"); no further reason is exposed.
 3. `neatlogs doctor --probe` → `FAIL TRACE_READBACK_TIMEOUT … Ingestion: processing at pii_redaction`.
-4. Root GUARDRAIL spans were dropped (never ingested); the SDK's `_ROOT_KINDS` accepts only workflow/chain/agent/mcp_tool/llm. `neatlogs.identify()` has no `parent_session_id` parameter (signature `session_id, end_user_id, end_user_metadata`), although the docs we followed describe one.
+4. Root GUARDRAIL spans were dropped (never ingested); the SDK's `_ROOT_KINDS` accepts only workflow/chain/agent/mcp_tool/llm. `neatlogs.identify()` has no `parent_session_id` parameter (signature `session_id, end_user_id, end_user_metadata`), although our integration plan expected one for linking CVE sessions to a campaign session.
 
 ## Minimal repro
 
-The script that produced observation 1 is committed verbatim as [neatlogs-pii-dlq-emit_s4.py](https://github.com/iamdflame/heirloom/blob/e391f81ec676448dfa55d56c9866676f28b6404c/docs/outreach/neatlogs-pii-dlq-emit_s4.py) (`python emit_s4.py <run-id>`; needs `NEATLOGS_API_KEY`, and `LITELLM_API_KEY` for its one LiteLLM call, which can be deleted). It emits, under an AGENT root, one GUARDRAIL child span with ~12 small string/bool/int/float attributes. **All attributes are small** (tens of bytes); it is not a large-payload repro. Then:
+The S4 emitter, which produced observations 2-4's first runs (a GUARDRAIL span never ingested; an AGENT-root trace that stayed at `spansCount` 0 / `dlq`), is committed verbatim as [neatlogs-pii-dlq-emit_s4.py](https://github.com/iamdflame/heirloom/blob/e391f81ec676448dfa55d56c9866676f28b6404c/docs/outreach/neatlogs-pii-dlq-emit_s4.py) (`python emit_s4.py <run-id>`; needs `NEATLOGS_API_KEY`, and `LITELLM_API_KEY` for its one LiteLLM call, which can be deleted). It emits, under an AGENT root, one GUARDRAIL child span with about a dozen small string/bool/int/float attributes. The table in observation 1 came from separate scratch emitters that are not committed. **All attributes are small** (tens of bytes); it is not a large-payload repro. Then:
 
 ```
 neatlogs trace get <trace-id>          # 404 for minutes, or:
