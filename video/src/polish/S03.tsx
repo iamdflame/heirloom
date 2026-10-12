@@ -96,7 +96,9 @@ export const S03: React.FC<SceneProps> = ({ frames }) => {
   const toClaim = io(frame, tClaim, 24, EASE_IN_OUT);
   const runs = terminal.probe.runs;
   const fix = FINDING.fix_commit.slice(0, 8);
-  const per = Math.round((tClaim - tRun) / 3.4);
+  // the log starts typing as soon as the terminal is up (no empty window), three runs before the claim
+  const tLog = tWe + 14;
+  const per = Math.round((tClaim - tLog) / 3.3);
   return (
     <AbsoluteFill>
       <Ground ringOpacity={0.05} glow={1.4} />
@@ -122,7 +124,7 @@ export const S03: React.FC<SceneProps> = ({ frames }) => {
             </div>
             <div style={{ position: 'absolute', inset: 0, borderRadius: 18, background: 'linear-gradient(180deg, #111416 0%, #0B0C0D 100%)', border: `1px solid ${C.line}`, boxShadow: '0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,168,106,0.18)', padding: '26px 30px', overflow: 'hidden' }}>
               {runs.map((r, i) => {
-                const t0 = tRun - 30 + i * per;
+                const t0 = tLog + i * per;
                 return (
                   <div key={i} style={{ marginBottom: 14 }}>
                     <TokenLine text={`── ${r.file}   ${r.exit}`} at={t0} color={C.muted} size={22} />
@@ -133,7 +135,7 @@ export const S03: React.FC<SceneProps> = ({ frames }) => {
                 );
               })}
               <div style={{ position: 'absolute', right: 30, bottom: 26 }}>
-                <VerdictChip chip="AFFECTED" at={tRun - 30 + 2 * per + 50} size={34} />
+                <VerdictChip chip="AFFECTED" at={tLog + 2 * per + 50} size={34} />
               </div>
             </div>
           </div>

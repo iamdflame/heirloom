@@ -3,7 +3,7 @@ import { AbsoluteFill, Sequence } from 'remotion';
 import { C } from '../theme';
 import { loadFonts } from '../fonts';
 import { S01 } from './S01';
-import { S02 } from '../scenes/S02';
+import { S02 } from './S02';
 import { S04 } from './S04';
 import { S05 } from './S05';
 import { S09 } from './S09';
