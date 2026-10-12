@@ -203,12 +203,12 @@ function Dial() {
 }
 
 /** 19 advisories (columns) × 3 release lines (rows), each tile a verdict, stamped in when its advisory arrives. */
-export function Tiles({ step, size, animate = true }: { step: number; size: 'lg' | 'sm'; animate?: boolean }) {
+export function Tiles({ step, size, animate = true }: { step: number; size: 'lg' | 'md' | 'sm'; animate?: boolean }) {
   const cur = STEPS[step]!;
   const qi = STEPS.findIndex((s) => s.kind === 'question');
   const amendI = STEPS.findIndex((s) => s.kind === 'amend');
-  const pitch = size === 'lg' ? 39 : 15;
-  const tile = size === 'lg' ? 33 : 12;
+  const pitch = size === 'lg' ? 39 : size === 'md' ? 26 : 15;
+  const tile = size === 'lg' ? 33 : size === 'md' ? 21 : 12;
   const head = size === 'lg' ? 34 : 0;
   const top = size === 'lg' ? 64 : 34;
   const w = head + site.rows.length * pitch;
@@ -240,14 +240,14 @@ export function Tiles({ step, size, animate = true }: { step: number; size: 'lg'
                 key={c.line + (on ? '1' : '0') + (fresh(r) ? step : '')}
                 className={cn(
                   'absolute flex items-center justify-center rounded-[3px] border font-mono leading-none',
-                  size === 'lg' ? 'text-[0.8rem]' : 'text-[0.55rem]',
+                  size === 'lg' ? 'text-[0.8rem]' : size === 'md' ? 'text-[0.62rem]' : 'text-[0.55rem]',
                   on ? TILE[c.chip] : 'border-dashed border-rule bg-transparent text-transparent',
                   on && fresh(r) && 'stamp',
                   on && focus && 'ring-1 ring-brass-hi',
                 )}
                 style={{ left: head + i * pitch, top: top + li * pitch, width: tile, height: tile, animationDelay: fresh(r) ? `${li * 70 + (i % 5) * 60}ms` : undefined }}
               >
-                {on && size === 'lg' ? CHIP_META[c.chip].symbol : ''}
+                {on && size !== 'sm' ? CHIP_META[c.chip].symbol : ''}
               </span>
             ))}
           </div>
@@ -296,6 +296,7 @@ export function Tiles({ step, size, animate = true }: { step: number; size: 'lg'
 
 // ---------------------------------------------------------------- mobile / reduced motion: a vertical story
 function Story({ animate }: { animate: boolean }) {
+  const md = useMedia('(min-width: 640px)');
   return (
     <div className={cn(WRAP, 'py-24')}>
       <p className="eyebrow" aria-hidden>
@@ -306,14 +307,14 @@ function Story({ animate }: { animate: boolean }) {
       </p>
       <ol aria-hidden className="mt-12 grid gap-5 border-l border-brass/25 pl-5">
         {STEPS.map((s, i) => (
-          <StoryStep key={i} s={s} i={i} animate={animate} />
+          <StoryStep key={i} s={s} i={i} animate={animate} size={md ? 'md' : 'sm'} />
         ))}
       </ol>
     </div>
   );
 }
 
-function StoryStep({ s, i, animate }: { s: Step; i: number; animate: boolean }) {
+function StoryStep({ s, i, animate, size }: { s: Step; i: number; animate: boolean; size: 'md' | 'sm' }) {
   const ref = useRef<HTMLLIElement>(null);
   const [seen, setSeen] = useState(!animate);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 85%', 'start 60%'] });
@@ -328,7 +329,7 @@ function StoryStep({ s, i, animate }: { s: Step; i: number; animate: boolean }) 
         {s.sub && <p className="mt-1 text-sm text-muted">{s.sub}</p>}
         <div className="mt-3 overflow-hidden rounded-[8px] border border-rule bg-surface p-3">
           <div className="origin-top-left max-[360px]:scale-[0.9]">
-            <Tiles step={seen ? i : Math.max(0, i - 1)} size="sm" animate={animate && seen} />
+            <Tiles step={seen ? i : Math.max(0, i - 1)} size={size} animate={animate && seen} />
           </div>
           <p className="mt-2 font-mono text-[0.68rem] text-muted">
             {t.advisories}/{site.rows.length} advisories · {t.backports} candidate backports · {t.evidence} evidence

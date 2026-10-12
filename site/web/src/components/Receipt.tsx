@@ -327,7 +327,7 @@ function TreatmentLink({ href, icon, children }: { href: string; icon: 'pr' | 'i
   return (
     <a
       href={href}
-      className="press inline-flex min-h-11 items-center gap-2 text-[1.1rem] font-medium underline decoration-ink/40 underline-offset-[0.2em] hover-underline"
+      className="btn btn-ghost press"
     >
       <Icon className="h-[1.1rem] w-[1.1rem] shrink-0" aria-hidden />
       {children}
