@@ -18,6 +18,7 @@ The README's numbers come from `evals/render_readme.py`.
   The reach retry in run `20261012T002657Z-0879` made it AFFECTED and produced
   [PR #21](https://github.com/iamdflame/django/pull/21). #10 was updated to say so and closed.
   [Ledger](https://github.com/iamdflame/heirloom/blob/e74cb04277e3454e798701912b4b73673d59b950/runs/20261012T002657Z-0879/CVE-2026-87890-4.2/ledger.json).
+- **Demo video (2:27):** <https://youtu.be/L4Zw555RuMs> shows the naive-vs-Heirloom backtest (1 false NOT_AFFECTED vs 0 over 27 cases) in the proof scene.
 
 ## 2. neatlogs traces or screenshots
 
@@ -69,14 +70,14 @@ The README's numbers come from `evals/render_readme.py`.
   - SIGKILL during ADAPT, then injected crashes after commit, push and PR. `resume` reconciled each
     one, leaving 1 commit and 1 PR ([#9](https://github.com/iamdflame/django/pull/9)).
   - Source: [evals/results_l0.json](evals/results_l0.json).
+- **Demo video (2:27):** <https://youtu.be/L4Zw555RuMs> shows the campaign, the stacked follow-up PR, and the one question asked and answered once (precedent P001).
 
 ## 6. Build-in-public links tagged #neatHack
 
-> **PLACEHOLDER: the owner fills this in.** Nothing has been posted from this build machine.
->
-> - [ ] link 1: …
-> - [ ] link 2: …
-> - [ ] link 3: …
+- **Submission post on X** (quote of the official neatlogs launch post, tagging @neatlogs, @EntireHQ and
+  @arithecfo): <https://x.com/i_am_dflame/status/2109675581776314381>
+- **Demo video (YouTube, 2:27):** <https://youtu.be/L4Zw555RuMs>, produced from [video/](video/) in this repo.
+- Earlier #neatHack posts can be added here by the owner.
 
 ## 7. A public repo with commits dated during the event
 
