@@ -377,6 +377,7 @@ const site = {
 // ---------- write ----------
 const pub = join(WEB, 'public');
 writeFileSync(join(pub, 'site.json'), JSON.stringify(site));
+writeFileSync(join(WEB, 'src/data/site.json'), JSON.stringify(site)); // bundled: the register renders without a fetch
 rmSync(join(pub, 'receipts'), { recursive: true, force: true });
 mkdirSync(join(pub, 'receipts'));
 for (const [cve, r] of Object.entries(receipts)) writeFileSync(join(pub, 'receipts', `${cve}.json`), JSON.stringify(r));

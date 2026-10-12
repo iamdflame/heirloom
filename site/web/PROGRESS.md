@@ -6,7 +6,7 @@ Spec: `~/brief/FRONTEND-BRIEF.md`. Live URL: https://iamdflame.github.io/heirloo
 - [x] M1 Toolchain: Node 22.23 (NodeSource), Playwright Chromium (headless shell 156) + deps, `heirloom export --out site/data` refreshed (summary now 13 AFFECTED / 1 NA / 5 UNPROVEN, matching the README).
 - [x] M2 Scaffold (Vite 8 + React 18 + TS strict + Tailwind 3 + Radix/shadcn-style ui), tokens light/dark, fonts, seal/favicon, nav/hero/footer skeleton, `.github/workflows/pages.yml`, Pages enabled (build_type=workflow)
 - [x] M3 `scripts/build-data.mjs` → `public/site.json` (25 kB) + `public/receipts/<CVE>.json` (lazy receipt detail) + `src/data/types.ts`; `src/data/counts.test.ts` (7 tests) parses the README first screen and checks every count; `scripts/check-links.mjs` checks all 20 PR/issue URLs via `gh api` (20/20)
-- [ ] M4 Hero, Fig. 1 register, replay, receipt
+- [x] M4 Hero/abstract (numbers from site.json), Fig. 1 register (ledger sheet, sticky accession column with the double red margin rule, row totals, filter with live counts, roving tabindex with arrows/Home/End/Ctrl+Home/PageUp/Down), replay scrubber (range input, play over 8 stops at 1 s, aria-live status, ink-in with motion `m` + LazyMotion, default end state), the 87890→15307 connector (SVG in the right margin at ≥1280 px; inline text below that) and the `query #6` marker; mobile cards (<768 px); lazy Receipt sheet (right ≥768, bottom below) with Condition / Examination (calibration triangle, failing ids, gates, probe origin; Tabs per line) / Treatment / Evidence (copy buttons, reproduce command), `#HL-4.2-007` deep links, focus return to the cell
 - [ ] M5 QA cycle 1
 
 ## Decisions
@@ -22,3 +22,8 @@ Spec: `~/brief/FRONTEND-BRIEF.md`. Live URL: https://iamdflame.github.io/heirloo
 - Treatment run id: campaign_evidence's run (the run that did the work) beats the event's run id (a later resume that only published). Raw logs: that run's dir on `artifacts`, else the CVE's latest.
 - Porter model names are not in the export, so receipts say "written by the independent porter" without a model (rule 8: hide what's missing).
 - `site.json`/`receipts/` are build outputs (git-ignored); `npm run build` = build-data → tsc → vitest → vite build, so CI fails if counts drift from the README.
+- Filter semantics: single-select; shows rows that have at least one cell with the chosen verdict and outlines the matching chips. Counts are live: they follow the replay position.
+- Row total wording: "n of 3 lines affected", plus "· k undecided" when some cells are UNPROVEN/NO PROBE; "none of 3 decided" when no cell is decided (so a NO PROBE row never reads as "0 affected").
+- Rows not yet arrived during the replay stay in place as empty ledger lines (accession only), so the sheet doesn't jump.
+- Receipt: Examination uses Tabs (one per line); the clicked cell's line is preselected; a deep link opens on Django 4.2.30. Receipt JSON is fetched from `receipts/<CVE>.json` on open and cached.
+- Data is bundled (`src/data/site.json`, ~6 kB gz) so the register renders without a fetch; `public/site.json` is the same file, published.

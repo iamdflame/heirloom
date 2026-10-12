@@ -1,0 +1,249 @@
+// QA loop (brief §6): screenshots, keyboard flow, axe, console, Lighthouse, budgets.
+// Usage: npm run build && node scripts/qa.mjs <cycle>   → qa/<cycle>/ (git-ignored)
+import { spawn, execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { gzipSync } from 'node:zlib';
+import { chromium } from 'playwright';
+import { AxeBuilder } from '@axe-core/playwright';
+
+const WEB = new URL('..', import.meta.url).pathname;
+const cycle = process.argv[2] ?? 'c1';
+const OUT = join(WEB, 'qa', cycle);
+mkdirSync(OUT, { recursive: true });
+const PORT = 4173;
+const URL_ = `http://localhost:${PORT}/heirloom/`;
+const report = { cycle, at: new Date().toISOString(), screenshots: [], axe: [], console: [], keyboard: null, lighthouse: null, budgets: null };
+
+// ---------- serve dist ----------
+const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: WEB, stdio: 'pipe' });
+const stop = () => server.kill('SIGTERM');
+process.on('exit', stop);
+for (let i = 0; i < 60; i++) {
+  try {
+    const r = await fetch(URL_);
+    if (r.ok) break;
+  } catch {
+    /* not up yet */
+  }
+  await new Promise((r) => setTimeout(r, 250));
+}
+
+const browser = await chromium.launch();
+const VIEWPORTS = [
+  [390, 844],
+  [768, 1024],
+  [1440, 900],
+  [1920, 1080],
+];
+
+async function page(opts = {}) {
+  const ctx = await browser.newContext({
+    viewport: { width: opts.w ?? 1440, height: opts.h ?? 900 },
+    colorScheme: opts.scheme ?? 'light',
+    reducedMotion: opts.reduced ? 'reduce' : 'no-preference',
+    deviceScaleFactor: 1,
+  });
+  const p = await ctx.newPage();
+  const tag = `${opts.w ?? 1440}x${opts.h ?? 900}-${opts.scheme ?? 'light'}${opts.reduced ? '-reduced' : ''}`;
+  p.on('console', (m) => {
+    if (m.type() === 'error' || m.type() === 'warning') report.console.push({ tag, type: m.type(), text: m.text() });
+  });
+  p.on('pageerror', (e) => report.console.push({ tag, type: 'pageerror', text: String(e) }));
+  await p.goto(URL_ + (opts.hash ?? ''), { waitUntil: 'networkidle' });
+  await p.evaluate(() => document.fonts.ready);
+  return { p, ctx, tag };
+}
+const shot = async (p, name, full = true) => {
+  const path = join(OUT, `${name}.png`);
+  await p.screenshot({ path, fullPage: full });
+  report.screenshots.push(`${name}.png`);
+};
+async function axe(p, tag) {
+  const r = await new AxeBuilder({ page: p }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze();
+  const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+  report.axe.push({
+    tag,
+    serious_or_critical: bad.length,
+    violations: r.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target })),
+  });
+}
+
+// ---------- screenshots (+ axe on each) ----------
+for (const [w, h] of VIEWPORTS) {
+  for (const scheme of ['light', 'dark']) {
+    const { p, ctx, tag } = await page({ w, h, scheme });
+    await shot(p, `page-${tag}`);
+    await axe(p, tag);
+    await ctx.close();
+  }
+}
+{
+  const { p, ctx, tag } = await page({ reduced: true });
+  await shot(p, `page-${tag}`, false);
+  await ctx.close();
+}
+
+// ---------- replay: start, middle, end ----------
+{
+  const { p, ctx } = await page();
+  const reg = p.locator('#register');
+  const range = p.locator('#replay');
+  await range.focus();
+  await p.keyboard.press('Home');
+  await p.waitForTimeout(400);
+  await reg.screenshot({ path: join(OUT, 'replay-start.png') });
+  for (let i = 0; i < 4; i++) await p.keyboard.press('ArrowRight');
+  await p.waitForTimeout(600);
+  await reg.screenshot({ path: join(OUT, 'replay-middle.png') });
+  report.replay_middle = await p.locator('#register [aria-live]').first().textContent();
+  await p.keyboard.press('End');
+  await p.waitForTimeout(600);
+  await reg.screenshot({ path: join(OUT, 'replay-end.png') });
+  report.screenshots.push('replay-start.png', 'replay-middle.png', 'replay-end.png');
+  // the play button walks the stops
+  await p.getByRole('button', { name: /replay the campaign/i }).click();
+  await p.waitForTimeout(2600);
+  report.replay_playing = await p.locator('#register [aria-live]').first().textContent();
+  await ctx.close();
+}
+
+// ---------- receipt open: desktop + mobile (+ axe with it open) ----------
+for (const [w, h, name] of [
+  [1440, 900, 'receipt-desktop'],
+  [390, 844, 'receipt-mobile'],
+]) {
+  const { p, ctx, tag } = await page({ w, h });
+  const btn = p.locator(w >= 768 ? 'table .cell-btn' : 'ol[aria-label="Register entries"] button').nth(w >= 768 ? 3 * 11 + 2 : 34);
+  await btn.scrollIntoViewIfNeeded();
+  await btn.click();
+  await p.locator('[role="dialog"]').waitFor();
+  await p.waitForTimeout(500);
+  await shot(p, `${name}`, false);
+  await axe(p, `${tag}-receipt`);
+  await ctx.close();
+}
+{
+  // deep link
+  const { p, ctx } = await page({ hash: '#HL-4.2-018' });
+  await p.locator('[role="dialog"]').waitFor({ timeout: 5000 });
+  await p.waitForTimeout(500);
+  report.deep_link = (await p.locator('[role="dialog"] h2').first().textContent())?.trim();
+  await shot(p, 'receipt-deeplink-018', false);
+  await ctx.close();
+}
+
+// ---------- keyboard flow ----------
+{
+  const { p, ctx } = await page();
+  const steps = [];
+  await p.locator('#register').scrollIntoViewIfNeeded();
+  await p.locator('#replay').focus();
+  let found = false;
+  for (let i = 0; i < 30; i++) {
+    await p.keyboard.press('Tab');
+    if (await p.evaluate(() => document.activeElement?.classList.contains('cell-btn'))) {
+      found = true;
+      break;
+    }
+  }
+  const label = () => p.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+  steps.push(['tab into register', found, await label()]);
+  await p.keyboard.press('ArrowRight');
+  steps.push(['ArrowRight', true, await label()]);
+  await p.keyboard.press('ArrowDown');
+  const before = await label();
+  steps.push(['ArrowDown', true, before]);
+  await p.keyboard.press('End');
+  steps.push(['End', true, await label()]);
+  await p.keyboard.press('Home');
+  steps.push(['Home', true, await label()]);
+  await p.keyboard.press('ArrowRight');
+  const target = await label();
+  await p.keyboard.press('Enter');
+  const opened = await p.locator('[role="dialog"]').waitFor({ timeout: 3000 }).then(() => true, () => false);
+  steps.push(['Enter opens receipt', opened, p.url().split('#')[1] ?? '']);
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(400);
+  const closed = (await p.locator('[role="dialog"]').count()) === 0;
+  const after = await label();
+  steps.push(['Esc closes', closed, '']);
+  steps.push(['focus returns to the same cell', after === target, after]);
+  report.keyboard = { pass: steps.every((s) => s[1]), steps };
+  await ctx.close();
+}
+
+// ---------- 404 ----------
+{
+  const { p, ctx } = await page({ hash: '' });
+  await p.goto(URL_ + '404.html', { waitUntil: 'networkidle' });
+  await shot(p, '404', false);
+  await ctx.close();
+}
+await browser.close();
+
+// ---------- budgets ----------
+{
+  const html = readFileSync(join(WEB, 'dist/index.html'), 'utf8');
+  const js = [...html.matchAll(/(?:src|href)="\/heirloom\/(assets\/[^"]+\.js)"/g)].map((m) => m[1]);
+  const gz = (f) => gzipSync(readFileSync(join(WEB, 'dist', f))).length;
+  const jsGz = js.reduce((a, f) => a + gz(f), 0);
+  const fonts = readdirSync(join(WEB, 'dist/fonts')).filter((f) => f.endsWith('.woff2'));
+  const fontBytes = fonts.reduce((a, f) => a + readFileSync(join(WEB, 'dist/fonts', f)).length, 0);
+  const lazy = readdirSync(join(WEB, 'dist/assets')).filter((f) => f.endsWith('.js') && !js.includes(`assets/${f}`));
+  report.budgets = {
+    first_load_js: js,
+    first_load_js_gzip_kb: +(jsGz / 1024).toFixed(1),
+    js_ok: jsGz <= 150 * 1024,
+    fonts_kb: +(fontBytes / 1024).toFixed(1),
+    fonts_ok: fontBytes <= 100 * 1024,
+    lazy_chunks: lazy.map((f) => `${f} ${(gz('assets/' + f) / 1024).toFixed(1)} kB gz`),
+    site_json_kb: +(readFileSync(join(WEB, 'dist/site.json')).length / 1024).toFixed(1),
+  };
+}
+
+// ---------- Lighthouse (mobile) ----------
+try {
+  const chrome = chromium.executablePath();
+  const lhOut = join(OUT, 'lighthouse');
+  execFileSync(
+    'npx',
+    ['lighthouse', URL_, '--quiet', '--output=json', '--output=html', `--output-path=${lhOut}`, '--form-factor=mobile',
+      '--only-categories=performance,accessibility,best-practices,seo', '--chrome-flags=--headless=new --no-sandbox'],
+    { cwd: WEB, env: { ...process.env, CHROME_PATH: chrome }, stdio: 'pipe', timeout: 240_000 },
+  );
+  const lh = JSON.parse(readFileSync(`${lhOut}.report.json`, 'utf8'));
+  report.lighthouse = Object.fromEntries(Object.entries(lh.categories).map(([k, v]) => [k, Math.round(v.score * 100)]));
+  report.lighthouse_failed_audits = Object.values(lh.audits)
+    .filter((a) => a.score !== null && a.score < 0.9 && a.scoreDisplayMode !== 'informative' && a.scoreDisplayMode !== 'notApplicable')
+    .map((a) => `${a.id}: ${a.displayValue ?? a.score}`);
+} catch (e) {
+  report.lighthouse = { error: String(e.message).slice(0, 400) };
+}
+
+stop();
+writeFileSync(join(OUT, 'report.json'), JSON.stringify(report, null, 1));
+const axeBad = report.axe.reduce((a, x) => a + x.serious_or_critical, 0);
+console.log(
+  JSON.stringify(
+    {
+      cycle,
+      screenshots: report.screenshots.length,
+      axe_serious_or_critical: axeBad,
+      axe_all: [...new Set(report.axe.flatMap((x) => x.violations.map((v) => `${v.id}(${v.impact})`)))],
+      console: report.console.length,
+      console_sample: report.console.slice(0, 5),
+      keyboard: report.keyboard,
+      deep_link: report.deep_link,
+      replay_middle: report.replay_middle,
+      replay_playing: report.replay_playing,
+      lighthouse: report.lighthouse,
+      lighthouse_failed_audits: report.lighthouse_failed_audits,
+      budgets: report.budgets,
+    },
+    null,
+    1,
+  ),
+);
+if (!existsSync(join(OUT, 'report.json'))) process.exit(1);
+process.exit(0);

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Site } from './types';
 
-const site: Site = JSON.parse(readFileSync(new URL('../../public/site.json', import.meta.url), 'utf8'));
+const site: Site = JSON.parse(readFileSync(new URL('./site.json', import.meta.url), 'utf8'));
 const readme = readFileSync(new URL('../../../../README.md', import.meta.url), 'utf8');
 const top = readme.split('<!-- top:start -->')[1]?.split('<!-- top:end -->')[0] ?? '';
 
