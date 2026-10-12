@@ -57,7 +57,7 @@ export const S06: React.FC<SceneProps> = ({ frames }) => {
             </div>
           }
         />
-        <CapWin id="GH06" {...RIGHT} zoom={1} fx={0.5} fy={0.45} rate={0.8} url="github.com/iamdflame/django/pulls" />
+        <CapWin id="GH06" {...RIGHT} zoom={1} fx={0.42} fy={0.45} rate={0.8} url="github.com/iamdflame/django/pulls" />
       </Seq>
       <Seq from={t2} to={t3}>
         <Stat at={0} kicker="UNPROVEN" n={UNPROVEN_N} color={VERDICT.UNPROVEN.color} title={<>evidence filed, <i style={{ color: C.brassHi }}>not guessed</i></>} />

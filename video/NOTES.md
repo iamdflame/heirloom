@@ -94,3 +94,12 @@ Milestone 1 read 20 frames at 2 s spacing from the encoded scenes (S01–S03, S0
 - The ProRes 4444 captions layer came out as `yuv444p10le` (no alpha) and blacked out the picture; captions are now 41 transparent cue PNGs overlaid by ffmpeg with 0.1 s alpha fades (`scripts/captions-burn.mjs`).
 - Read 18 frames of `HeirloomDemo-FINAL.mp4` (0–40 s, 2 s spacing) + 23 of the first 45 s from the scenes + 18 of 50 s–2:24. Fixed after the first look: S02's first 0.4 s was empty ink (plates now enter on the cut), S03's terminal sat empty for 1.4 s (the log now types as soon as it opens).
 - FINAL: H.264 High 1080p60 + AAC-LC 320 kbps 48 kHz; −14.2 LUFS integrated, −1.4 dBFS peak.
+
+## V-FIX: two reviewer defects in the silent master
+
+| # | Defect | Fix |
+|---|---|---|
+| F1 | S05 (master 61.8–62.4 s): the gate checklist entered while the triangle was still shrinking left, and C1 ran over the U⁺ node for about 0.3 s. | The checklist starts when the 40-frame move ends (`listAt = shift + 40`); frames read at 0.1 s steps across 13.0–13.8 s of S05: the triangle settles at 13.6 s, C1 fades in at 13.7 s, clear of U⁺. |
+| F2 | S06 GH06 (master 1:14–1:20): the window cut the page's left edge ("…ull requests", "…4.2.x] Fixed"). | Same window, focus `fx` 0.5 → 0.42: the PR list's left edge and every row start sit inside the window. The page is wider than the window, so the right side gives way (long titles end at the edge, as they did before). In the first ~1 s, the full-width repo breadcrumb above the list still meets the left edge. |
+
+Re-rendered S05 and S06 only (frame counts unchanged: 1080 / 1498), then `render-polish.mjs master captions stills` and `mix.mjs`. FINAL: 8817 frames, 146.95 s, −14.2 LUFS; decoded audio identical to the previous FINAL.

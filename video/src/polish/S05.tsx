@@ -21,6 +21,8 @@ export const S05: React.FC<SceneProps> = ({ scale, frames }) => {
   const cell = exampleCell(UPSTREAM.id);
   const noble = exampleCell(UBUNTU.id);
   const side = io(frame, shift, 40, EASE_IN_OUT);
+  // the checklist enters only once the triangle has finished moving left, so it never crosses the U⁺ node
+  const listAt = shift + 40;
   const gate = (id: string) => cell.gates.find((g) => g.id === id);
   const c4 = noble.gates.find((g) => g.id === 'C4ab')!;
   const gates = [
@@ -61,9 +63,9 @@ export const S05: React.FC<SceneProps> = ({ scale, frames }) => {
             />
           </div>
         </div>
-        {frame >= shift && (
+        {frame >= listAt && (
           <div style={{ position: 'absolute', left: 900, top: 310 }}>
-            <GateChecklist gates={gates} at={shift - tTri + 14} every={b(0.45)} width={900} />
+            <GateChecklist gates={gates} at={listAt - tTri} every={b(0.45)} width={900} />
           </div>
         )}
       </Seq>
