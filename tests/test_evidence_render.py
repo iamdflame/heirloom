@@ -134,3 +134,12 @@ def test_reused_precedent_names_its_question_and_asking_trace(tmp_path: Path) ->
     assert "no new question for CVE-B." in reused
     asker = publish._notes(_precedent_ctx(tmp_path / "a", "CVE-A"), prec)
     assert "no new question" not in asker
+
+
+def test_precedent_without_asking_row_claims_no_new_question(tmp_path: Path) -> None:
+    ctx = _precedent_ctx(tmp_path / "c", "CVE-B")
+    ctx.ledger.db.execute("DELETE FROM stages WHERE stage='decide.question'")
+    prec = {"decide": {"decision": "publish-fix", "precedent": {"id": "P001", "issue": ""}}}
+    note = publish._notes(ctx, prec)
+    assert "no new question" not in note
+    assert "[#]()" not in note
