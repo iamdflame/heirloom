@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4R0HXPCAW6769Y4SNDA60B4",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "video/captions.srt",
+    "video/public/site-finale.jpg",
+    "video/scripts/link-captures.mjs",
+    "video/scripts/render.mjs",
+    "video/src/Root.tsx",
+    "video/src/components/Overlays.tsx",
+    "video/src/data/captures.json",
+    "video/src/polish/PolishDemo.tsx",
+    "video/src/polish/S01.tsx",
+    "video/src/polish/S09.tsx",
+    "video/src/scenes/S04.tsx",
+    "video/src/scenes/S10.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 4238,
+    "cache_read_tokens": 1295304,
+    "output_tokens": 3102,
+    "api_call_count": 5
+  }
+}
