@@ -1,7 +1,7 @@
 // Renders the VO-timed cut (src/polish, timing-vo.json) into ~/video-out (or $VIDEO_OUT):
 //   scenes  → scenes/S01.mp4…S10.mp4 (silent, H.264 High CRF 14 slow, BT.709)   [--scenes=S03,S06]
 //   master  → concat (stream copy) → master/HeirloomDemo-silent.mp4
-//   captions→ transparent captions layer (ProRes 4444) overlaid → master/HeirloomDemo-captions.mp4, + .srt
+//   captions→ scripts/captions-burn.mjs (cue PNGs overlaid) → master/HeirloomDemo-captions.mp4, + .srt
 //   stills  → stills/S01.png… (key frames)
 //   sample  → out/sample.mp4: 5 s of S06 (the capture-heaviest scene) for the speed check
 // Scenes can be split across processes: run several `node scripts/render-polish.mjs scenes --scenes=…` in parallel.
@@ -62,11 +62,8 @@ if (steps.has('master')) {
 }
 if (steps.has('captions')) {
   copyFileSync(join(root, 'captions.srt'), join(OUT, 'master', 'HeirloomDemo.srt'));
-  const layer = join(root, 'out', 'captions-layer.mov');
-  const comp = await selectComposition({ serveUrl, id: 'CaptionsLayer', inputProps: {} });
-  await renderMedia({ composition: comp, serveUrl, codec: 'prores', proresProfile: '4444', imageFormat: 'png', pixelFormat: 'yuva444p10le', concurrency: Number(process.env.CONC ?? 8), outputLocation: layer, muted: true });
-  log('captions layer');
-  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', master, '-i', layer, '-filter_complex', '[0:v][1:v]overlay=0:0:format=auto,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-movflags', '+faststart', '-an', join(OUT, 'master', 'HeirloomDemo-captions.mp4')]);
+  // per-cue transparent PNGs overlaid by ffmpeg (the ProRes 4444 layer came out without alpha on this box)
+  execFileSync('node', [join(root, 'scripts/captions-burn.mjs')], { stdio: 'inherit' });
   log('master/HeirloomDemo-captions.mp4');
 }
 if (steps.has('stills')) {

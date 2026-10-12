@@ -87,3 +87,10 @@ Milestone 1 read 20 frames at 2 s spacing from the encoded scenes (S01–S03, S0
 
 **How the final cut is built** (V-MO's `src/index.ts` / `render.mjs` / `timing.json` still build the earlier linear-scaled cut):
 `node scripts/captions-from-words.mjs` → `timing-vo.json` + `captions.srt`; `node scripts/render-polish.mjs scenes` (split `--scenes=` across 2 processes at CONC=4 each) → `node scripts/render-polish.mjs master captions stills` → `node scripts/mix.mjs` (VO −16 LUFS, music −20/−28 LUFS with ducking from the word timestamps, 3 s fade to the last frame, loudnorm −14/−1.5 for `-FINAL.mp4`) → `node scripts/edit-guide-polish.mjs`. Stills for review: `node scripts/stills-polish.mjs out/x S03:12 …`.
+
+### Polish pass: final render (12:40)
+
+- 60 fps (5 s sample: 6.4 fps under V-CAP/V-MO load → 23 min projected, inside the 25-min rule); scenes in 2 parallel processes at CONC=4: 10 min. Frame counts match `timing-vo.json` exactly (8817).
+- The ProRes 4444 captions layer came out as `yuv444p10le` (no alpha) and blacked out the picture; captions are now 41 transparent cue PNGs overlaid by ffmpeg with 0.1 s alpha fades (`scripts/captions-burn.mjs`).
+- Read 18 frames of `HeirloomDemo-FINAL.mp4` (0–40 s, 2 s spacing) + 23 of the first 45 s from the scenes + 18 of 50 s–2:24. Fixed after the first look: S02's first 0.4 s was empty ink (plates now enter on the cut), S03's terminal sat empty for 1.4 s (the log now types as soon as it opens).
+- FINAL: H.264 High 1080p60 + AAC-LC 320 kbps 48 kHz; −14.2 LUFS integrated, −1.4 dBFS peak.
