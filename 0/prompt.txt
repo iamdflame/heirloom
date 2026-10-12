@@ -1,0 +1,50 @@
+You are running HEADLESS: nobody can answer you mid-run, so never wait for input. Decide within the brief, record decisions in hackathon.md, and keep going. Usage is tight: work efficiently, and commit and push after every step.
+
+Before anything else: run `entire session current` and `entire status`. If no active session is shown, or the id is f5117257-5211-42ae-823c-32aa228a28d9, stop and print why.
+
+This is B6, the hardening, README and evidence session, before the 08:58 UTC freeze. From here: fixes only, no new features. Read hackathon.md's B4, B5 and B5b entries first.
+
+1. (≤30 min) Loose ends:
+   (a) Evidence issue #10 still says CVE-2026-87890 is UNPROVEN, but 87890 is now AFFECTED and published as PR #21, stacked on PR #20.
+       - Update #10 in place to say it is superseded by PR #21, with the reach-retry run that changed the verdict, then close it.
+       - Make `evals/results_live.json` reflect the final state and commit it (it has an uncommitted modification).
+   (b) The Ubuntu outreach draft needs the raw ubuntu-noble probe logs for CVE-2026-87890, which are local only. Publish them the same way the campaign publishes run artifacts (the artifacts path or branch on iamdflame/heirloom), link them from docs/outreach/ubuntu-cve-2026-87890.md, and check they contain no secrets.
+   (c) Fix the two medium findings from docs/entire/ (the entire review output) if each takes ≤10 min; otherwise list them under known limits.
+2. (≤60 min) Go through ~/brief/DOD.md line by line. Check each item with evidence (command output, link or file) written next to it in a new file docs/DOD-status.md. Fix what fails, where a fix fits.
+3. (≤75 min) README first screen, for a judge who gives it 60 seconds. Every number must be rendered from the JSON files by a script (extend the existing render script), never typed by hand. Include:
+   - the one-liner: "Heirloom is an agent that keeps end-of-life software patched." plus one sentence on what it does;
+   - a "what it did, unattended" block:
+     - the 19 post-EOL Django CVEs on 4.2, as verdict counts from evals/results_live.json;
+     - the number of candidate backport PRs, each with fail→pass, linking https://github.com/iamdflame/django/pulls;
+     - evidence issues for everything it could not prove;
+     - the one question it asked (#6), and the precedent reused by PR #19 without asking;
+     - 87890 stacked on its own 15307 backport (PR #21 on #20);
+   - the CVE × line matrix (4.2.30, Debian 13 trixie, Ubuntu 24.04 noble) from evals/matrix.json, with the Ubuntu cross-check line;
+   - the Ubuntu finding in exactly this wording: "noble's CVE-2026-15307 backport leaves the bytes path that upstream closed as CVE-2026-87890; our calibrated probe shows it." Follow it with: the probe is hand-written and calibrated on Django's own fix commits;
+   - the backtest v1 vs v2 table from evals/results.json, with false NOT_AFFECTED counts;
+   - "verify it yourself" links: fork PRs, evidence issues, Entire checkpoints (refs/entire/checkpoints and the trailers), the neatlogs detections file and the trace ids, the cfo.ai Pages (Base https://app.cfo.ai/s/25vRDQClPxqPWB5g · Bear https://app.cfo.ai/s/iY4Wmzs_IFo0SBTz · Bull https://app.cfo.ai/s/ASqxTf1hUwtztmtT) and the recovery record (evals/recovery_b4.json). Say that neatlogs traces live in the owner's private neatlogs org, so judges see the trace ids and the detections JSON;
+   - "what's real / known limits", stated honestly:
+     - candidate backports, not releases;
+     - SQLite and PostGIS only;
+     - UNPROVEN by design for what it can't exercise;
+     - the porter sees the advisory and upstream's test diff, never the fix's code hunks;
+     - the 87890 matrix probe is hand-written;
+     - the recovery was a worker killed during a harness-fix restart;
+   - "built during neatHack" with the first commit's date.
+   Keep the first screen tight; push detail below the fold.
+4. (≤30 min) EVIDENCE.md: map each item on the hackathon's evidence list to links:
+   - a before-and-after run showing the agent improved;
+   - neatlogs traces or screenshots;
+   - Entire checkpoints or entire-graph output;
+   - the cfo.ai business plan (pricing, costs, revenue, runway);
+   - a run showing recovery from a failed action;
+   - build-in-public links tagged #neatHack (leave a clearly marked placeholder list for the owner to fill);
+   - a public repo with commits dated during the event.
+5. Final checks: pytest, ruff and mypy --strict one last time. Finish hackathon.md (dated, only things that happened). Commit and push.
+
+Budget: no model-spending runs are needed in this session. No new PRs; no `clean --remote`. Never print .env values.
+
+Finish with:
+- `entire status`;
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- a final summary: DoD status counts, what failed or was left, and anything you need from me.
