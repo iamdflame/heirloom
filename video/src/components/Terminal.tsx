@@ -42,7 +42,7 @@ export const Terminal: React.FC<{
         {[0, 1, 2].map((i) => (
           <div key={i} style={{ width: 12, height: 12, borderRadius: 12, background: C.line }} />
         ))}
-        <div style={{ marginLeft: 14, fontFamily: FONT.mono, fontSize: 18, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
+        <div style={{ marginLeft: 14, fontFamily: FONT.mono, fontSize: 22, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
       </div>
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', padding: '20px 28px' }}>
         <div style={{ transform: `translateY(${-scroll}px)` }}>

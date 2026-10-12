@@ -53,8 +53,8 @@ export const S05: React.FC<SceneProps> = ({ scale, frames }) => {
               </div>
             </div>
             {frame >= b(11.6) && (
-              <div style={{ position: 'absolute', left: 980, top: 300 }}>
-                <GateChecklist gates={gates} at={b(11.8)} every={b(0.45)} width={860} />
+              <div style={{ position: 'absolute', left: 900, top: 310 }}>
+                <GateChecklist gates={gates} at={b(11.8)} every={b(0.45)} width={900} />
               </div>
             )}
           </>

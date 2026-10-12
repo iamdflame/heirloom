@@ -18,13 +18,12 @@ export const S09: React.FC<SceneProps> = ({ scale, frames }) => {
       <Ground ringOpacity={0.05} glow={1.4} />
       <Seq from={0} to={t1}>
         <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-          <div style={{ fontFamily: FONT.mono, fontSize: 26, letterSpacing: '0.2em', color: C.muted, opacity: io(frame, b(0.3), 30) }}>MODEL COST PER ADVISORY</div>
           <div style={{ fontFamily: FONT.serif, fontSize: 300, lineHeight: 1, color: C.brassHi, marginTop: 10, opacity: io(frame, b(0.4), 20), textShadow: '0 0 80px rgba(230,203,142,0.25)' }}>
             <Counter to={COST_PER_CVE} at={b(0.5)} dur={b(2.1)} decimals={2} prefix="$" />
           </div>
           <BrassUnderline at={b(2.4)} width={520} />
           <div style={{ marginTop: 26, fontFamily: FONT.sans, fontSize: 36, color: C.bone, opacity: io(frame, b(2.6), 30) }}>
-            ({COST_STATUS}) · campaign model spend ÷ advisories
+            model cost per advisory ({COST_STATUS})
           </div>
         </AbsoluteFill>
       </Seq>

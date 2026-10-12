@@ -96,7 +96,7 @@ export const Hallmark: React.FC<{ size: number; at?: number; stamp?: boolean; co
 };
 
 /** Ink ground with a faint warm radial glow and a slow guilloché watermark. */
-export const Ground: React.FC<{ glow?: number; ring?: boolean; ringOpacity?: number; x?: string; y?: string }> = ({ glow = 1, ring = true, ringOpacity = 0.07, x = '50%', y = '46%' }) => {
+export const Ground: React.FC<{ glow?: number; ring?: boolean; ringOpacity?: number; x?: string; y?: string }> = ({ glow = 1, ring = true, ringOpacity = 0.05, x = '50%', y = '46%' }) => {
   const frame = useCurrentFrame();
   return (
     <div style={{ position: 'absolute', inset: 0, background: C.ink, overflow: 'hidden' }}>

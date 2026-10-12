@@ -20,8 +20,8 @@ export const S03: React.FC<SceneProps> = ({ scale }) => {
   const lines: TermLine[] = [];
   runs.forEach((r, i) => {
     const t0 = b(7.2) + i * b(1.6);
-    lines.push({ text: `── ${r.file}   ${r.exit}`, at: t0, color: C.muted, size: 20 });
-    lines.push({ text: r.test, at: t0 + 10, color: C.bone, size: 20 });
+    lines.push({ text: `── ${r.file}   ${r.exit}`, at: t0, color: C.muted, size: 22 });
+    lines.push({ text: r.test, at: t0 + 10, color: C.bone, size: 22 });
     lines.push({ text: r.assertion, at: t0 + 26, color: red, weight: 500, size: 22 });
     lines.push({ text: r.result, at: t0 + 38, color: red, size: 22 });
   });
@@ -30,26 +30,26 @@ export const S03: React.FC<SceneProps> = ({ scale }) => {
     <AbsoluteFill>
       <Ground ringOpacity={0.05} glow={1 + up} />
       <AbsoluteFill style={{ opacity: 1 - toClaim, filter: toClaim > 0 ? `blur(${toClaim * 10}px)` : undefined }}>
-        <div style={{ position: 'absolute', left: 0, right: 0, top: lerp(380, 70, up), transform: `scale(${lerp(1, 0.6, up)})`, transformOrigin: '50% 0' }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: lerp(380, 40, up), transform: `scale(${lerp(1, 0.8, up)})`, transformOrigin: '50% 0' }}>
           <DatePlates
             at={b(0.3)}
             lockAt={b(3.0)}
             days={daysBetween(FINDING.distro_date, FINDING.advisory_date)}
-            left={{ date: shortDate(FINDING.distro_date), text: <>Ubuntu ships its <span style={{ fontFamily: FONT.mono, color: C.brassHi }}>{FINDING.amends}</span> backport</> }}
-            right={{ date: shortDate(FINDING.advisory_date), text: <>Django: <span style={{ fontFamily: FONT.mono, color: C.brassHi }}>{FINDING.cve}</span> amends that fix</> }}
+            left={{ date: shortDate(FINDING.distro_date), text: <>Ubuntu ships its <span style={{ fontFamily: FONT.mono, color: C.brassHi, whiteSpace: 'nowrap' }}>{FINDING.amends}</span> backport</> }}
+            right={{ date: shortDate(FINDING.advisory_date), text: <>Django: <span style={{ fontFamily: FONT.mono, color: C.brassHi, whiteSpace: 'nowrap' }}>{FINDING.cve}</span> amends that fix</> }}
           />
         </div>
         {frame >= b(6.2) && (
-          <div style={{ position: 'absolute', left: 160, top: 300 }}>
+          <div style={{ position: 'absolute', left: 140, top: 300 }}>
             <Terminal
               at={b(6.3)}
-              width={1600}
-              height={600}
+              width={1640}
+              height={630}
               title={`${UBUNTU.name} noble · python-django ${UBUNTU.version} · probe hl_cve_2026_87890 · runs ×3`}
               lines={lines}
-              fontSize={20}
+              fontSize={22}
             />
-            <div style={{ position: 'absolute', right: 40, top: 80 }}>
+            <div style={{ position: 'absolute', right: 48, bottom: 40 }}>
               <VerdictChip chip="AFFECTED" at={b(12.9)} size={34} />
             </div>
           </div>

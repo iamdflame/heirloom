@@ -123,7 +123,7 @@ export const CveCascade: React.FC<{ items: { cve: string; date: string }[]; at: 
   const frame = useCurrentFrame();
   const per = Math.ceil(items.length / columns);
   return (
-    <div style={{ display: 'flex', gap: 56, opacity: dim }}>
+    <div style={{ display: 'flex', gap: 64, opacity: dim }}>
       {Array.from({ length: columns }, (_, c) => (
         <div key={c} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {items.slice(c * per, c * per + per).map((it, j) => {
@@ -131,9 +131,8 @@ export const CveCascade: React.FC<{ items: { cve: string; date: string }[]; at: 
             const t = io(frame, at + i * every, 30);
             return (
               <div key={it.cve} style={{ display: 'flex', alignItems: 'center', gap: 22, height: 50, opacity: t, transform: `translateY(${(1 - t) * -28}px)` }}>
-                <span style={{ fontFamily: FONT.mono, fontSize: 18, color: C.muted, width: 104 }}>{it.date}</span>
-                <span style={{ fontFamily: FONT.mono, fontSize: 28, color: C.bone, width: 290 }}>{it.cve}</span>
-                <Stamp text="NO 4.2 PATCH" color={VERDICT.AFFECTED.color} at={at + i * every + stampDelay} size={18} rotate={-3} />
+                <span style={{ fontFamily: FONT.mono, fontSize: 30, color: C.bone, width: 300 }}>{it.cve}</span>
+                <Stamp text="NO 4.2 PATCH" color={VERDICT.AFFECTED.color} at={at + i * every + stampDelay} size={20} rotate={-3} />
               </div>
             );
           })}
@@ -160,9 +159,9 @@ export const DatePlates: React.FC<{
   const pulse = 0.75 + 0.25 * Math.sin((frame - lockAt) / 14);
   const plate = (p: { date: string; text: React.ReactNode }, s: number, dir: number, glow: number) => (
     <div style={{ transform: `translateX(${(1 - s) * 300 * dir + (dir * gap) / 2}px)`, opacity: Math.min(1, s * 1.5) }}>
-      <Plate width={560} pad="30px 44px" glow={glow}>
+      <Plate width={640} pad="30px 48px" glow={glow}>
         <div style={{ fontFamily: FONT.serif, fontSize: 84, color: C.brassHi, lineHeight: 1 }}>{p.date}</div>
-        <div style={{ marginTop: 14, fontFamily: FONT.sans, fontSize: 30, color: C.bone, lineHeight: 1.25 }}>{p.text}</div>
+        <div style={{ marginTop: 14, fontFamily: FONT.sans, fontSize: 34, color: C.bone, lineHeight: 1.3 }}>{p.text}</div>
       </Plate>
     </div>
   );

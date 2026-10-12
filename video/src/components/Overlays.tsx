@@ -13,7 +13,7 @@ export const LowerThird: React.FC<{ at: number; out: number; title: React.ReactN
   title,
   kicker,
   x = 96,
-  y = 860,
+  y = 742,
   width = 980,
 }) => {
   const frame = useCurrentFrame();
@@ -97,7 +97,9 @@ export const PrecedentSeal: React.FC<{ at: number; id: string; answer: string; s
         <div style={{ fontFamily: FONT.mono, fontSize: 24, letterSpacing: '0.3em', color: C.brass }}>PRECEDENT</div>
         <div style={{ fontFamily: FONT.serif, fontSize: 132, color: C.brassHi, lineHeight: 1 }}>{id}</div>
         <div style={{ fontFamily: FONT.mono, fontSize: 24, letterSpacing: '0.3em', color: C.brass }}>SEALED</div>
-        <div style={{ marginTop: 12, fontFamily: FONT.mono, fontSize: 22, color: C.bone, opacity: io(frame, at + 20, 30) }}>{answer}</div>
+      </div>
+      <div style={{ position: 'absolute', left: -200, right: -200, top: size + 56, textAlign: 'center', fontFamily: FONT.mono, fontSize: 30, color: C.bone, opacity: io(frame, at + 24, 30), transform: `scale(${1 / (1.8 - 0.8 * s)})` }}>
+        /heirloom answer <span style={{ color: C.brassHi }}>{answer}</span>
       </div>
     </div>
   );
@@ -139,8 +141,9 @@ export const Captions: React.FC = () => {
           lineHeight: 1.3,
           color: C.bone,
           background: 'rgba(8,9,10,0.7)',
-          padding: '10px 26px 12px',
-          borderRadius: 999,
+          padding: '10px 28px 12px',
+          borderRadius: c.text.includes('\n') ? 26 : 999,
+          whiteSpace: 'pre-line',
           opacity: t,
           maxWidth: 1400,
           textAlign: 'center',

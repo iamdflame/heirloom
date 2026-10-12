@@ -187,7 +187,7 @@ export const GateChecklist: React.FC<{ gates: { id: string; label: string; note?
             <span style={{ fontFamily: FONT.mono, fontSize: 28, color: C.brassHi, width: 60 }}>{g.id}</span>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontFamily: FONT.sans, fontSize: 30, color: C.bone }}>{g.label}</span>
-              {g.note && <span style={{ fontFamily: FONT.mono, fontSize: 22, color: C.muted, marginTop: 4 }}>{g.note}</span>}
+              {g.note && <span style={{ fontFamily: FONT.mono, fontSize: 22, color: C.muted, marginTop: 4, whiteSpace: 'nowrap' }}>{g.note}</span>}
             </div>
           </div>
         );

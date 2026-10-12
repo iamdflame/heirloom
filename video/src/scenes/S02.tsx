@@ -13,18 +13,18 @@ export const S02: React.FC<SceneProps> = ({ scale }) => {
   const b = beats(scale);
   // plates arrive big and centred, then lift into a header row
   const lift = io(frame, b(4.4), 60, EASE_IN_OUT);
-  const plateScale = lerp(1, 0.62, lift);
+  const plateScale = lerp(1.2, 0.78, lift);
   const counterT = io(frame, b(8.8), 40);
   return (
     <AbsoluteFill>
       <Ground ringOpacity={0.05} />
-      <div style={{ position: 'absolute', left: lerp(590, 150, lift), top: lerp(300, 70, lift) }}>
+      <div style={{ position: 'absolute', left: lerp(530, 116, lift), top: lerp(250, 64, lift) }}>
         <DistroPlate name={DEBIAN.name} pkg="python-django" version={DEBIAN.version} at={b(0.4)} scale={plateScale} />
       </div>
-      <div style={{ position: 'absolute', left: lerp(590, 150 + 470, lift), top: lerp(530, 70, lift) }}>
+      <div style={{ position: 'absolute', left: lerp(530, 116 + 580, lift), top: lerp(500, 64, lift) }}>
         <DistroPlate name={UBUNTU.name} pkg="python-django" version={UBUNTU.version} at={b(1.2)} scale={plateScale} from={1} />
       </div>
-      <div style={{ position: 'absolute', left: 150, top: 300 }}>
+      <div style={{ position: 'absolute', left: 116, top: 316 }}>
         <CveCascade items={ADVISORIES} at={b(4.9)} every={Math.max(4, b(0.12))} columns={3} stampDelay={b(0.3)} />
       </div>
       <div

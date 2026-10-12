@@ -25,10 +25,10 @@ export const S04: React.FC<SceneProps> = ({ scale, frames }) => {
         ) : (
           <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', opacity: 0.9 - 0.4 * settle }}>
             <div style={{ position: 'absolute', transform: `rotate(${frame * 0.08}deg)` }}>
-              <GuillocheRing size={1180} at={0} dur={110} copies={16} lobes={30} amp={3.2} strokeWidth={0.09} opacity={0.6} />
+              <GuillocheRing size={1180} at={-999} copies={16} lobes={30} amp={3.2} strokeWidth={0.09} opacity={0.6 * io(frame, 0, 90)} />
             </div>
             <div style={{ position: 'absolute', transform: `rotate(${-frame * 0.12}deg)` }}>
-              <GuillocheRing size={760} at={10} dur={100} copies={12} lobes={22} amp={4} strokeWidth={0.12} opacity={0.5} />
+              <GuillocheRing size={760} at={-999} copies={12} lobes={22} amp={4} strokeWidth={0.12} opacity={0.5 * io(frame, 10, 90)} />
             </div>
           </AbsoluteFill>
         )}

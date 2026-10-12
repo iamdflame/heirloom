@@ -30,7 +30,9 @@ export const S07: React.FC<SceneProps> = ({ scale, frames }) => {
           {PRECEDENT.kind} · ASKED BY {QUERY.asked_by}
         </Kicker>
         <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
-          <PrecedentSeal at={b(0.6)} id={PRECEDENT.id} answer={PRECEDENT.answer} size={440} />
+          <div style={{ marginTop: -80 }}>
+            <PrecedentSeal at={b(0.6)} id={PRECEDENT.id} answer={PRECEDENT.answer} size={440} />
+          </div>
         </AbsoluteFill>
       </Seq>
       <Seq from={t3} to={frames}>

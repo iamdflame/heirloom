@@ -12,33 +12,39 @@ const MAX = 42;
 const probe = (file) =>
   Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' }).trim());
 
-/** Split VO into caption chunks of ≤42 chars, preferring sentence and clause breaks. */
+/** Two balanced lines of ≤42 chars, preferring a break after punctuation. */
+function twoLines(block) {
+  if (block.length <= MAX) return block;
+  const words = block.split(' ');
+  let best = null;
+  for (let i = 1; i < words.length; i++) {
+    const l1 = words.slice(0, i).join(' ');
+    const l2 = words.slice(i).join(' ');
+    if (l1.length > MAX || l2.length > MAX) continue;
+    const score = Math.abs(l1.length - l2.length) - (/[,:;…]$/.test(l1) ? 12 : 0) - (/^—/.test(l2) ? 12 : 0);
+    if (!best || score < best.score) best = { score, text: `${l1}\n${l2}` };
+  }
+  return best ? best.text : block;
+}
+
+/** Split VO into captions: one or two lines of ≤42 chars, never across a sentence end. */
 export function chunk(text) {
-  const words = text.replace(/\s+/g, ' ').trim().split(' ');
+  const sentences = text.replace(/\s+/g, ' ').trim().match(/[^.?!…]+[.?!…]+["”']?\s*|[^.?!…]+$/g).map((x) => x.trim());
   const out = [];
-  let cur = '';
-  for (const w of words) {
-    const next = cur ? `${cur} ${w}` : w;
-    if (next.length > MAX && cur) {
-      out.push(cur);
-      cur = w;
-    } else cur = next;
-    // close a chunk at a sentence end once it is reasonably long
-    if (/[.?!…:]$/.test(cur) && cur.length >= 18) {
-      out.push(cur);
-      cur = '';
+  for (const sentence of sentences) {
+    const clauses = sentence.split(/(?<=[,:;…])\s+|\s+(?=— )/).filter(Boolean);
+    let cur = '';
+    for (const clause of clauses) {
+      const joined = cur ? `${cur} ${clause}` : clause;
+      if (joined.length <= 2 * MAX - 6 && twoLines(joined).split('\n').every((l) => l.length <= MAX)) cur = joined;
+      else {
+        if (cur) out.push(cur);
+        cur = clause;
+      }
     }
+    if (cur) out.push(cur);
   }
-  if (cur) out.push(cur);
-  // avoid a dangling one- or two-word chunk: rebalance with its predecessor
-  for (let i = 1; i < out.length; i++) {
-    if (out[i].length < 12 && (out[i - 1] + ' ' + out[i]).length <= MAX && !/[.?!…]$/.test(out[i - 1])) {
-      out[i - 1] = out[i - 1] + ' ' + out[i];
-      out.splice(i, 1);
-      i--;
-    }
-  }
-  return out;
+  return out.map(twoLines);
 }
 
 const cues = JSON.parse(readFileSync(join(root, 'sfx-cues.json'), 'utf8'));
@@ -91,5 +97,5 @@ writeFileSync(join(root, 'captions.srt'), srt);
 
 console.log(`timing.json: ${scenes.length} scenes, ${start} frames (${(start / FPS).toFixed(2)} s), ${captions.length} captions, VO ${anyVo ? 'present' : 'absent (target lengths)'}`);
 for (const s of scenes) console.log(`  ${s.id} ${(s.start / FPS).toFixed(2).padStart(7)}s  ${(s.frames / FPS).toFixed(2)}s`);
-const long = captions.filter((c) => c.text.length > MAX);
+const long = captions.filter((c) => c.text.split('\n').some((l) => l.length > MAX));
 if (long.length) console.log('WARNING over-long captions:', long);

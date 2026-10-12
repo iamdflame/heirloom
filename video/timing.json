@@ -122,338 +122,242 @@
  "captions": [
   {
    "scene": "S01",
-   "text": "On the seventh of April, Django",
+   "text": "On the seventh of April, Django\nfour-point-two reached end of life.",
    "from": 24,
-   "to": 164
-  },
-  {
-   "scene": "S01",
-   "text": "four-point-two reached end of life.",
-   "from": 166,
-   "to": 360
+   "to": 362
   },
   {
    "scene": "S01",
    "text": "No more security fixes.",
-   "from": 362,
+   "from": 364,
    "to": 502
   },
   {
    "scene": "S02",
-   "text": "But Debian thirteen and Ubuntu",
+   "text": "But Debian thirteen and Ubuntu\ntwenty-four-oh-four still ship it.",
    "from": 564,
-   "to": 667
+   "to": 816
   },
   {
    "scene": "S02",
-   "text": "twenty-four-oh-four still ship it.",
-   "from": 669,
-   "to": 815
+   "text": "Since then, Django has published\nnineteen security advisories",
+   "from": 818,
+   "to": 1027
   },
   {
    "scene": "S02",
-   "text": "Since then, Django has published nineteen",
-   "from": 817,
-   "to": 959
-  },
-  {
-   "scene": "S02",
-   "text": "security advisories — and not one official",
-   "from": 961,
-   "to": 1106
-  },
-  {
-   "scene": "S02",
-   "text": "patch for four-point-two.",
-   "from": 1108,
+   "text": "— and not one official\npatch for four-point-two.",
+   "from": 1029,
    "to": 1222
   },
   {
    "scene": "S03",
-   "text": "On October first, Ubuntu shipped a",
+   "text": "On October first, Ubuntu shipped\na backport for one of them.",
    "from": 1284,
-   "to": 1414
+   "to": 1534
   },
   {
    "scene": "S03",
-   "text": "backport for one of them.",
-   "from": 1416,
-   "to": 1543
+   "text": "Five days later, Django said\nits original fix was incomplete.",
+   "from": 1536,
+   "to": 1789
   },
   {
    "scene": "S03",
-   "text": "Five days later, Django said its original",
-   "from": 1545,
-   "to": 1702
+   "text": "We took Ubuntu's source package,",
+   "from": 1791,
+   "to": 1922
   },
   {
    "scene": "S03",
-   "text": "fix was incomplete.",
-   "from": 1704,
-   "to": 1807
+   "text": "ran a test calibrated on\nDjango's own fix commits…",
+   "from": 1924,
+   "to": 2137
   },
   {
    "scene": "S03",
-   "text": "We took Ubuntu's source package, ran a",
-   "from": 1809,
-   "to": 1955
-  },
-  {
-   "scene": "S03",
-   "text": "test calibrated on Django's own fix",
-   "from": 1957,
-   "to": 2091
-  },
-  {
-   "scene": "S03",
-   "text": "commits… and the code path Django closed",
-   "from": 2093,
-   "to": 2247
-  },
-  {
-   "scene": "S03",
-   "text": "is still reachable in Ubuntu's build.",
-   "from": 2249,
+   "text": "and the code path Django closed is\nstill reachable in Ubuntu's build.",
+   "from": 2139,
    "to": 2422
   },
   {
    "scene": "S04",
-   "text": "That test was run by Heirloom — an agent",
+   "text": "That test was run by Heirloom",
    "from": 2484,
-   "to": 2648
+   "to": 2601
   },
   {
    "scene": "S04",
-   "text": "that keeps end-of-life software patched,",
-   "from": 2650,
-   "to": 2830
+   "text": "— an agent that keeps\nend-of-life software patched,",
+   "from": 2603,
+   "to": 2827
   },
   {
    "scene": "S04",
-   "text": "and proves which old versions are actually",
-   "from": 2832,
-   "to": 3003
-  },
-  {
-   "scene": "S04",
-   "text": "vulnerable.",
-   "from": 3005,
+   "text": "and proves which old versions\nare actually vulnerable.",
+   "from": 2829,
    "to": 3082
   },
   {
    "scene": "S05",
-   "text": "Its first rule: never trust a test that",
+   "text": "Its first rule: never trust\na test that hasn't failed.",
    "from": 3144,
-   "to": 3315
+   "to": 3398
   },
   {
    "scene": "S05",
-   "text": "hasn't failed. For each advisory, Heirloom",
-   "from": 3317,
-   "to": 3501
+   "text": "For each advisory,\nHeirloom writes its own test,",
+   "from": 3400,
+   "to": 3612
   },
   {
    "scene": "S05",
-   "text": "writes its own test, proves it fails on",
-   "from": 3503,
-   "to": 3673
+   "text": "proves it fails on Django's\nvulnerable code and passes on the fix…",
+   "from": 3614,
+   "to": 3917
   },
   {
    "scene": "S05",
-   "text": "Django's vulnerable code and passes on the",
-   "from": 3675,
-   "to": 3859
-  },
-  {
-   "scene": "S05",
-   "text": "fix… and only then asks the real question:",
-   "from": 3861,
-   "to": 4063
-  },
-  {
-   "scene": "S05",
-   "text": "is the old version affected?",
-   "from": 4065,
+   "text": "and only then asks the real question:\nis the old version affected?",
+   "from": 3919,
    "to": 4222
   },
   {
    "scene": "S06",
-   "text": "Then we let it run the whole campaign:",
+   "text": "Then we let it run the whole\ncampaign: nineteen advisories,",
    "from": 4284,
-   "to": 4452
+   "to": 4530
   },
   {
    "scene": "S06",
-   "text": "nineteen advisories, replayed in the order",
-   "from": 4454,
-   "to": 4622
+   "text": "replayed in the order\nDjango published them.",
+   "from": 4532,
+   "to": 4735
   },
   {
    "scene": "S06",
-   "text": "Django published them.",
-   "from": 4624,
-   "to": 4744
+   "text": "Thirteen candidate backports\n— each one failing before the fix,",
+   "from": 4737,
+   "to": 4999
   },
   {
    "scene": "S06",
-   "text": "Thirteen candidate backports — each one",
-   "from": 4746,
-   "to": 4902
+   "text": "and passing after.",
+   "from": 5001,
+   "to": 5102
   },
   {
    "scene": "S06",
-   "text": "failing before the fix, and passing after.",
-   "from": 4904,
-   "to": 5104
+   "text": "Where it couldn't prove something,\nit filed the evidence instead of guessing.",
+   "from": 5104,
+   "to": 5437
   },
   {
    "scene": "S06",
-   "text": "Where it couldn't prove something, it",
-   "from": 5106,
-   "to": 5254
+   "text": "And when a new fix amended\none it had already backported,",
+   "from": 5439,
+   "to": 5677
   },
   {
    "scene": "S06",
-   "text": "filed the evidence instead of guessing.",
-   "from": 5256,
-   "to": 5444
-  },
-  {
-   "scene": "S06",
-   "text": "And when a new fix amended one it had",
-   "from": 5446,
-   "to": 5594
-  },
-  {
-   "scene": "S06",
-   "text": "already backported, it stacked the",
-   "from": 5596,
-   "to": 5732
-  },
-  {
-   "scene": "S06",
-   "text": "follow-up on its own pull request.",
-   "from": 5734,
+   "text": "it stacked the follow-up\non its own pull request.",
+   "from": 5679,
    "to": 5902
   },
   {
    "scene": "S07",
-   "text": "Across the whole campaign, it asked me one",
+   "text": "Across the whole campaign,\nit asked me one question",
    "from": 5964,
-   "to": 6146
+   "to": 6173
   },
   {
    "scene": "S07",
-   "text": "question — a real judgement call about",
-   "from": 6148,
-   "to": 6313
+   "text": "— a real judgement call about\nchanging Django's behaviour.",
+   "from": 6175,
+   "to": 6446
   },
   {
    "scene": "S07",
-   "text": "changing Django's behaviour.",
-   "from": 6315,
-   "to": 6470
+   "text": "I answered once.",
+   "from": 6448,
+   "to": 6545
   },
   {
    "scene": "S07",
-   "text": "I answered once. It sealed the answer as a",
-   "from": 6472,
-   "to": 6655
+   "text": "It sealed the answer as a precedent,",
+   "from": 6547,
+   "to": 6711
   },
   {
    "scene": "S07",
-   "text": "precedent, and the next case reused it",
-   "from": 6657,
-   "to": 6821
-  },
-  {
-   "scene": "S07",
-   "text": "without asking.",
-   "from": 6823,
+   "text": "and the next case reused\nit without asking.",
+   "from": 6713,
    "to": 6922
   },
   {
    "scene": "S08",
-   "text": "We tested the method on cases with known",
+   "text": "We tested the method on\ncases with known answers.",
    "from": 6984,
-   "to": 7171
+   "to": 7237
   },
   {
    "scene": "S08",
-   "text": "answers. A naive pipeline once called a",
-   "from": 7173,
-   "to": 7354
-  },
-  {
-   "scene": "S08",
-   "text": "vulnerable version safe.",
-   "from": 7356,
-   "to": 7505
+   "text": "A naive pipeline once called\na vulnerable version safe.",
+   "from": 7239,
+   "to": 7519
   },
   {
    "scene": "S08",
    "text": "Heirloom: zero times.",
-   "from": 7507,
-   "to": 7642
+   "from": 7521,
+   "to": 7649
   },
   {
    "scene": "S08",
-   "text": "Every claim in every pull request links to",
-   "from": 7644,
-   "to": 7840
+   "text": "Every claim in every pull request\nlinks to its neat-logs trace,",
+   "from": 7651,
+   "to": 7949
   },
   {
    "scene": "S08",
-   "text": "its neat-logs trace, and every backport",
-   "from": 7842,
-   "to": 8024
-  },
-  {
-   "scene": "S08",
-   "text": "links the Entire session of the agent that",
-   "from": 8026,
-   "to": 8222
-  },
-  {
-   "scene": "S08",
-   "text": "wrote it.",
-   "from": 8224,
+   "text": "and every backport links the Entire\nsession of the agent that wrote it.",
+   "from": 7951,
    "to": 8302
   },
   {
    "scene": "S09",
-   "text": "Each advisory cost about twenty cents of",
+   "text": "Each advisory cost about\ntwenty cents of model time.",
    "from": 8364,
-   "to": 8512
+   "to": 8570
   },
   {
    "scene": "S09",
-   "text": "model time. We modelled the business in",
-   "from": 8514,
-   "to": 8658
+   "text": "We modelled the business in C-F-O dot A-I:",
+   "from": 8572,
+   "to": 8730
   },
   {
    "scene": "S09",
-   "text": "C-F-O dot A-I: what that's worth to the",
-   "from": 8660,
-   "to": 8805
-  },
-  {
-   "scene": "S09",
-   "text": "teams who keep old software alive.",
-   "from": 8807,
+   "text": "what that's worth to the teams\nwho keep old software alive.",
+   "from": 8732,
    "to": 8962
   },
   {
    "scene": "S10",
-   "text": "Heirloom. Old software, kept honest.",
+   "text": "Heirloom.",
    "from": 9024,
-   "to": 9323
+   "to": 9130
+  },
+  {
+   "scene": "S10",
+   "text": "Old software, kept honest.",
+   "from": 9132,
+   "to": 9346
   },
   {
    "scene": "S10",
    "text": "Every verdict is a test run you can open.",
-   "from": 9325,
+   "from": 9348,
    "to": 9658
   }
  ],
