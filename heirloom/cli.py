@@ -316,6 +316,41 @@ def answers_cmd(
 
 
 @app.command()
+def relink(
+    apply: bool = typer.Option(False, help="Edit the bodies; without it, only report."),
+) -> None:
+    """Re-render span links in every open campaign PR and evidence issue with
+    NEATLOGS_TRACE_URL, in place (same trace and span ids; no new PR or issue)."""
+    import tempfile
+    from pathlib import Path
+
+    from heirloom.claims import relink as relink_body
+
+    s = config.load()
+    live = json.loads((s.root / "evals" / "results_live.json").read_text())["summary"]
+    targets = [(s.fork, u, True) for u in live["prs"]]
+    targets += [(s.heirloom_repo, u, False) for u in live["evidence_issues"]]
+    with guard.publishing(LINES["4.2"]), tempfile.TemporaryDirectory() as tmp:
+        for repo, url, is_pr in targets:
+            number = int(url.rstrip("/").rsplit("/", 1)[1])
+            kind = "pr" if is_pr else "issue"
+            view = json.loads(github.gh(kind, "view", str(number), "--repo", repo,
+                                        "--json", "state,body"))  # fmt: skip
+            if view["state"] != "OPEN":
+                typer.echo(f"{url}: {view['state'].lower()}, left as is")
+                continue
+            body, changed = relink_body(view["body"], s.neatlogs_trace_url)
+            typer.echo(f"{url}: {changed} span link(s) to re-render")
+            if apply and changed:
+                path = Path(tmp) / f"{kind}-{number}.md"
+                path.write_text(body)
+                if is_pr:
+                    github.edit_pr_body(repo, number, path)
+                else:
+                    github.edit_issue_body(repo, number, path)
+
+
+@app.command()
 def serve(host: str = "127.0.0.1", port: int = 8077) -> None:
     """Read-only JSON API over the ledger and evals/*.json (no UI)."""
     import uvicorn

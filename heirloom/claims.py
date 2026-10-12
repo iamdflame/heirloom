@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -65,3 +66,24 @@ def render(claims: Sequence[Claim], template: str) -> tuple[str, int]:
             text = f"~~{text}~~ (no {missing})"
         rows.append(f"| {c.id} | {text} | {span_cell} | {evidence} |")
     return "\n".join(rows), unlinked
+
+
+# A rendered span link in any template's format: the trace id in the path, the span id
+# in a ``span=`` query parameter.
+SPAN_LINK = re.compile(
+    r"\]\((https://app\.neatlogs\.com/traces/([0-9a-f]{32})\?[^)\s]*?\bspan=([0-9a-f]{16})[^)\s]*)\)"
+)
+
+
+def relink(body: str, template: str) -> tuple[str, int]:
+    """Re-render every span link of a published body with ``template`` (the same trace
+    and span ids); returns the new body and how many links changed. Idempotent."""
+    changed = 0
+
+    def sub(m: re.Match[str]) -> str:
+        nonlocal changed
+        url = trace_url(template, m[2], m[3]) or m[1]
+        changed += url != m[1]
+        return f"]({url})"
+
+    return SPAN_LINK.sub(sub, body), changed
