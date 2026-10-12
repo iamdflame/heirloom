@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QXXD4WRTMPCQRZZED8Y4K8",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "video/NOTES.md",
+    "video/scripts/edit-guide.mjs",
+    "video/scripts/render.mjs",
+    "video/scripts/review-frames.sh",
+    "video/sfx-cues.json",
+    "video/src/Root.tsx",
+    "video/src/components/Capture.tsx",
+    "video/src/data/captures.json",
+    "video/src/scenes/S04.tsx",
+    "video/src/scenes/S10.tsx",
+    "video/timing.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 7231,
+    "cache_read_tokens": 811973,
+    "output_tokens": 2797,
+    "api_call_count": 4
+  }
+}
