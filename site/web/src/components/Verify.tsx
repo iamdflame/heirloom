@@ -26,7 +26,7 @@ export function Verify() {
             {prs.map((r) => (
               <li
                 key={r.cve}
-                className="grid gap-x-4 gap-y-0.5 border-b border-rule py-2.5 md:grid-cols-[4rem_10.5rem_minmax(0,1fr)_auto] md:items-baseline"
+                className="grid gap-x-4 gap-y-0.5 border-b border-rule py-2.5 md:grid-cols-[4rem_10.5rem_minmax(0,1fr)] md:items-baseline lg:grid-cols-[4rem_10.5rem_minmax(0,1fr)_auto]"
               >
                 <a className="link font-mono text-[0.95rem]" href={r.campaign.link}>
                   {prNum(r.campaign.link)}
@@ -35,7 +35,7 @@ export function Verify() {
                 <span className="leading-snug [overflow-wrap:anywhere]">
                   <RstTitle text={r.title} />
                 </span>
-                <span className="font-mono text-[0.75rem] text-muted md:text-right">
+                <span className="font-mono text-[0.75rem] text-muted md:col-start-3 lg:col-start-auto lg:text-right">
                   {line.name} · {ftp(r)}
                 </span>
               </li>

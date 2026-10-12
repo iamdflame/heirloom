@@ -99,7 +99,7 @@ export function Replay({
           {playing ? 'Pause' : stop >= last ? 'Replay the campaign' : 'Play'}
         </button>
         <p aria-live="polite" className="font-mono text-[0.8rem] tabular-nums text-ink">
-          {status}
+          {status.split(/(CVE-\d{4}-\d+)/).map((t, i) => (i % 2 ? <span key={i} className="whitespace-nowrap">{t}</span> : t))}
         </p>
       </div>
       <label htmlFor="replay" className="sr-only">
@@ -140,7 +140,7 @@ export function Replay({
                 <span className={cn('absolute left-0 top-0 w-px -translate-x-1/2', cur ? 'bg-ink' : 'bg-muted/60', place.row ? 'h-[18px] lg:h-[34px]' : 'h-[5px]')} />
                 <span
                   className={cn(
-                    'absolute font-mono text-[0.65rem] leading-tight',
+                    'absolute whitespace-nowrap font-mono text-[0.65rem] leading-tight lg:whitespace-normal',
                     place.row ? 'top-[19px] lg:top-[35px]' : 'top-[7px]',
                     place.align === 'center' && 'w-[3.5rem] -translate-x-1/2 text-center lg:w-[7.5rem]',
                     place.align === 'start' && 'left-0 pl-1 text-left lg:w-[15rem]',

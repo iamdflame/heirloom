@@ -45,7 +45,7 @@ export function Query() {
         <>
           The owner answers{' '}
           <a className="link" href={q.issue}>
-            <code className="font-mono text-[0.9em]">{p.answer}</code>
+            <code className="whitespace-nowrap font-mono text-[0.9em]">{p.answer}</code>
           </a>
           .
         </>

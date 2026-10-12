@@ -23,10 +23,11 @@ export function CatalogueCard({ className }: { className?: string }) {
     ],
     [
       'Still shipped by',
-      <span className="grid gap-0.5">
+      <span className="grid gap-1">
         {distros.map((l) => (
-          <span key={l.id}>
-            {l.name} <code className="font-mono text-[0.75rem] [overflow-wrap:anywhere]">{l.version}</code>
+          <span key={l.id} className="block">
+            {l.name}
+            <code className="block font-mono text-[0.75rem] leading-snug text-muted [overflow-wrap:anywhere]">{l.version}</code>
           </span>
         ))}
       </span>,
@@ -170,7 +171,7 @@ function MiniRegister() {
           ))}
         </tbody>
       </table>
-      <div className="flex min-w-0 flex-col justify-between gap-4 pt-5">
+      <div className="flex min-w-0 flex-col gap-5 pt-5">
         <ul className="grid gap-1.5" aria-label="Cells by verdict">
           {(site.chips as ChipT[]).map((c) => (
             <li key={c} className="flex items-center gap-2 text-[0.85rem] leading-tight">

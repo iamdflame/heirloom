@@ -28,7 +28,9 @@ export function Footer({ generatedAt }: { generatedAt?: string }) {
             </>
           )}
           <dt className="label">Built</dt>
-          <dd>With neatlogs · Entire · cfo.ai during neatHack, Oct 10–12 2026</dd>
+          <dd>
+            With neatlogs · Entire · cfo.ai during neatHack, <span className="whitespace-nowrap">Oct 10–12 2026</span>
+          </dd>
           <dt className="label">Page</dt>
           <dd>
             Vite, React, Tailwind CSS and Radix;{' '}

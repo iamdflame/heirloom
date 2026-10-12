@@ -201,6 +201,8 @@ export function Economics() {
   const measured = e.inputs.filter((i) => i.status.startsWith('measured'));
   const hypotheses = e.inputs.filter((i) => i.status === 'assumption');
   const runway = e.results.find((r) => r.name.toLowerCase() === 'runway');
+  // values in dollars get a "$", so the model's " USD" suffix on the name is dropped
+  const label = (name: string) => name.replace(/ USD\b/, '');
   const fmt = (name: string, v: string) => (v === '=' ? '=' : /USD|price|cost|cash|subscription/i.test(name) && !/rate/i.test(name) ? `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 4 })}` : v);
   return (
     <Section
@@ -223,7 +225,7 @@ export function Economics() {
             {measured.map((i) => (
               <div key={i.name} className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 border-b border-rule py-2">
                 <dt>
-                  {i.name}
+                  {label(i.name)}
                   {i.status !== 'measured' && <span className="block text-[0.85rem] text-muted">{i.status}</span>}
                 </dt>
                 <dd className="font-mono text-[0.9rem]">{fmt(i.name, i.base)}</dd>
@@ -236,15 +238,15 @@ export function Economics() {
             <span className="mr-2 rounded-chip border border-muted/50 px-1.5 py-0.5 text-ink">Hypothesis</span>
             Pricing and volume, no buyer asked
           </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[30rem] border-collapse text-left tabular-nums">
+          <div>
+            <table className="w-full border-collapse text-left tabular-nums">
               <thead>
                 <tr className="border-b border-rule">
                   <th scope="col" className="py-2 pr-3 label">
                     Hypothesis
                   </th>
                   {e.pages.map((p) => (
-                    <th key={p.name} scope="col" className="px-2 py-2 text-right label">
+                    <th key={p.name} scope="col" className="py-2 pl-2 text-right label sm:px-2">
                       {p.name}
                     </th>
                   ))}
@@ -253,11 +255,11 @@ export function Economics() {
               <tbody>
                 {hypotheses.map((i) => (
                   <tr key={i.name} className="border-b border-rule">
-                    <th scope="row" className="py-2 pr-3 text-left font-normal">
-                      {i.name}
+                    <th scope="row" className="py-2 pr-2 text-left font-normal leading-snug">
+                      {label(i.name)}
                     </th>
                     {[i.base, i.bear, i.bull].map((v, k) => (
-                      <td key={k} className="px-2 py-2 text-right font-mono text-[0.85rem]">
+                      <td key={k} className="whitespace-nowrap py-2 pl-2 text-right font-mono text-[0.8rem] sm:px-2 sm:text-[0.85rem]">
                         {fmt(i.name, v)}
                       </td>
                     ))}

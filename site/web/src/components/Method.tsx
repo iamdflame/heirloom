@@ -45,7 +45,7 @@ export function Method() {
       proof: (
         <>
           The calibration triangle in each receipt, e.g.{' '}
-          <a className="link" href={`#${m.example.anchor}`}>
+          <a className="link whitespace-nowrap" href={`#${m.example.anchor}`}>
             {m.example.cve}
           </a>{' '}
           ·{' '}

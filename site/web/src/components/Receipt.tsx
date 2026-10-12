@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { LineId, Receipt as ReceiptT, ReceiptCell, Row } from '@/data/types';
 import { CHIP_META, GATES, REASONS, lineById, prNum, shortDate, site } from '@/lib/site';
 import { cn } from '@/lib/utils';
+import { useMedia } from '@/lib/useMedia';
 import { Chip } from './Chip';
 import { Breakable, RstTitle } from './Code';
 import { FileText, GitPullRequest } from 'lucide-react';
@@ -22,18 +23,6 @@ function load(cve: string) {
   return p;
 }
 
-function useWide() {
-  const q = '(min-width: 768px)';
-  const [wide, setWide] = useState(() => window.matchMedia(q).matches);
-  useEffect(() => {
-    const mq = window.matchMedia(q);
-    const f = () => setWide(mq.matches);
-    mq.addEventListener('change', f);
-    return () => mq.removeEventListener('change', f);
-  }, []);
-  return wide;
-}
-
 export default function Receipt({
   row,
   line,
@@ -47,7 +36,7 @@ export default function Receipt({
   onLine: (l: LineId) => void;
   returnFocus: () => void;
 }) {
-  const wide = useWide();
+  const wide = useMedia('(min-width: 768px)');
   const [data, setData] = useState<ReceiptT | null>(null);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {

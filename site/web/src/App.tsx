@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
+import { LazyMotion, MotionConfig } from 'motion/react';
 import type { LineId } from './data/types';
 import { Nav } from './components/Nav';
 import { Footer } from './components/Footer';
@@ -12,8 +12,10 @@ import { Backtest, Economics, Limits } from './components/Results';
 import { Verify } from './components/Verify';
 import { Asterism } from './components/Section';
 import { rowByAnchor, site } from './lib/site';
+import { MAIN_CLASS } from './lib/layout';
 
 const Receipt = lazy(() => import('./components/Receipt'));
+const motionFeatures = () => import('./lib/motion-features').then((m) => m.default);
 const DEFAULT_LINE = site.lines[0]!.id;
 
 const fromHash = () => {
@@ -65,7 +67,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <LazyMotion features={domAnimation} strict>
+      <LazyMotion features={motionFeatures} strict>
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:bg-surface focus:px-3 focus:py-2"
@@ -73,7 +75,7 @@ export default function App() {
           Skip to the record
         </a>
         <Nav />
-        <main id="main" className="mx-auto max-w-[84rem] px-5 md:px-10">
+        <main id="main" className={MAIN_CLASS}>
           <Hero />
           <Register onOpen={open} />
           <Asterism />
