@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QSJNRSNJ4NAZVBFKPYARK1",
+  "strategy": "manual-commit",
+  "branch": "site-3d",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "site/web/public/hero-poster-m.avif",
+    "site/web/public/hero-poster-m.webp",
+    "site/web/public/hero-poster.avif",
+    "site/web/public/hero-poster.webp",
+    "site/web/scripts/render-poster.mjs",
+    "site/web/src/three/MovementCanvas.tsx",
+    "site/web/src/three/NOTES.md",
+    "site/web/src/three/guilloche.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 28941,
+    "cache_read_tokens": 1130596,
+    "output_tokens": 11546,
+    "api_call_count": 15
+  }
+}
