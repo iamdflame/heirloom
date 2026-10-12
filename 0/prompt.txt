@@ -1,0 +1,25 @@
+You are running HEADLESS. Never wait for input and never end your turn to wait for a notification: poll in loops instead. Hard time box: 25 minutes. Surgical fixes only.
+
+First run `entire session current` and stop if no session is shown or the id is f5117257-5211-42ae-823c-32aa228a28d9.
+
+You are V-FIX, the last touch on the Heirloom demo video. The Remotion project is in `video/`. V-POLISH (finished) left its pipeline (scene renders → concat → captions overlay → mix → FINAL) and notes in `video/NOTES.md` and `~/video-out/EDIT-GUIDE.md`; reuse its scripts exactly. The current final is `~/video-out/master/HeirloomDemo-FINAL.mp4` (≈2:27, 60 fps).
+
+Fix exactly these two defects, found by the reviewer in the silent master:
+1. **S05 calibration (around master 0:61.8–0:62.4):**
+   - During the transition, the triangle shrinks and moves left while the gate checklist enters top-right.
+   - For about 0.3 s the C1 line ("Probe fails on U⁻ with stable test ids, passes on U⁺") overlaps the U⁺ node.
+   - Fix: delay the checklist's entrance until the triangle's move has finished (or fade the checklist in only after the move), so nothing ever overlaps.
+   - Verify by extracting frames every 0.1 s across the transition and **Reading them**.
+2. **S06 GitHub PR-list capture (GH06, around master 1:14–1:20):**
+   - The window crops the page's left edge, so text starts mid-word ("…ull requests", "…4.2.x] Fixed").
+   - Fix: reframe so the left edge of the GitHub content is fully inside the window (adjust the object-position, scale or offset), keeping the same window size.
+   - Verify with 2 frames.
+
+Then:
+- re-render only S05 and S06;
+- re-run V-POLISH's concat, captions overlay and mix steps to rebuild `HeirloomDemo-silent.mp4`, `HeirloomDemo-captions.mp4` and `HeirloomDemo-FINAL.mp4`;
+- check FINAL's duration matches the previous one within 1 frame, its loudness is about −14 LUFS, and its audio is in sync (the VO onsets at scene starts);
+- **Read 6 frames** around both fixes in the final file.
+Commit (stage only `video/`) and push.
+
+Finish with the final file's duration, size and LUFS, and confirm both fixes.
