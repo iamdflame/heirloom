@@ -1,0 +1,23 @@
+You are running HEADLESS. Never wait for input and never end your turn to wait for a notification: poll in a loop (e.g. `gh run watch --exit-status`). Hard time box: 30 minutes. Be fast.
+
+First run `entire session current` and stop if no session is shown or the id is f5117257-5211-42ae-823c-32aa228a28d9.
+
+Context: B7b (the site's second half) hit its usage limit at 03:18. The deployed site is commit 14c96f4. B7b left UNCOMMITTED work in site/web (see `git status`):
+- QA cycle 3–7 fixes: 768 replay ticks, the economics table at 390, catalogue card distro lines, layout and motion helpers;
+- a first-screen prerender (scripts/prerender.mjs, src/prerender.tsx), plus inlined CSS.
+site/web/PROGRESS.md and ~/brief/FRONTEND-BRIEF.md describe the site.
+
+Do this:
+1. `cd site/web && npm run build`, then `node scripts/qa.mjs c8`. Required: axe 0 serious/critical, console 0 errors/warnings (watch for hydration mismatch warnings from the prerender), keyboard flow PASS, Lighthouse mobile ≥95 on all four.
+   - Read these PNGs yourself: the 1440 light page, the 390 light page, the desktop receipt and the 768 page. Fix any clear defect in ≤10 min.
+   - If the prerender causes console or hydration errors you can't fix in 10 min, take it out of the build (keep the other fixes) and rebuild.
+2. Commit in 2–4 logical commits (e.g. "site: QA cycle 3–7 fixes", "site: prerendered first screen"), push, then poll until the Pages deploy for your last commit succeeds. Confirm with `curl -s https://iamdflame.github.io/heirloom/ | grep -c "Treatment record"` (or another first-screen string) that the live site serves the new build.
+3. README.md: add one line at the very top of the first screen, "**Live:** https://iamdflame.github.io/heirloom/". Make sure `evals/render_readme.py` keeps it: put it outside the `<!-- top:start -->` markers, or in the script. Re-run the render, and check the README test or CI is still green.
+4. hackathon.md: add a dated entry for the site (B7a, B7b and this session), with the QA numbers from c8, the live URL and the Lighthouse scores.
+5. Run `python3 ~/brief/secretscan.py`; every surface must be clean. Push.
+
+Finish with:
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- the live URL status;
+- the c8 numbers;
+- anything left.
