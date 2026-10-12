@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 export default {
-  content: ['./index.html', './404.html', './src/**/*.{ts,tsx}'],
+  content: ['./index.html', './404.html', './og.html', './src/**/*.{ts,tsx}'],
   darkMode: ['selector', '[data-theme="dark"]'],
   theme: {
     extend: {

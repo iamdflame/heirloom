@@ -82,6 +82,12 @@ axe 0 serious/critical (10 runs); console 0; keyboard PASS; Lighthouse mobile 96
 - **Colophon**: seal, tagline, record/object, type, data provenance, built with, page stack + source link, MIT + repo.
 - Sections after a `* * *` drop their own rule. `Nb` keeps CVE ids and versions unbroken in prose. `qa.mjs` now checks that every `a[href^="#"]` resolves to an element id or a register row.
 
+### M3: OG card and meta
+- `og.html` + `src/og.tsx` (a third Vite entry, `noindex`): 1200×630 card on the page paper with the seal, "Heirloom", the record line, the H1, "19 advisories × 3 release lines, each verdict with a receipt", counts (13 fix ready · 1 not affected · 5 unproven · 1 question), the URL, and on a ledger panel the 19 × 3 mini register (DJ/DE/UB, rows 001–019) with a chip key. All values from site.json.
+- `npm run og` (`scripts/og.mjs`) starts `vite preview` on :4174 and screenshots it with Playwright to `public/og.png` (82 kB). It is committed; CI only copies it.
+- `index.html`: og:type/site_name/url/title/description/image (+ width, height, alt), twitter:card `summary_large_image` + title/description/image/alt. Canonical and description were already there. Checked in the built `dist/index.html` (all 16 tags present, absolute image URL).
+- Two new vitest checks: the three meta descriptions state site.json's advisory count (and the EOL date where one is given), and `public/og.png` is a 1200×630 PNG.
+
 ## Next: B7b
 1. Sections 5–12 from the brief: The finding (Fig. 2, three dated steps + verbatim claim), Method (5 stages), The conservator's query timeline (`site.query`, already in site.json), Table 2 — Backtest (`site.backtest`, emphasise false NOT AFFECTED 1 vs 0), Stated limits, Economics (`site.economics.inputs` + cfo.ai pages, label hypotheses), Verify it yourself (`site.links`, detections), full colophon. The nav links for those sections currently point at anchors that don't exist yet.
 2. OG: `/og.html` view + Playwright render to `public/og.png` (1200×630), then the OG/Twitter meta.

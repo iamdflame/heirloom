@@ -73,3 +73,25 @@ describe('site.json vs README first screen', () => {
     }
   });
 });
+
+describe('static meta and the OG image agree with the data', () => {
+  const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+  const metas = [...html.matchAll(/<meta (?:name|property)="(description|og:description|twitter:description)" content="([^"]+)"/g)];
+
+  it('every description states the data’s advisory count and EOL date', () => {
+    expect(metas).toHaveLength(3);
+    const [y, m, d] = site.eol.split('-').map(Number);
+    const month = new Date(Date.UTC(y!, m! - 1, d)).toLocaleString('en-GB', { month: 'long', timeZone: 'UTC' });
+    for (const [, name, content] of metas) {
+      const nums = [...content!.matchAll(/\b(\d+) (?:later |Django 4\.2 )?advisories/g)].map((x) => Number(x[1]));
+      expect(nums, name).toEqual([site.summary.cves]);
+      if (/end of life on/.test(content!)) expect(content, name).toContain(`${d} ${month} ${y}`);
+    }
+  });
+
+  it('public/og.png is a 1200×630 PNG', () => {
+    const png = readFileSync(new URL('../../public/og.png', import.meta.url));
+    expect(png.subarray(1, 4).toString()).toBe('PNG');
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+  });
+});
