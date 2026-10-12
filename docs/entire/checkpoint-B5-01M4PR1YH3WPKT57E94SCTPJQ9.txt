@@ -1,0 +1,557 @@
+● Checkpoint 01M4PR1YH3WPKT57E94SCTPJQ9
+  session  906e2055-9df1-4566-8bc3-7ac0e8830995
+  created  2026-10-12 00:26:32
+  author   Dflame <306545410+iamdflame@users.noreply.github.com>
+  tokens   4336.7k
+  commits  a444c2a Precedent PRs cite their question and asking trace; replay-only rerender
+────────────────────────────────────────────────────────────
+## Intent
+
+*(no prompt recorded)*
+
+## Summary
+
+*Not generated yet. Run ‘entire checkpoint explain --generate 01M4PR1YH3WPKT57E94SCTPJQ9‘ to create an AI summary.*
+
+## Files (8)
+
+- `heirloom/campaign.py`
+- `heirloom/cli.py`
+- `heirloom/ledger.py`
+- `heirloom/pipeline/context.py`
+- `heirloom/pipeline/publish.py`
+- `heirloom/pipeline/run.py`
+- `tests/test_evidence_render.py`
+- `tests/test_publish_guard.py`
+
+── Transcript (checkpoint scope) ───────────────────────────
+[Assistant] Second pass changed nothing (idempotent). Verifying counts and checking one rendered link.
+
+[Tool] Bash: echo "PRs: $(gh pr list -R iamdflame/django --state all --limit 100 --json number -q length)  issues: $(gh issue list -R iamdflame/heirloom --state all --limit 100 --json number -q length)"; url=$(gh pr view 13 -R iamdflame/django --json body -q .body | grep -o 'https://app.neatlogs.com/traces/[^)]*' | head -1); echo "$url" | sed -E 's/orgId=[^&]+/orgId=<org>/; s/projectId=[^&]+/projectId=<proj>/'; curl -s -o /tmp/nl.html -w "HTTP %{http_code} final=%{url_effective}\n" -L "$url" | sed -E 's/orgId=[^&]+/orgId=<org>/; s/projectId=[^&]+/projectId=<proj>/'; grep -o '<title>[^<]*' /tmp/nl.html | head -2
+
+[Tool] Bash: grep -n "api/v1/public\|/traces\|def .*trace" heirloom/integrations/neatlogs.py | head; grep -rn "traces/" evals/*.py heirloom/lines/*.py 2>/dev/null | head -3
+
+[Tool] Bash: grep -rn "app.neatlogs.com/api\|NEATLOGS_SERVICE_TOKEN" heirloom | head -5; which neatlogs; neatlogs --help 2>&1 | head -30
+
+[Tool] Bash: grep -n "def \|BASE}" heirloom/integrations/neatlogs_api.py | head -30
+
+[Tool] Bash: uv run python - <<'EOF'
+from heirloom import config
+from heirloom.integrations.neatlogs_api import Client if False else None
+EOF
+sed -n 80,105p heirloom/integrations/neatlogs_api.py
+
+[Tool] Bash: uv run python - <<'EOF'
+from heirloom import config
+from heirloom.integrations.neatlogs_api import Api
+a=Api(config.load())
+for path in ("/traces/422b0c69b66f3824c5dc8f96489bff06", "/traces/422b0c69b66f3824c5dc8f96489bff06/spans", "/spans/7ce5aa7d875eb017"):
+    st,b=a.call("GET",path)
+    print(path, st, str(b)[:300])
+EOF
+
+[Tool] Bash: uv run python - <<'EOF' | tee /tmp/linkcheck.txt
+from heirloom import config
+from heirloom.integrations.neatlogs_api import Api
+a=Api(config.load())
+st,b=a.call("GET","/traces/422b0c69b66f3824c5dc8f96489bff06/spans")
+for sp in b['data']['spans']:
+    if sp['spanId']=='7ce5aa7d875eb017': print("span found:", sp['spanName'], sp.get('status'), sp['durationMs'],'ms')
+print("trace session:", a.call("GET","/traces/422b0c69b66f3824c5dc8f96489bff06")[1]['data']['sessionId'])
+EOF
+
+[Tool] Bash: gh pr view 20 -R iamdflame/django --json body,files,commits -q '.files[].path, (.commits[]|.oid[0:10]+" "+.messageHeadline)'; gh pr view 20 -R iamdflame/django --json body -q .body | grep -n "Note\|precedent\|P001\|#6\|adopt\|tests/" | head -20
+
+[Assistant] #20 includes `tests/gis_tests/rasterapp/test_rasterfield.py`. Checking those hunks match upstream's `115ffd04` exactly.
+
+[Tool] Bash: cd ~/work/django && git fetch -q https://github.com/iamdflame/django heirloom/cve-2026-15307-4.2 2>/dev/null; F=tests/gis_tests/rasterapp/test_rasterfield.py; U=$(git rev-parse 115ffd04); diff <(git diff $U~1 $U -- $F | grep '^[+-]' | grep -v '^+++\|^---') <(git diff 96166f2ccc~1 96166f2ccc -- $F | grep '^[+-]' | grep -v '^+++\|^---') && echo "IDENTICAL +/- lines"; git diff --stat 96166f2ccc~1 96166f2ccc -- $F; git diff --stat $U~1 $U -- $F
+
+[Assistant] Identical to upstream. Now #19 (84429): does it cite #6/P001 and the asking trace?
+
+[Tool] Bash: gh pr view 19 -R iamdflame/django --json files,body -q '.files[].path' ; gh pr view 19 -R iamdflame/django --json body -q .body | grep -n "Note\|P001\|issues/6\|trace" | grep -v "^.*| \(L1\|C0\|P1\|C1\|C2\|C3\|V1\|A1\|F1\|B1\|D1\) " | head; gh pr view 19 -R iamdflame/django --json body -q .body | grep -n "^| D\|^| Q\|escalations"
+
+[Assistant] #19 cites P001 and #6 but not the asking trace, and its D1 claim reads "No human choice needed", which hides the precedent. Fixing the rendering.
+
+[Tool] Bash: sed -n 395,445p heirloom/pipeline/publish.py; grep -n "precedent" heirloom/pipeline/decide.py | head -20
+
+[Tool] Bash: grep -n "trace" heirloom/answers.py heirloom/policy.py | head -20; uv run python - <<'EOF'
+import sqlite3,json
+c=sqlite3.connect('work/ledger.sqlite')
+for cve in ('CVE-2026-15307','CVE-2026-84429'):
+    for r in c.execute("select stage,attempt,run_id,trace_id,span_id,output_json,started_at from stages where cve=? and line='4.2' and stage like 'decide%' order by started_at",(cve,)):
+        print(cve, r[0], r[1], r[2], r[3], r[4], (r[5] or '')[:250], r[6])
+EOF
+
+[Tool] Bash: sed -n 1,70p heirloom/policy.py; sed -n 50,66p heirloom/answers.py
+
+[Assistant] Re-rendering #19/#20 safely needs the requeue to reuse every cached stage. Checking the ledger API for a side-effect-free cache lookup so I can add a replay-only guard.
+
+[Tool] Bash: grep -n "    def " heirloom/ledger.py; grep -n "def begin" -A45 heirloom/ledger.py | head -60
+
+[Tool] Bash: sed -n 295,326p heirloom/ledger.py
+
+[Tool] Bash: sed -n 1,125p heirloom/pipeline/context.py | grep -n "class\|def \|replay\|Unresolvable" ; grep -n "^WAITING\|^NO_MORE\|^PROBE_LEDGERS\|^STATE_DIR" heirloom/campaign.py
+
+[Tool] Bash: sed -n 20,64p heirloom/pipeline/context.py
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+# context
+p=Path('heirloom/pipeline/context.py'); s=p.read_text()
+s=s.replace('''class StageFailed(RuntimeError):
+    pass
+''','''class StageFailed(RuntimeError):
+    pass
+
+
+class ReplayMiss(RuntimeError):
+    """Replay-only run: a stage other than a body render would have done new work."""
+
+
+# The only stages a replay-only run may execute: they edit a PR/issue body in place.
+REPLAY_RENDERS = frozenset({"publish.pr", "publish.evidence"})
+''')
+s=s.replace('''    spans: dict[str, SpanRef] = field(default_factory=dict)
+    out: dict[str, dict[str, Any]] = field(default_factory=dict)
+''','''    spans: dict[str, SpanRef] = field(default_factory=dict)
+    out: dict[str, dict[str, Any]] = field(default_factory=dict)
+    replay_only: bool = False  # re-render bodies from the ledger; never run other work
+''',1)
+old='''        key_line = scope or self.line
+        while True:'''
+new='''        key_line = scope or self.line
+        if (
+            self.replay_only
+            and name not in REPLAY_RENDERS
+            and not self.ledger.has_done(self.cve, key_line, name, inputs)
+        ):
+            raise ReplayMiss(f"replay-only: stage {name} of {self.cve} is not cached")
+        while True:'''
+assert old in s; s=s.replace(old,new); p.write_text(s)
+# ledger
+p=Path('heirloom/ledger.py'); s=p.read_text()
+old='''    def begin(
+        self, cve: str, line: str, stage: str, inputs: Any, *, run_id: str, effect: bool = False'''
+new='''    def has_done(self, cve: str, line: str, stage: str, inputs: Any) -> bool:
+        """Whether begin() would return a cached result for these inputs (no claim made)."""
+        row = self.db.execute(
+            "SELECT 1 FROM stages WHERE cve=? AND line=? AND stage=? AND status='done' "
+            "AND input_hash=? LIMIT 1",
+            (cve, line, stage, canonical_hash(inputs)),
+        ).fetchone()
+        return row is not None
+
+    def begin(
+        self, cve: str, line: str, stage: str, inputs: Any, *, run_id: str, effect: bool = False'''
+assert old in s; s=s.replace(old,new); p.write_text(s)
+# run.execute
+p=Path('heirloom/pipeline/run.py'); s=p.read_text()
+old='''    done_fixes: tuple[str, ...] = (),
+    note: str = "",
+) -> Result:'''
+new='''    done_fixes: tuple[str, ...] = (),
+    note: str = "",
+    replay_only: bool = False,
+) -> Result:'''
+assert old in s; s=s.replace(old,new)
+old='''        ctx.archive_ref, ctx.done_fixes, ctx.note = archive_ref, done_fixes, note
+'''
+new='''        ctx.archive_ref, ctx.done_fixes, ctx.note = archive_ref, done_fixes, note
+        ctx.replay_only = replay_only
+'''
+assert old in s; s=s.replace(old,new); p.write_text(s)
+EOF
+grep -n "self.db\b\|self.db =" heirloom/ledger.py | head -3
+
+[Assistant] Now the campaign side: extracting the event-argument logic so `rerender` reproduces exactly what the campaign passed, plus the rule that a CVE whose porter already ran on the line keeps porter mode.
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+p=Path('heirloom/campaign.py'); s=p.read_text()
+start=s.index('''    done_fixes: tuple[str, ...] = ()
+    note = ""
+    supersedes: dict[str, Any] | None = None''')
+end_marker='''    reuse = None
+    if ev["kind"] == "new" and supersedes is None:
+        reuse = reusable_probe(s, cve)
+'''
+end=s.index(end_marker)+len(end_marker)
+body=s[start:end]
+s=s[:start]+'''    spec, reuse, done_fixes, note, supersedes = prepare(s, state, ev)
+'''+s[end:]
+# build prepare function
+body=body.replace(end_marker,'''    reuse = None
+    if ev["kind"] == "new" and supersedes is None and not porter_ran(s, cve, line):
+        reuse = reusable_probe(s, cve)
+    return spec, reuse, done_fixes, note, supersedes
+''')
+prep='''Prepared = tuple[LineSpec, "dict[str, Any] | None", tuple[str, ...], str, "dict[str, Any] | None"]
+
+
+def porter_ran(s: Settings, cve: str, line: str) -> bool:
+    """Whether the porter wrote a probe for this CVE on this line already. Such a CVE
+    keeps its own probe history on a re-run instead of switching to a reused probe
+    (which would start a new calibration and, for AFFECTED, a new adaptation)."""
+    ledger = Ledger(s.ledger_path)
+    try:
+        return any(
+            r.key.stage == "probe" and r.status == "done" and "reused_from" not in (r.output or {})
+            for r in ledger.stages(cve, line)
+        )
+    finally:
+        ledger.close()
+
+
+def prepare(s: Settings, state: dict[str, Any], ev: Event) -> Prepared:
+    """The line spec (stacked or not), reused probe, done fixes, note and supersedes
+    record an event runs with."""
+    line = state["line"]
+    spec = LINES[line]
+    cve = ev["cve"]
+'''+body+'''
+
+def process('''
+s=s.replace('''def process(''',prep,1)
+p.write_text(s)
+EOF
+uv run ruff check heirloom/campaign.py; uv run mypy --strict heirloom 2>&1 | tail -5
+
+[Tool] Bash: uv run python - <<'EOF'
+import json
+from heirloom import config, campaign as cmp
+from heirloom.ledger import Ledger
+s=config.load()
+st=json.loads(cmp.state_path(s,'b4-replay').read_text())
+L=Ledger(s.ledger_path)
+for ev in st['events']:
+    rows=[r for r in L.stages(ev['cve'],'4.2') if r.key.stage=='probe' and r.status=='done']
+    last=max(rows,key=lambda r:r.finished_at or 0) if rows else None
+    print(ev['cve'].ljust(15), 'porter_ran',cmp.porter_ran(s,ev['cve'],'4.2'), 'last_used_reuse', bool(last and 'reused_from' in (last.output or {})))
+EOF
+
+[Tool] Bash: uv run python - <<'EOF'
+import json
+from heirloom import config, campaign as cmp
+from heirloom.ledger import Ledger
+s=config.load()
+st=json.loads(cmp.state_path(s,'b4-replay').read_text())
+L=Ledger(s.ledger_path)
+for ev in st['events']:
+    rows=[r for r in L.stages(ev['cve'],'4.2') if r.key.stage=='probe' and r.status=='done']
+    last=max(rows,key=lambda r:r.key.attempt) if rows else None
+    print(ev['cve'].ljust(15), 'porter_ran',cmp.porter_ran(s,ev['cve'],'4.2'), 'last_used_reuse', bool(last and 'reused_from' in (last.output or {})))
+EOF
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+p=Path('heirloom/campaign.py'); s=p.read_text()
+a=s.index('def porter_ran('); b=s.index('def prepare(')
+s=s[:a]+s[b:]
+s=s.replace(' and not porter_ran(s, cve, line):',':')
+p.write_text(s)
+EOF
+grep -n "porter_ran" heirloom/campaign.py; sed -n '/^def prepare/,/^def process/p' heirloom/campaign.py | head -20
+
+[Tool] Bash: sed -n '/^def process/,/execute(/p' heirloom/campaign.py
+
+[Assistant] Now the rendering change for precedents (asking trace, D1 wording) and the `rerender` CLI.
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+p=Path('heirloom/campaign.py'); s=p.read_text()
+s=s.replace('''    line = state["line"]
+    spec = LINES[line]
+    cve = ev["cve"]
+    if cve in NO_MORE_PRS:''','''    line = state["line"]
+    cve = ev["cve"]
+    if cve in NO_MORE_PRS:''')
+p.write_text(s)
+
+p=Path('heirloom/pipeline/publish.py'); s=p.read_text()
+old='''def _notes(ctx: Ctx, d: dict[str, Any]) -> str:
+    notes = [n for n in (ctx.note, d.get("decide", {}).get("note")) if n]
+    prec = (d.get("decide") or {}).get("precedent")
+    if prec:
+        notes.append(
+            f"Decision `{d['decide']['decision']}` applies stored precedent "
+            f"**{prec['id']}** ({prec['issue']})."
+        )
+    return "".join(f"\\n> **Note:** {n}\\n" for n in notes)
+'''
+new='''def _asking(ctx: Ctx, prec: dict[str, Any]) -> str:
+    """'asked once on <issue> (asking trace <link>)' for a stored precedent: the span of
+    the decide.question stage that opened its issue."""
+    issue = prec.get("issue", "")
+    number = issue.rstrip("/").rsplit("/", 1)[-1]
+    text = f"asked once on [#{number}]({issue})"
+    stored = next((p for p in PolicyStore(ctx.s.root / "policy" / "precedents.json").all()
+                   if p.id == prec.get("id")), None)  # fmt: skip
+    trace = stored.trace_id if stored else "NONE"
+    if trace in ("", "NONE"):
+        return text
+    row = ctx.ledger.db.execute(
+        "SELECT span_id FROM stages WHERE stage='decide.question' AND trace_id=? LIMIT 1",
+        (trace,),
+    ).fetchone()
+    span = str(row["span_id"]) if row and row["span_id"] else ""
+    url = trace_url(ctx.s.neatlogs_trace_url, trace, span) if span else None
+    label = f"`{trace[:12]}`"
+    return f"{text}, asking trace " + (f"[{label}]({url})" if url else label)
+
+
+def _notes(ctx: Ctx, d: dict[str, Any]) -> str:
+    notes = [n for n in (ctx.note, d.get("decide", {}).get("note")) if n]
+    prec = (d.get("decide") or {}).get("precedent")
+    if prec:
+        notes.append(
+            f"Decision `{d['decide']['decision']}` applies stored precedent "
+            f"**{prec['id']}** ({_asking(ctx, prec)}); no new question was asked for {ctx.cve}."
+        )
+    return "".join(f"\\n> **Note:** {n}\\n" for n in notes)
+'''
+assert old in s; s=s.replace(old,new)
+old='''        Claim(
+            "D1",
+            "No human choice needed"
+            if not dec.get("kind")
+            else f"Decision {dec['decision']} for {dec['kind']}",'''
+new='''        Claim(
+            "D1",
+            f"Decision {dec['decision']} by stored precedent {dec['precedent']['id']}; "
+            "no new question"
+            if dec.get("precedent")
+            else "No human choice needed"
+            if not dec.get("kind")
+            else f"Decision {dec['decision']} for {dec['kind']}",'''
+assert old in s; s=s.replace(old,new)
+s=s.replace('''        # body 4: span links in the real NEATLOGS_TRACE_URL format (orgId, projectId)
+        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 4},''','''        # body 4: span links in the real NEATLOGS_TRACE_URL format (orgId, projectId)
+        # body 5: a precedent names its question and asking trace; D1 says it applied
+        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 5},''')
+s=s.replace('''        # body 2: absent-path gates read n/a; P1 names the porter; trace URL with org/project
+        {"presence": canonical_hash(pres), "artifacts": art["commit"], "body": 2},''','''        # body 2: absent-path gates read n/a; P1 names the porter; trace URL with org/project
+        # body 3: a precedent names its question and asking trace
+        {"presence": canonical_hash(pres), "artifacts": art["commit"], "body": 3},''')
+p.write_text(s)
+EOF
+sed -n 1,30p heirloom/pipeline/publish.py | grep -n import
+
+[Assistant] Adjusting wording so 15307 (which asked #6 itself) isn't described as "no new question", while 84429 is.
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+p=Path('heirloom/pipeline/publish.py'); s=p.read_text()
+old='''    row = ctx.ledger.db.execute(
+        "SELECT span_id FROM stages WHERE stage='decide.question' AND trace_id=? LIMIT 1",
+        (trace,),
+    ).fetchone()
+    span = str(row["span_id"]) if row and row["span_id"] else ""
+    url = trace_url(ctx.s.neatlogs_trace_url, trace, span) if span else None
+    label = f"`{trace[:12]}`"
+    return f"{text}, asking trace " + (f"[{label}]({url})" if url else label)
+'''
+new='''    row = ctx.ledger.db.execute(
+        "SELECT cve, span_id FROM stages WHERE stage='decide.question' AND trace_id=? LIMIT 1",
+        (trace,),
+    ).fetchone()
+    span = str(row["span_id"]) if row and row["span_id"] else ""
+    url = trace_url(ctx.s.neatlogs_trace_url, trace, span) if span else None
+    label = f"`{trace[:12]}`"
+    who = f" by {row['cve']}" if row else ""
+    return f"{text}{who}, asking trace " + (f"[{label}]({url})" if url else label)
+'''
+assert old in s; s=s.replace(old,new)
+old='''            f"**{prec['id']}** ({_asking(ctx, prec)}); no new question was asked for {ctx.cve}."'''
+new='''            f"**{prec['id']}** ({_asking(ctx, prec)})"
+            + ("." if f"by {ctx.cve}," in _asking(ctx, prec) else
+               f"; no new question was asked for {ctx.cve}.")  # fmt: skip'''
+assert old in s; s=s.replace(old,new)
+old='''            f"Decision {dec['decision']} by stored precedent {dec['precedent']['id']}; "
+            "no new question"
+            if dec.get("precedent")'''
+new='''            f"Decision {dec['decision']} by stored precedent {dec['precedent']['id']} "
+            "(the owner's answer to one question)"
+            if dec.get("precedent")'''
+assert old in s; s=s.replace(old,new)
+s=s.replace('''from heirloom.integrations.neatlogs import StageSpan
+''','''from heirloom.integrations.neatlogs import StageSpan, trace_url
+''')
+s=s.replace('''from heirloom.pipeline.context import Ctx, StageFailed, Unresolvable
+''','''from heirloom.pipeline.context import Ctx, StageFailed, Unresolvable
+from heirloom.policy import PolicyStore
+''')
+p.write_text(s)
+EOF
+uv run ruff check heirloom && uv run ruff format heirloom >/dev/null && uv run mypy --strict heirloom | tail -3
+
+[Assistant] Cleaning that up properly (compute the asking text once).
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+p=Path('heirloom/pipeline/publish.py'); s=p.read_text()
+old='''    if prec:
+        notes.append(
+            f"Decision `{d['decide']['decision']}` applies stored precedent "
+            f"**{prec['id']}** ({_asking(ctx, prec)})"
+            + ("." if f"by {ctx.cve}," in _asking(ctx, prec) else
+               f"; no new question was asked for {ctx.cve}.")  # fmt: skip
+        )'''
+new='''    if prec:
+        asking = _asking(ctx, prec)
+        tail = "." if f" by {ctx.cve}," in asking else f"; no new question for {ctx.cve}."
+        notes.append(
+            f"Decision `{d['decide']['decision']}` applies stored precedent "
+            f"**{prec['id']}** ({asking}){tail}"
+        )'''
+assert old in s; s=s.replace(old,new); p.write_text(s)
+EOF
+uv run ruff check heirloom && uv run ruff format heirloom >/dev/null && uv run mypy --strict heirloom | tail -3
+
+[Assistant] Now the `rerender` CLI and tests (replay-only guard; precedent note).
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+p=Path('heirloom/cli.py'); s=p.read_text()
+anchor='''@app.command()
+def relink('''
+new='''@app.command()
+def rerender(
+    cves: list[str] = typer.Argument(..., metavar="CVE..."),
+    campaign_id: str = typer.Option(..., "--id", help="The campaign whose events to replay."),
+) -> None:
+    """Re-render the PR or evidence-issue body of each CVE's latest campaign event in
+    place, replay-only: every other stage must be a ledger cache hit (no model call, no
+    commit, no push); a miss aborts that CVE before any work starts."""
+    from heirloom import campaign as cmp
+    from heirloom.pipeline.context import ReplayMiss
+
+    s = config.load()
+    state = json.loads(cmp.state_path(s, campaign_id).read_text())
+    for cve_id in cves:
+        ev = cmp._outcome(state, cve_id)
+        if ev is None or cve_id in cmp.NO_MORE_PRS:
+            typer.echo(f"{cve_id}: no finished event to re-render")
+            continue
+        spec, reuse, done_fixes, note, _ = cmp.prepare(s, state, ev)
+        try:
+            r = execute(
+                s, cve_id, spec, reuse_probe=reuse, campaign_id=state["id"],
+                archive_ref=ev["ref"], done_fixes=done_fixes, note=note, replay_only=True,
+            )  # fmt: skip
+        except ReplayMiss as exc:
+            typer.echo(f"{cve_id}: not re-rendered ({exc})")
+            continue
+        typer.echo(f"{cve_id}: {r.status} {r.pr_url or r.issue_url} (run {r.run_id})")
+
+
+'''+anchor
+assert anchor in s; s=s.replace(anchor,new,1); p.write_text(s)
+EOF
+cat >> tests/test_publish_guard.py <<'EOF'
+
+
+def test_replay_only_refuses_any_stage_that_is_not_cached(tmp_path: Path) -> None:
+    from heirloom.pipeline.context import ReplayMiss
+
+    ctx = make_ctx(tmp_path, NON_PUBLISHING[0])
+    calls: list[str] = []
+    ctx.stage("locate", {"a": 1}, lambda span: calls.append("ran") or {"x": 1})
+    ctx.replay_only = True
+    assert ctx.stage("locate", {"a": 1}, lambda span: {"x": 2}) == {"x": 1}  # cache hit
+    with pytest.raises(ReplayMiss):
+        ctx.stage("locate", {"a": 2}, lambda span: calls.append("ran") or {})
+    with pytest.raises(ReplayMiss):
+        ctx.stage("adapt", {"a": 1}, lambda span: calls.append("ran") or {})
+    assert calls == ["ran"]
+    # Body renders are the one exception: they edit a PR or issue in place.
+    assert ctx.stage("publish.evidence", {"b": 1}, lambda span: {"edited": True})["edited"]
+EOF
+cat >> tests/test_evidence_render.py <<'EOF'
+
+
+def _precedent_ctx(tmp_path: Path, cve: str) -> Ctx:
+    import json
+
+    ctx = _ctx(tmp_path)
+    ctx.cve = cve
+    root = tmp_path / "root"
+    (root / "policy").mkdir(parents=True)
+    (root / "policy" / "precedents.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "P001",
+                    "kind": "UPSTREAM_TEST_CHANGE",
+                    "scope": "django/4.2",
+                    "answer": "adopt-upstream-tests",
+                    "issue_url": "https://github.com/o/heirloom/issues/6",
+                    "trace_id": "c" * 32,
+                    "created_at": 0.0,
+                }
+            ]
+        )
+    )
+    ctx.s = config.Settings(**{**ctx.s.__dict__, "root": root, "neatlogs_trace_url": TEMPLATE})
+    ctx.ledger.db.execute(
+        "INSERT INTO stages (cve, line, stage, attempt, status, effect, run_id, pid, "
+        "input_hash, started_at, trace_id, span_id) VALUES "
+        "('CVE-A', '4.2', 'decide.question', 1, 'done', 1, 'r0', 1, 'h', 0, ?, ?)",
+        ("c" * 32, "d" * 16),
+    )
+    return ctx
+
+
+def test_reused_precedent_names_its_question_and_asking_trace(tmp_path: Path) -> None:
+    prec = {"decide": {"decision": "publish-fix", "precedent": {
+        "id": "P001", "issue": "https://github.com/o/heirloom/issues/6"}}}  # fmt: skip
+    reused = publish._notes(_precedent_ctx(tmp_path / "b", "CVE-B"), prec)
+    assert "stored precedent **P001** (asked once on [#6](https://github.com/o/heirloom/issues/6)"
+    assert "by CVE-A, asking trace [`cccccccccccc`](" in reused
+    assert f"traces/{'c' * 32}?orgId=o&projectId=p&span={'d' * 16})" in reused
+    assert "no new question for CVE-B." in reused
+    asker = publish._notes(_precedent_ctx(tmp_path / "a", "CVE-A"), prec)
+    assert "no new question" not in asker
+EOF
+uv run ruff format heirloom tests >/dev/null; uv run ruff check heirloom tests; uv run pytest -q 2>&1 | tail -15
+
+[Assistant] One assertion in my new test is missing its `in reused`; fixing, then mypy.
+
+[Tool] Bash: grep -n 'assert "stored precedent' tests/test_evidence_render.py && sed -i 's|    assert "stored precedent \*\*P001\*\* (asked once on \[#6\](https://github.com/o/heirloom/issues/6)"|    assert "stored precedent **P001** (asked once on [#6](https://github.com/o/heirloom/issues/6)" in reused|' tests/test_evidence_render.py && grep -n 'stored precedent' tests/test_evidence_render.py; uv run ruff format heirloom tests >/dev/null; uv run ruff check heirloom tests && uv run pytest -q tests/test_evidence_render.py 2>&1 | tail -1; uv run mypy --strict heirloom tests | tail -3
+
+[Tool] Bash: python3 - <<'EOF'
+from pathlib import Path
+p=Path('tests/test_publish_guard.py'); s=p.read_text()
+old_start=s.index('    calls: list[str] = []\n    ctx.stage("locate", {"a": 1}')
+seg_end=s.index('    assert calls == ["ran"]')
+seg=s[old_start:seg_end]
+new=seg.replace('''    calls: list[str] = []
+''','''    calls: list[str] = []
+
+    def work(span: Any) -> dict[str, Any]:
+        calls.append("ran")
+        return {"x": 1}
+
+''').replace('lambda span: calls.append("ran") or {"x": 1}','work').replace('lambda span: calls.append("ran") or {}','work')
+s=s[:old_start]+new+s[seg_end:]
+p.write_text(s)
+EOF
+uv run ruff format heirloom tests >/dev/null; uv run ruff check heirloom tests && uv run mypy --strict heirloom tests | tail -2 && uv run pytest -q 2>&1 | tail -1
+
+[Tool] Bash: git add -A heirloom tests && git commit -q -F - <<'EOF'
+Precedent PRs cite their question and asking trace; replay-only rerender
+
+PR #19 (CVE-2026-84429) said "No human choice needed" in D1 and named
+P001 without the trace that asked it. A PR or issue that applies a stored
+precedent now says "asked once on #6 by CVE-2026-15307, asking trace
+<link>" (the decide.question span) and, when another CVE asked, that no
+new question was asked for this one. D1 names the precedent.
+
+`heirloom rerender CVE... --id <campaign>` replays a CVE's latest campaign
+event with the same arguments the campaign used (campaign.prepare) in a
+replay-only Ctx: any stage other than publish.pr / publish.evidence that
+is not a ledger cache hit raises ReplayMiss before it starts, so a
+re-render can never call a model, commit or push.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+EOF
+timeout 900 uv run heirloom rerender CVE-2026-84429 CVE-2026-15307 --id b4-replay 2>&1 | tail -5

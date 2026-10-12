@@ -1,0 +1,24 @@
+Reviewing main vs 7bbe5e5~1: 6 commits, 15 files changed, 2 uncommitted
+Running review with claude-code  (model sonnet)...
+# claude-code  (model sonnet) review
+
+Verdict: approve with nits. I found no definite correctness bug in the B5 changes. The risks are in the replay path and in two claims the PR and issue text asserts without checking. I only read the diff and the surrounding code; I didn't run the tests.
+
+- [medium] heirloom/cli.py:332 (`rerender` calling `cmp.prepare`). `prepare` is not a pure replay of the original run. For stacked and follow-up events it recomputes `stacked(spec, s, dep)` from the current head of the dependency's branch. For new events it recomputes `reusable_probe(s, cve)`. Both can differ from what the original run used. Once the CVE's own earlier run has stored a probe, `reusable_probe` now returns one even if the original run called the porter, so it can pick up the CVE's own probe. The head hash and the reuse choice feed stage inputs and the note text, so `rerender` raises `ReplayMiss` for a CVE that should re-render. Worse, it can render a note ("was `<head>`") that differs from the one the PR was built with. Fix: persist the original spec, head, reuse and note on the campaign event, or reconstruct them from the ledger.
+
+- [medium] heirloom/pipeline/publish.py:524 (`_notes` tail, "no new question for {ctx.cve}"). The tail is chosen by substring-matching `f" by {ctx.cve},"` in the string `_asking` returns. When the `decide.question` ledger row is missing, or the span or trace is NONE, `who` is empty. The note then claims "no new question for X", even when X asked the question and the ledger is just missing the row. That is an unverified claim in a PR body. `_asking` also reads `stages` with `LIMIT 1` and no ORDER BY, so several rows sharing a trace_id pick an arbitrary CVE and span. Fix: return `(text, asked_by)` from `_asking`, and only assert "no new question" when `asked_by` is known and differs from `ctx.cve`.
+
+- [low] heirloom/pipeline/publish.py:506. When `prec["issue"]` is empty, `_asking` renders `asked once on [#]()`, a broken link. It also reads and parses `policy/precedents.json` on every render. Fix: skip the link when the issue is empty, and use the precedent object already in the decision.
+
+- [low] heirloom/pipeline/calibrate.py:757 (`reach_feedback`). If every present symbol has `body_lines_hit`, `missed` is empty. The feedback then prints "Not executed (0 body lines):" with no items. This can happen for NO_REACH when the gate fails on a threshold or on symbols that were not in `present`. The retry prompt then tells the porter nothing actionable. Fix: omit that header when `missed` is empty, or name the failed gate's detail.
+
+- [low] heirloom/pipeline/run.py:144. The reach retry extends `attempts` only when `reach_retried` is false. The retry reuses `models[min(attempt, len-1)]`, so when NO_REACH is the first-attempt failure it still gets a retry from the shared 3-attempt budget. The "one reach retry always" guarantee therefore costs nothing extra in that case, and the budget cap is not re-checked for the extended attempt. This is acceptable, but the comment overstates it. Fix: no code change needed, or correct the comment.
+
+- [low] heirloom/cli.py:360 (`relink`). The guard is entered with `LINES["4.2"]` hardcoded, and the target list comes only from `results_live.json`. PRs or issues from other lines or campaigns are silently skipped. `--apply` also edits bodies with no dry-run diff beyond the link count, and `gh view` failures on one target abort the whole loop. Fix: wrap each target in a try/except that reports and continues, and derive the line from the PR.
+1 agent(s) done — 1 succeeded, 0 failed, 0 cancelled
+
+Review complete.
+
+Browse findings:
+  entire review --findings '20261012T013324'
+rc=0

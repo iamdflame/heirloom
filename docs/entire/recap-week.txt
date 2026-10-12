@@ -1,0 +1,20 @@
+day · [week] · month · 90d        agent: [all]        view: you team [both]
+
+╭────────────────────────────────────────────────────────────────────────────╮
+│  Last 7 days                                                               │
+│  window Oct 6, 2026 00:00 UTC - Oct 13, 2026 00:00 UTC                     │
+│                                                                            │
+│  you   0 sessions    0 checkpoints    0 tok                                │
+│  team  -           -                -                                      │
+│                                                                            │
+│  0 agents · 0 active days                                                  │
+╰────────────────────────────────────────────────────────────────────────────╯
+
+Activity · week
+░░░░░░░
+
+╭─ Agents · last 7 days ─────────────────────────────────────────────────────╮
+│  (no agent activity in range)                                              │
+╰────────────────────────────────────────────────────────────────────────────╯
+
+  ℹ Labels require server analysis (may take a few minutes after committing).
