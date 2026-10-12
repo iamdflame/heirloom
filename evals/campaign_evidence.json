@@ -1,0 +1,279 @@
+{
+  "campaign": "b4-replay",
+  "line": "4.2",
+  "source": "work/ledger.sqlite + policy/precedents.json + evals/results_live.json",
+  "fail_to_pass": [
+    {
+      "cve": "CVE-2026-15307",
+      "pr": "https://github.com/iamdflame/django/pull/20",
+      "run_id": "20261011T210749Z-9f96",
+      "trace_id": "910339f68afba5c237c48ea77c012a14",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": false,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-15920",
+      "pr": "https://github.com/iamdflame/django/pull/18",
+      "run_id": "20261011T212524Z-2c04",
+      "trace_id": "6542b8b7e6ef25625bde1eead22afaad",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-35192",
+      "pr": "https://github.com/iamdflame/django/pull/11",
+      "run_id": "20261011T210815Z-e826",
+      "trace_id": "b4459b250cdec7a84bf1023b0275cdf7",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-48587",
+      "pr": "https://github.com/iamdflame/django/pull/10",
+      "run_id": "20261011T211353Z-c730",
+      "trace_id": "20885b0e5eb107706d054b0d130f2357",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-48588",
+      "pr": "https://github.com/iamdflame/django/pull/17",
+      "run_id": "20261011T212057Z-e8d7",
+      "trace_id": "df2c04f55ab2709f0952e04b4681cff8",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-53877",
+      "pr": "https://github.com/iamdflame/django/pull/15",
+      "run_id": "20261011T212059Z-db05",
+      "trace_id": "08a3fb66267df5b6a08ab640e3fd9b67",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-5766",
+      "pr": "https://github.com/iamdflame/django/pull/12",
+      "run_id": "20261011T211028Z-b112",
+      "trace_id": "39748a789bd6d8a4d33eda382b7779c2",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-6873",
+      "pr": "https://github.com/iamdflame/django/pull/14",
+      "run_id": "20261011T211632Z-0609",
+      "trace_id": "0645ff1e964b418e4d463a44e4840350",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-6907",
+      "pr": "https://github.com/iamdflame/django/pull/13",
+      "run_id": "20261011T211152Z-f8af",
+      "trace_id": "129fa74a756c23f837700be92977d1fa",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-8404",
+      "pr": "https://github.com/iamdflame/django/pull/16",
+      "run_id": "20261011T212037Z-91f7",
+      "trace_id": "e848835789ecf3ace1fcde1862cdca83",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-84429",
+      "pr": "https://github.com/iamdflame/django/pull/19",
+      "run_id": "20261011T212548Z-41bf",
+      "trace_id": "9ebff32a371a1c3ade52ad671abc5e62",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": false,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-87890",
+      "pr": "https://github.com/iamdflame/django/pull/21",
+      "run_id": "20261012T002657Z-0879",
+      "trace_id": "a64e212753c43adb4c39cc7c120a56b0",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    },
+    {
+      "cve": "CVE-2026-87975",
+      "pr": "https://github.com/iamdflame/django/pull/9",
+      "run_id": "20261011T015149Z-839b",
+      "trace_id": "39e09b05aa64466f3a5cd91fd8865ea2",
+      "probe_before": [
+        "FAIL",
+        "FAIL",
+        "FAIL"
+      ],
+      "probe_after": [
+        "PASS",
+        "PASS",
+        "PASS"
+      ],
+      "verify_ok": true,
+      "fail_to_pass": true
+    }
+  ],
+  "questions": [
+    {
+      "issue": "https://github.com/iamdflame/heirloom/issues/6",
+      "asked_by": "CVE-2026-15307",
+      "asking_trace": "2976b1584b28aa7100fdee51b7eeed07",
+      "asking_span": "dbfac466b5599924",
+      "asked_at": "2026-10-11T21:20:16Z",
+      "waited": [
+        "CVE-2026-84429"
+      ]
+    }
+  ],
+  "precedents": [
+    {
+      "id": "P001",
+      "kind": "UPSTREAM_TEST_CHANGE",
+      "scope": "django/4.2",
+      "answer": "adopt-upstream-tests",
+      "issue": "https://github.com/iamdflame/heirloom/issues/6",
+      "stored_at": "2026-10-12T00:00:19Z",
+      "applied_by": [
+        {
+          "cve": "CVE-2026-15307",
+          "run_id": "20261012T000021Z-211f",
+          "trace_id": "3dda8cfee18560bfa6cf1f1fe0273a9a",
+          "decision": "adopt-upstream-tests",
+          "pr": "https://github.com/iamdflame/django/pull/20"
+        },
+        {
+          "cve": "CVE-2026-84429",
+          "run_id": "20261012T000021Z-ae48",
+          "trace_id": "c79d0bd234803497d5f8f8f9963e0175",
+          "decision": "adopt-upstream-tests",
+          "pr": "https://github.com/iamdflame/django/pull/19"
+        }
+      ]
+    }
+  ]
+}
