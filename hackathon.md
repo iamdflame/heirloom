@@ -453,3 +453,9 @@ Started headless at 01:40 UTC. `entire session current` showed `ea42def1-7e83-47
 
 **Tests that actually ran (B6):** pytest **197 passed**; `ruff check heirloom tests` clean; `ruff format --check heirloom tests` 67 files formatted; `mypy --strict heirloom tests` no issues in 67 files. Plus the targeted DoD subset (10 passed). Final re-run at the end of B6 (01:57 UTC): 197 passed, ruff clean, 67 files formatted, mypy --strict clean. README re-render produced no diff.
 
+
+## 2026-10-12: the site (B7a, B7b, QA session)
+
+Live: https://iamdflame.github.io/heirloom/ (Vite + React, GitHub Pages, deployed by `pages.yml`). Built in B7a (scaffold, hero, Fig. 1 register, replay, receipts), B7b (sections 5-12, OG card, QA cycles 3-7, first-screen prerender with inlined CSS) and a final QA session (cycle c8).
+
+c8 (`node scripts/qa.mjs c8`, 16 screenshots): axe 0 serious/critical; console 0 errors/warnings (no hydration warnings from the prerender); keyboard flow PASS; 10 anchors resolve. Lighthouse mobile: performance 98, accessibility 100, best-practices 100, SEO 100. First-load JS 103 kB gz (budget 150); fonts 93.7 kB (budget 100). The site's counts are tested against the README first screen.
