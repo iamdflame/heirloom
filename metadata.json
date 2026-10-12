@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QT8DYS9WZR41B77PD1GM7C",
+  "strategy": "manual-commit",
+  "branch": "site-3d",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/pages.yml",
+    "README.md",
+    "site/web/index.html",
+    "site/web/public/og.png",
+    "site/web/scripts/og.mjs",
+    "site/web/scripts/qa.mjs",
+    "site/web/src/og.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 18529,
+    "cache_read_tokens": 2733683,
+    "output_tokens": 9127,
+    "api_call_count": 19
+  }
+}
