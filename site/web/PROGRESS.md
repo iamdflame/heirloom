@@ -7,7 +7,7 @@ Spec: `~/brief/FRONTEND-BRIEF.md`. Live URL: https://iamdflame.github.io/heirloo
 - [x] M2 Scaffold (Vite 8 + React 18 + TS strict + Tailwind 3 + Radix/shadcn-style ui), tokens light/dark, fonts, seal/favicon, nav/hero/footer skeleton, `.github/workflows/pages.yml`, Pages enabled (build_type=workflow)
 - [x] M3 `scripts/build-data.mjs` → `public/site.json` (25 kB) + `public/receipts/<CVE>.json` (lazy receipt detail) + `src/data/types.ts`; `src/data/counts.test.ts` (7 tests) parses the README first screen and checks every count; `scripts/check-links.mjs` checks all 20 PR/issue URLs via `gh api` (20/20)
 - [x] M4 Hero/abstract (numbers from site.json), Fig. 1 register (ledger sheet, sticky accession column with the double red margin rule, row totals, filter with live counts, roving tabindex with arrows/Home/End/Ctrl+Home/PageUp/Down), replay scrubber (range input, play over 8 stops at 1 s, aria-live status, ink-in with motion `m` + LazyMotion, default end state), the 87890→15307 connector (SVG in the right margin at ≥1280 px; inline text below that) and the `query #6` marker; mobile cards (<768 px); lazy Receipt sheet (right ≥768, bottom below) with Condition / Examination (calibration triangle, failing ids, gates, probe origin; Tabs per line) / Treatment / Evidence (copy buttons, reproduce command), `#HL-4.2-007` deep links, focus return to the cell
-- [ ] M5 QA cycle 1
+- [x] M5 QA cycle 1 (+ a verification run c2) — see below
 
 ## Decisions
 - Toolchain resolved to Vite 8 / @vitejs/plugin-react 6 / TypeScript 7 / vitest 5 (current majors); Tailwind pinned to v3 and React to 18 per brief.
@@ -27,3 +27,40 @@ Spec: `~/brief/FRONTEND-BRIEF.md`. Live URL: https://iamdflame.github.io/heirloo
 - Rows not yet arrived during the replay stay in place as empty ledger lines (accession only), so the sheet doesn't jump.
 - Receipt: Examination uses Tabs (one per line); the clicked cell's line is preselected; a deep link opens on Django 4.2.30. Receipt JSON is fetched from `receipts/<CVE>.json` on open and cached.
 - Data is bundled (`src/data/site.json`, ~6 kB gz) so the register renders without a fetch; `public/site.json` is the same file, published.
+
+## QA cycle 1 (2026-10-12, `node scripts/qa.mjs c1`, 16 screenshots read)
+Script results: axe 0 serious/critical on 10 runs (8 page views + receipt desktop/mobile); console 0 errors/warnings; keyboard flow PASS (Tab into register → ArrowRight/ArrowDown/End/Home → Enter opens #HL-4.2-002 → Esc closes → focus back on the same cell); deep link `#HL-4.2-018` opens CVE-2026-87890; replay middle reads "Aug 4 2026 · 15 of 19 advisories"; Lighthouse mobile 96 / 100 / 100 / 100; first-load JS 103.6 kB gz (budget 150), fonts 93.7 kB (budget 100). A pre-cycle run (c0) found axe `definition-list` (serious) in the receipt Evidence list (a copy button sat directly in the `<dl>` row), fixed before c1.
+
+Defects seen in the PNGs:
+1. **390 px: horizontal overflow.** The page renders 423 px wide: register cards grow to fit unbreakable mono identifiers in titles (`django.http.HttpRequest.get_signed_cookie`). (page-390x844-*)
+2. **768 px: replay tick labels collide** ("Django 4.2 end of life" runs into "3 advisories"; "Ubuntu ships its…" into "4 advisories"). (page-768x1024-*)
+3. **768 px: table clips** the Ubuntu column and the total column off the right edge (scrolls horizontally; sticky accession works, but half the row is hidden with no cue).
+4. **1440/1920: "Lines affected" column too narrow**: "2 of 3 lines affected" wraps onto 3 lines, so rows are taller than the content needs; header "LINES AFFECTED" wraps too.
+5. Lighthouse `label-content-name-mismatch`: filter toggles had an aria-label ("Fix ready, 13 cells") that differs from the visible text ("✓ FIX READY 13").
+6. Receipt (390 px) Condition list: chips wrap under long line labels at different indents. Fixed between c0 and c1 (grid: label left, chip right); recheck in cycle 2.
+7. Minor: the hero meta line breaks after "built" at 1440 ("built / during neatHack"), and the table leaves ~14rem of empty margin at 1440–1920 when the connector isn't the focus. Left as is: the margin holds the connector.
+
+Fixes after cycle 1 (verified by re-running as `qa/c2` and reading the PNGs):
+- (1) cards: `min-w-0` + `overflow-wrap:anywhere` on titles → the 390 px page is 390 px wide (page-390x844-light is 390×8673).
+- (2) replay ticks: below 1024 px only the dates show; labels from `lg` up → no collisions at 768.
+- (3) table: `table-fixed` + `<colgroup>` widths; the total column moves into the advisory cell below 1024 px → all three line columns fit at 768 with no horizontal scroll.
+- (4) total column 11rem, each part nowrap ("2 of 3 lines affected" / "1 undecided") → one or two lines at 1440/1920. Long identifiers in titles get `<wbr>` after `.` and `_` instead of breaking mid-word.
+- (5) filter toggles have no aria-label (visible text is the name); mobile card buttons use visible text + sr-only context. Lighthouse `label-content-name-mismatch` is gone.
+- (6) receipt Condition rows on 390 px: label left, chip right, version below → checked in receipt-mobile.png.
+
+## QA cycle 2 results (`qa/c2`)
+axe 0 serious/critical (10 runs); console 0; keyboard PASS; Lighthouse mobile 96 / 100 / 100 / 100; first-load JS 103.7 kB gz; fonts 93.7 kB; lazy chunks: Receipt 4.9 kB gz + sheet (Radix dialog/tabs) 10.6 kB gz; site.json 24.7 kB.
+
+## Remaining defects (for B7b)
+- Lighthouse performance is 96, not 100: `render-blocking-insight` (~300 ms, the CSS file) and `max-potential-fid` 200 ms. Options: inline critical CSS, or split the 404 entry so `src-*.js` (react-dom) isn't shared as a separate preload.
+- 390 px receipt: the sticky nav may sit above the sheet's dim overlay (in receipt-mobile.png the nav reads lighter than the dimmed page). Check the stacking (header z-40 vs overlay z-50) in a fresh screenshot.
+- 768–1023 px: the advisory column is narrow (~13 rem), so titles take 3–5 lines; acceptable but dense.
+- The replay range shows the 2 px focus outline around the whole input after keyboard use (correct, but heavy); consider outlining only the thumb.
+- No OG image yet (`og.html` + `og.png`), so the OG/Twitter meta tags are not added yet.
+- The porter model is not shown in receipts (not in the export).
+
+## Next: B7b
+1. Sections 5–12 from the brief: The finding (Fig. 2, three dated steps + verbatim claim), Method (5 stages), The conservator's query timeline (`site.query`, already in site.json), Table 2 — Backtest (`site.backtest`, emphasise false NOT AFFECTED 1 vs 0), Stated limits, Economics (`site.economics.inputs` + cfo.ai pages, label hypotheses), Verify it yourself (`site.links`, detections), full colophon. The nav links for those sections currently point at anchors that don't exist yet.
+2. OG: `/og.html` view + Playwright render to `public/og.png` (1200×630), then the OG/Twitter meta.
+3. Run QA cycles 3+ (`npm run build && node scripts/qa.mjs c3`), read every PNG, fix, redeploy.
+4. Optional: chip contrast check script (all 10 chip pairs; AA verified so far only by axe on rendered pages).

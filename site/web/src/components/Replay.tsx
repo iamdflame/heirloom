@@ -73,7 +73,7 @@ export function Replay({
         }}
         className="replay-range mt-3 w-full"
       />
-      <ol className="relative mt-1 hidden h-16 md:block" aria-hidden>
+      <ol className="relative mt-1 hidden h-6 md:block lg:h-16" aria-hidden>
         {site.stops.map((s, i) => {
           const at = (i / last) * 100;
           const edge = i === 0 ? 'left-0 text-left' : i === last ? 'right-0 text-right' : '-translate-x-1/2 text-center';
@@ -82,13 +82,13 @@ export function Replay({
               key={s.date + s.kind}
               style={i === 0 || i === last ? undefined : { left: `${at}%` }}
               className={cn(
-                'absolute top-0 w-[7.5rem] font-mono text-[0.65rem] leading-tight',
+                'absolute top-0 w-[3.5rem] font-mono text-[0.65rem] leading-tight lg:w-[7.5rem]',
                 edge,
                 i === stop ? 'text-ink' : 'text-muted',
               )}
             >
               <span className="block tabular-nums">{s.date.slice(5)}</span>
-              <span className="block">{s.label}</span>
+              <span className="hidden lg:block">{s.label}</span>
             </li>
           );
         })}

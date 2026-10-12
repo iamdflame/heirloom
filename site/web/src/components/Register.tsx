@@ -136,11 +136,11 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
             onValueChange={(v) => setFilter((v || 'ALL') as Filter)}
             aria-labelledby="filter-label"
           >
-            <ToggleGroupItem value="ALL" aria-label={`All advisories, ${arrived.length}`}>
+            <ToggleGroupItem value="ALL">
               All <span className="tabular-nums">{arrived.length}</span>
             </ToggleGroupItem>
             {site.chips.map((c) => (
-              <ToggleGroupItem key={c} value={c} aria-label={`${CHIP_META[c].word}, ${counts[c]} cells`}>
+              <ToggleGroupItem key={c} value={c}>
                 <span aria-hidden>{CHIP_META[c].symbol}</span> {CHIP_META[c].word}{' '}
                 <span className="tabular-nums">{counts[c]}</span>
               </ToggleGroupItem>
@@ -152,13 +152,21 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
         </div>
 
         {/* desktop/tablet: the ledger sheet */}
-        <div ref={sheetRef} className="relative mt-5 hidden md:block xl:pr-56">
+        <div ref={sheetRef} className="relative mt-5 hidden md:block xl:pr-44">
           <div className="overflow-x-auto rounded-[2px] border border-ledger-rule bg-ledger">
             <p id="register-help" className="sr-only">
               Each verdict cell is a button. Use the arrow keys to move between cells, Home and End for the start or end of a
               row, and Enter to open the receipt.
             </p>
-            <table className="ledger w-full min-w-[54rem] border-collapse text-left" aria-describedby="register-help">
+            <table className="ledger w-full table-fixed border-collapse text-left" aria-describedby="register-help">
+              <colgroup>
+                <col className="w-[7.25rem]" />
+                <col />
+                {site.lines.map((l) => (
+                  <col key={l.id} className="w-[8.25rem] lg:w-[9rem]" />
+                ))}
+                <col className="hidden w-[11rem] lg:table-column" />
+              </colgroup>
               <thead>
                 <tr className="border-b-2 border-ledger-rule align-bottom">
                   <th scope="col" className="ledger-acc sticky left-0 z-10 bg-ledger px-3 py-3 label">
@@ -168,14 +176,14 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                     Advisory
                   </th>
                   {site.lines.map((l) => (
-                    <th key={l.id} scope="col" className="w-[11.5rem] px-2 py-3 font-normal">
+                    <th key={l.id} scope="col" className="px-2 py-3 font-normal">
                       <span className="block text-[0.95rem] leading-tight">{l.label}</span>
-                      <span className="mt-0.5 block whitespace-nowrap font-mono text-[0.7rem] text-muted">
+                      <span className="mt-0.5 block font-mono text-[0.7rem] text-muted [overflow-wrap:anywhere]">
                         {l.kind === 'eval' ? 'tag ' + l.version : l.version}
                       </span>
                     </th>
                   ))}
-                  <th scope="col" className="w-[9.5rem] px-3 py-3 label">
+                  <th scope="col" className="hidden whitespace-nowrap px-3 py-3 label lg:table-cell">
                     Lines affected
                   </th>
                 </tr>
@@ -203,7 +211,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                       </th>
                       {isArrived ? (
                         <>
-                          <td className="px-4 py-2 align-middle">
+                          <td className="px-4 py-2 align-middle [overflow-wrap:break-word]">
                             <m.div {...ink}>
                               <span className="font-mono text-[0.8rem]">{r.cve}</span>
                               {site.query_marker.cve === r.cve && (
@@ -214,6 +222,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                               <span className="block text-[0.95rem] leading-snug">
                                 <RstTitle text={r.title} />
                               </span>
+                              <span className="mt-0.5 block font-mono text-[0.7rem] text-muted lg:hidden">{rowTotal(r)}</span>
                               {conn && r.cve === conn.from && until >= conn.date && (
                                 <span className="mt-0.5 block font-mono text-[0.7rem] text-muted xl:sr-only">
                                   stacked on our own backport · PR #{conn.pr} on #{conn.on}
@@ -247,8 +256,12 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                               </td>
                             );
                           })}
-                          <td className="px-3 py-2 align-middle font-mono text-[0.75rem] text-muted">
-                            <m.span {...ink} className="block">{rowTotal(r)}</m.span>
+                          <td className="hidden px-3 py-2 align-middle font-mono text-[0.75rem] text-muted lg:table-cell">
+                            <m.span {...ink} className="block">
+                              {rowTotal(r).split(' · ').map((t) => (
+                                <span key={t} className="block whitespace-nowrap">{t}</span>
+                              ))}
+                            </m.span>
                           </td>
                         </>
                       ) : (
@@ -270,7 +283,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
         {/* mobile: one card per CVE */}
         <ol className="mt-5 grid gap-3 md:hidden" aria-label="Register entries">
           {shown.map((r) => (
-            <li key={r.anchor} className="rounded-[2px] border border-ledger-rule bg-ledger p-4">
+            <li key={r.anchor} className="min-w-0 rounded-[2px] border border-ledger-rule bg-ledger p-4">
               <p className="flex items-baseline justify-between gap-3 font-mono text-[0.75rem] text-muted">
                 <span>{r.acc}</span>
                 <span>{shortDate(r.date)}</span>
@@ -283,7 +296,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                   </span>
                 )}
               </p>
-              <p className="mt-1 leading-snug">
+              <p className="mt-1 leading-snug [overflow-wrap:anywhere]">
                 <RstTitle text={r.title} />
               </p>
               {conn && r.cve === conn.from && until >= conn.date && (
@@ -299,11 +312,14 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                       <button
                         type="button"
                         onClick={(e) => onOpen(r.anchor, cell.line, e.currentTarget)}
-                        aria-label={`${r.cve} on ${line.label}: ${CHIP_META[cell.chip].word}. Open receipt`}
                         className="press flex min-h-12 w-full items-center justify-between gap-3 py-2 text-left"
                       >
-                        <span className="text-[0.9rem] leading-tight">{line.label}</span>
+                        <span className="text-[0.9rem] leading-tight">
+                          <span className="sr-only">{r.cve} on </span>
+                          {line.label}
+                        </span>
                         <Chip chip={cell.chip} />
+                        <span className="sr-only">. Open receipt</span>
                       </button>
                     </li>
                   );
