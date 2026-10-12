@@ -1,0 +1,35 @@
+You are running HEADLESS: nobody can answer you mid-run, so never wait for input. Make reasonable decisions within the brief, record them in site/web/PROGRESS.md, and keep going. Usage is limited: work efficiently, commit and push after every milestone, and keep PROGRESS.md current so another session can continue if you stop.
+
+Before anything else: run `entire session current` and `entire status`. If no active session is shown, or the id is f5117257-5211-42ae-823c-32aa228a28d9, stop and print why.
+
+This is B7a, the first half of the public site. Read ~/brief/FRONTEND-BRIEF.md fully (it is the spec; follow it exactly), then README.md's first screen and the key data files it names.
+
+Milestones, in order (commit and push after each):
+1. (≤20 min) Toolchain:
+   - install Node 22 (NodeSource apt; sudo works);
+   - in site/web, install Playwright Chromium with its deps (`npx playwright install --with-deps chromium`);
+   - run `heirloom export --out site/data` to refresh the snapshot.
+2. (≤25 min) Scaffold and go live early:
+   - Vite + React + TS + Tailwind + shadcn (Radix) in site/web, with the tokens (light and dark), fonts and seal SVG/favicon;
+   - a minimal page (nav, hero headline, footer);
+   - `.github/workflows/pages.yml`, then enable Pages (`gh api -X POST repos/iamdflame/heirloom/pages -f build_type=workflow`, or PUT if it exists);
+   - push, and confirm https://iamdflame.github.io/heirloom/ serves the skeleton (curl until 200; check the Actions run with `gh run list`/`gh run view`).
+3. (≤25 min) The data builder `scripts/build-data.mjs` → `public/site.json` + types, plus the vitest test that the counts equal the README first screen.
+4. (≤60 min) The hero/abstract, **Fig. 1 — The register** (table, filter with counts, row totals, roving-tabindex keyboard nav, mobile cards), the **Replay scrubber** with the 87890→15307 connector and the query marker, and the **Receipt** sheet with the deep-link hash. All per brief §3.1–3.4.
+5. (≤20 min) The first QA cycle with `scripts/qa.mjs` per brief §6:
+   - read every screenshot PNG and write the defects in PROGRESS.md;
+   - fix the top defects;
+   - re-deploy and confirm live.
+
+Rules:
+- Don't touch heirloom/ Python code except to fix a real bug you hit. Keep pytest, ruff and mypy green if you do.
+- Never print .env values. Before each push, make sure no file under site/ contains a secret (run `python3 ~/brief/secretscan.py`; every surface must say clean).
+- Commit messages are real and small.
+
+Finish with:
+- `entire status`;
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- the live URL and whether it returns 200;
+- the QA results (axe, console, Lighthouse scores, bundle sizes);
+- the remaining defects list;
+- what B7b should do next (also in PROGRESS.md).
