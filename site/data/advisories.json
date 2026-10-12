@@ -1,0 +1,170 @@
+{
+ "source": "django origin/main:docs/releases/security.txt",
+ "advisories": {
+  "CVE-2025-13473": {
+   "date": "2026-02-03",
+   "title": "Username enumeration through timing difference in mod_wsgi authentication handler.",
+   "url": "https://www.djangoproject.com/weblog/2026/feb/03/security-releases/"
+  },
+  "CVE-2025-14550": {
+   "date": "2026-02-03",
+   "title": "Potential denial-of-service vulnerability via repeated headers when using ASGI.",
+   "url": "https://www.djangoproject.com/weblog/2026/feb/03/security-releases/"
+  },
+  "CVE-2025-27556": {
+   "date": "2025-04-02",
+   "title": "Potential denial-of-service vulnerability in ``LoginView``, ``LogoutView``, and ``set_language()`` on Windows.",
+   "url": "https://www.djangoproject.com/weblog/2025/apr/02/security-releases/"
+  },
+  "CVE-2026-1207": {
+   "date": "2026-02-03",
+   "title": "Potential SQL injection via raster lookups on PostGIS.",
+   "url": "https://www.djangoproject.com/weblog/2026/feb/03/security-releases/"
+  },
+  "CVE-2026-1285": {
+   "date": "2026-02-03",
+   "title": "Potential denial-of-service vulnerability in ``django.utils.text.Truncator`` HTML methods.",
+   "url": "https://www.djangoproject.com/weblog/2026/feb/03/security-releases/"
+  },
+  "CVE-2026-1287": {
+   "date": "2026-02-03",
+   "title": "Potential SQL injection in column aliases via control characters.",
+   "url": "https://www.djangoproject.com/weblog/2026/feb/03/security-releases/"
+  },
+  "CVE-2026-1312": {
+   "date": "2026-02-03",
+   "title": "Potential SQL injection via ``QuerySet.order_by`` and ``FilteredRelation``.",
+   "url": "https://www.djangoproject.com/weblog/2026/feb/03/security-releases/"
+  },
+  "CVE-2026-15307": {
+   "date": "2026-08-04",
+   "title": "Server-side file-write and request forgery via spatial lookups.",
+   "url": "https://www.djangoproject.com/weblog/2026/aug/04/security-releases/"
+  },
+  "CVE-2026-15337": {
+   "date": "2026-08-04",
+   "title": "Potential denial-of-service vulnerability in ``check_for_language()``.",
+   "url": "https://www.djangoproject.com/weblog/2026/aug/04/security-releases/"
+  },
+  "CVE-2026-15830": {
+   "date": "2026-08-04",
+   "title": "Potential denial-of-service vulnerability via nested geometry collections.",
+   "url": "https://www.djangoproject.com/weblog/2026/aug/04/security-releases/"
+  },
+  "CVE-2026-15920": {
+   "date": "2026-08-04",
+   "title": "Potential cross-site scripting via ``URLField`` values in the admin.",
+   "url": "https://www.djangoproject.com/weblog/2026/aug/04/security-releases/"
+  },
+  "CVE-2026-25673": {
+   "date": "2026-03-03",
+   "title": "Potential denial-of-service vulnerability in ``URLField`` via Unicode normalization on Windows.",
+   "url": "https://www.djangoproject.com/weblog/2026/mar/03/security-releases/"
+  },
+  "CVE-2026-25674": {
+   "date": "2026-03-03",
+   "title": "Potential incorrect permissions on newly created file system objects.",
+   "url": "https://www.djangoproject.com/weblog/2026/mar/03/security-releases/"
+  },
+  "CVE-2026-33033": {
+   "date": "2026-04-07",
+   "title": "Potential denial-of-service vulnerability in ``MultiPartParser`` via base64-encoded file upload.",
+   "url": "https://www.djangoproject.com/weblog/2026/apr/07/security-releases/"
+  },
+  "CVE-2026-33034": {
+   "date": "2026-04-07",
+   "title": "Potential denial-of-service vulnerability in ASGI requests via memory upload limit bypass.",
+   "url": "https://www.djangoproject.com/weblog/2026/apr/07/security-releases/"
+  },
+  "CVE-2026-35192": {
+   "date": "2026-05-05",
+   "title": "Session fixation via public cached pages and ``SESSION_SAVE_EVERY_REQUEST``.",
+   "url": "https://www.djangoproject.com/weblog/2026/may/05/security-releases/"
+  },
+  "CVE-2026-35193": {
+   "date": "2026-06-03",
+   "title": "Potential exposure of private data via missing ``Vary: Authorization`` in ``UpdateCacheMiddleware``.",
+   "url": "https://www.djangoproject.com/weblog/2026/jun/03/security-releases/"
+  },
+  "CVE-2026-3902": {
+   "date": "2026-04-07",
+   "title": "ASGI header spoofing via underscore/hyphen conflation.",
+   "url": "https://www.djangoproject.com/weblog/2026/apr/07/security-releases/"
+  },
+  "CVE-2026-4277": {
+   "date": "2026-04-07",
+   "title": "Privilege abuse in ``GenericInlineModelAdmin``.",
+   "url": "https://www.djangoproject.com/weblog/2026/apr/07/security-releases/"
+  },
+  "CVE-2026-4292": {
+   "date": "2026-04-07",
+   "title": "Privilege abuse in ``ModelAdmin.list_editable``.",
+   "url": "https://www.djangoproject.com/weblog/2026/apr/07/security-releases/"
+  },
+  "CVE-2026-48587": {
+   "date": "2026-06-03",
+   "title": "Potential exposure of private data via whitespace padding in ``Vary`` header.",
+   "url": "https://www.djangoproject.com/weblog/2026/jun/03/security-releases/"
+  },
+  "CVE-2026-48588": {
+   "date": "2026-07-07",
+   "title": "Potential exposure of private data via cached ``Set-Cookie`` response.",
+   "url": "https://www.djangoproject.com/weblog/2026/jul/07/security-releases/"
+  },
+  "CVE-2026-53877": {
+   "date": "2026-07-07",
+   "title": "Heap buffer over-read in ``GDALRaster``.",
+   "url": "https://www.djangoproject.com/weblog/2026/jul/07/security-releases/"
+  },
+  "CVE-2026-53878": {
+   "date": "2026-07-07",
+   "title": "Header injection possibility since ``DomainNameValidator`` accepted newlines in input.",
+   "url": "https://www.djangoproject.com/weblog/2026/jul/07/security-releases/"
+  },
+  "CVE-2026-5766": {
+   "date": "2026-05-05",
+   "title": "Potential denial-of-service vulnerability in ASGI requests via file upload limit bypass.",
+   "url": "https://www.djangoproject.com/weblog/2026/may/05/security-releases/"
+  },
+  "CVE-2026-6873": {
+   "date": "2026-06-03",
+   "title": "Signed cookie salt namespace collision in ``django.http.HttpRequest.get_signed_cookie``.",
+   "url": "https://www.djangoproject.com/weblog/2026/jun/03/security-releases/"
+  },
+  "CVE-2026-6907": {
+   "date": "2026-05-05",
+   "title": "Potential exposure of private data due to incorrect handling of ``Vary: *`` in ``UpdateCacheMiddleware``.",
+   "url": "https://www.djangoproject.com/weblog/2026/may/05/security-releases/"
+  },
+  "CVE-2026-7666": {
+   "date": "2026-06-03",
+   "title": "Potential unencrypted email transmission via ``STARTTLS`` in the SMTP backend.",
+   "url": "https://www.djangoproject.com/weblog/2026/jun/03/security-releases/"
+  },
+  "CVE-2026-77050": {
+   "date": "2026-10-06",
+   "title": "Potential denial-of-service vulnerability in ``get_supported_language_variant()``.",
+   "url": "https://www.djangoproject.com/weblog/2026/oct/06/security-releases/"
+  },
+  "CVE-2026-8404": {
+   "date": "2026-06-03",
+   "title": "Potential exposure of private data via case-sensitive ``Cache-Control`` directives in ``UpdateCacheMiddleware``.",
+   "url": "https://www.djangoproject.com/weblog/2026/jun/03/security-releases/"
+  },
+  "CVE-2026-84429": {
+   "date": "2026-10-06",
+   "title": "Potential denial-of-service vulnerability in HTTP header parsing.",
+   "url": "https://www.djangoproject.com/weblog/2026/oct/06/security-releases/"
+  },
+  "CVE-2026-87890": {
+   "date": "2026-10-06",
+   "title": "Potential request forgery via spatial lookup byte values.",
+   "url": "https://www.djangoproject.com/weblog/2026/oct/06/security-releases/"
+  },
+  "CVE-2026-87975": {
+   "date": "2026-10-06",
+   "title": "Privilege abuse in model formsets with editable primary keys.",
+   "url": "https://www.djangoproject.com/weblog/2026/oct/06/security-releases/"
+  }
+ }
+}
