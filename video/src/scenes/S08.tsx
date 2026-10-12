@@ -46,10 +46,12 @@ const NeatlogsSlot: React.FC = () => {
 
 export const S08: React.FC<SceneProps> = ({ scale, frames }) => {
   const b = beats(scale);
-  const t1 = b(9.4);
-  const t2 = b(12.4);
+  // when the VO is shorter than the target, the backtest and PR #13 give way so the owner's slot keeps its full 6 s
+  const tight = scale < 1;
+  const t1 = b(tight ? 8.6 : 9.4);
+  const t2 = t1 + (tight ? sec(2.2) : b(3.0));
   const t3 = t2 + sec(6); // the slot is exactly 6 s
-  const t4 = Math.min(t3 + b(2.0), frames - 90);
+  const t4 = Math.min(t3 + (tight ? sec(1.3) : b(2.0)), frames - 100);
   const cp = terminal.checkpoint;
   const lines: TermLine[] = [{ text: `$ entire checkpoint explain ${cp.id}`, at: 6, typed: true, cps: 60, color: C.brassHi }];
   cp.lines.slice(0, 14).forEach((l, i) => lines.push({ text: l, at: 6 + 46 + i * 4, color: l.startsWith('##') || l.startsWith('●') ? C.bone : C.muted }));

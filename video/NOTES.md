@@ -54,3 +54,15 @@ Renders live in `video/out/` and `~/video-out/` and are never committed.
 | S08 | The Heirloom half of the backtest sat empty for 4 s waiting for its number. | Labels and captions arrive with the split; a dim dot holds the place; the "0" lands on "Heirloom: zero times". |
 | S08 render | Chrome crashed at frame 7470 during the first batch and the render hung (memory/CPU contention with V-CAP's SwiftShader capture). A still at that frame renders fine. | Re-rendered S08 alone at concurrency 6: clean in 150 s. `CONC` env sets render concurrency. |
 | S04 / S10 | SH01 (hero) and SH11 (finale) are 3D captures that V-CAP renders at ~1–3 s per frame. | S04 holds the logo reveal if SH01 is under 3 s; S10 uses BR03 (slowed) if SH11 is missing. |
+
+## Pass 5: re-timed to the owner's VO (12:13)
+
+The owner's ElevenLabs VO (S01–S10, 146.95 s of scenes) and `music.mp3` arrived in `public/audio/`. `retime.mjs` set each scene to 0.4 s + VO + 0.6 s (S10: + 4 s), so the film is now 2:26.95. Inner beats scale with each scene.
+
+| Check | Finding | Fix |
+|---|---|---|
+| S08 at 0.8× | The 6 s neatlogs slot pushed GH05 and the `entire` terminal to under 1 s. | When a scene runs short, the backtest and PR #13 give way (8.6 s / 2.2 s), the slot stays 6.00 s, GH05 1.3 s, the terminal gets the rest. |
+| S10 at 0.69× | The end-card guard (`frames − 9 s`) would have put the card at 1.4 s, cutting the finale. | Guard is now `frames − 5 s`: finale, then the card from 3.7 s, holding through the 4 s tail. |
+| S04 / S10 fallbacks | SH01 arrived (8 s) just before the final render; SH11 did not. | S04 uses SH01; S10 uses the site's finale frame (`public/site-finale.jpg`, from `site/web/public/finale-poster.webp`) with an eased push to the H medallion instead of BR03 (which shows a watch brand on the rotor). |
+| Captions | 40 cues; burned in by overlaying 40 transparent PNG cues with 0.13 s alpha fades on the silent master (one x264 pass instead of a second full render). | — |
+| Mix | VO at the scene start + 0.4 s; music −18 dB, ducked to −24 dB under each VO line with 0.3 s ramps, faded over the last 2 s. | Audio-only render muxed onto the silent master's picture (no re-encode of video). |

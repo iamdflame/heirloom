@@ -2,8 +2,8 @@
  "fps": 60,
  "width": 1920,
  "height": 1080,
- "totalFrames": 9900,
- "voPresent": false,
+ "totalFrames": 8817,
+ "voPresent": true,
  "head": 0.4,
  "tail": 0.6,
  "endHold": 4,
@@ -12,111 +12,111 @@
    "id": "S01",
    "title": "End of life",
    "start": 0,
-   "frames": 540,
+   "frames": 431,
    "target": 540,
-   "scale": 1,
+   "scale": 0.7981,
    "vo": "On the seventh of April, Django four-point-two reached end of life. No more security fixes.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S01.mp3",
+   "voSeconds": 6.18
   },
   {
    "id": "S02",
    "title": "Still shipped",
-   "start": 540,
-   "frames": 720,
+   "start": 431,
+   "frames": 759,
    "target": 720,
-   "scale": 1,
+   "scale": 1.0542,
    "vo": "But Debian thirteen and Ubuntu twenty-four-oh-four still ship it. Since then, Django has published nineteen security advisories — and not one official patch for four-point-two.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S02.mp3",
+   "voSeconds": 11.65
   },
   {
    "id": "S03",
    "title": "The finding",
-   "start": 1260,
-   "frames": 1200,
+   "start": 1190,
+   "frames": 1157,
    "target": 1200,
-   "scale": 1,
+   "scale": 0.9642,
    "vo": "On October first, Ubuntu shipped a backport for one of them. Five days later, Django said its original fix was incomplete. We took Ubuntu's source package, ran a test calibrated on Django's own fix commits… and the code path Django closed is still reachable in Ubuntu's build.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S03.mp3",
+   "voSeconds": 18.29
   },
   {
    "id": "S04",
    "title": "Heirloom",
-   "start": 2460,
-   "frames": 660,
+   "start": 2347,
+   "frames": 573,
    "target": 660,
-   "scale": 1,
+   "scale": 0.8682,
    "vo": "That test was run by Heirloom — an agent that keeps end-of-life software patched, and proves which old versions are actually vulnerable.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S04.mp3",
+   "voSeconds": 8.55
   },
   {
    "id": "S05",
    "title": "The method",
-   "start": 3120,
-   "frames": 1140,
+   "start": 2920,
+   "frames": 1080,
    "target": 1140,
-   "scale": 1,
+   "scale": 0.9474,
    "vo": "Its first rule: never trust a test that hasn't failed. For each advisory, Heirloom writes its own test, proves it fails on Django's vulnerable code and passes on the fix… and only then asks the real question: is the old version affected?",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S05.mp3",
+   "voSeconds": 17
   },
   {
    "id": "S06",
    "title": "The campaign",
-   "start": 4260,
-   "frames": 1680,
+   "start": 4000,
+   "frames": 1498,
    "target": 1680,
-   "scale": 1,
+   "scale": 0.8917,
    "vo": "Then we let it run the whole campaign: nineteen advisories, replayed in the order Django published them. Thirteen candidate backports — each one failing before the fix, and passing after. Where it couldn't prove something, it filed the evidence instead of guessing. And when a new fix amended one it had already backported, it stacked the follow-up on its own pull request.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S06.mp3",
+   "voSeconds": 23.96
   },
   {
    "id": "S07",
    "title": "One question",
-   "start": 5940,
-   "frames": 1020,
+   "start": 5498,
+   "frames": 926,
    "target": 1020,
-   "scale": 1,
+   "scale": 0.9078,
    "vo": "Across the whole campaign, it asked me one question — a real judgement call about changing Django's behaviour. I answered once. It sealed the answer as a precedent, and the next case reused it without asking.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S07.mp3",
+   "voSeconds": 14.44
   },
   {
    "id": "S08",
    "title": "Proof",
-   "start": 6960,
-   "frames": 1380,
+   "start": 6424,
+   "frames": 1103,
    "target": 1380,
-   "scale": 1,
+   "scale": 0.7993,
    "vo": "We tested the method on cases with known answers. A naive pipeline once called a vulnerable version safe. Heirloom: zero times. Every claim in every pull request links to its neat-logs trace, and every backport links the Entire session of the agent that wrote it.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S08.mp3",
+   "voSeconds": 17.39
   },
   {
    "id": "S09",
    "title": "Economics",
-   "start": 8340,
-   "frames": 660,
+   "start": 7527,
+   "frames": 666,
    "target": 660,
-   "scale": 1,
+   "scale": 1.0091,
    "vo": "Each advisory cost about twenty cents of model time. We modelled the business in C-F-O dot A-I: what that's worth to the teams who keep old software alive.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S09.mp3",
+   "voSeconds": 10.1
   },
   {
    "id": "S10",
    "title": "Kept honest",
-   "start": 9000,
-   "frames": 900,
+   "start": 8193,
+   "frames": 624,
    "target": 900,
-   "scale": 1,
+   "scale": 0.6933,
    "vo": "Heirloom. Old software, kept honest. Every verdict is a test run you can open.",
-   "voFile": null,
-   "voSeconds": null
+   "voFile": "audio/vo/S10.mp3",
+   "voSeconds": 6.004059
   }
  ],
  "captions": [
@@ -124,241 +124,241 @@
    "scene": "S01",
    "text": "On the seventh of April, Django\nfour-point-two reached end of life.",
    "from": 24,
-   "to": 362
+   "to": 285
   },
   {
    "scene": "S01",
    "text": "No more security fixes.",
-   "from": 364,
-   "to": 502
+   "from": 287,
+   "to": 393
   },
   {
    "scene": "S02",
    "text": "But Debian thirteen and Ubuntu\ntwenty-four-oh-four still ship it.",
-   "from": 564,
-   "to": 816
+   "from": 455,
+   "to": 722
   },
   {
    "scene": "S02",
    "text": "Since then, Django has published\nnineteen security advisories",
-   "from": 818,
-   "to": 1027
+   "from": 724,
+   "to": 946
   },
   {
    "scene": "S02",
    "text": "— and not one official\npatch for four-point-two.",
-   "from": 1029,
-   "to": 1222
+   "from": 948,
+   "to": 1152
   },
   {
    "scene": "S03",
    "text": "On October first, Ubuntu shipped\na backport for one of them.",
-   "from": 1284,
-   "to": 1534
+   "from": 1214,
+   "to": 1454
   },
   {
    "scene": "S03",
    "text": "Five days later, Django said\nits original fix was incomplete.",
-   "from": 1536,
-   "to": 1789
+   "from": 1456,
+   "to": 1700
   },
   {
    "scene": "S03",
    "text": "We took Ubuntu's source package,",
-   "from": 1791,
-   "to": 1922
+   "from": 1702,
+   "to": 1828
   },
   {
    "scene": "S03",
    "text": "ran a test calibrated on\nDjango's own fix commits…",
-   "from": 1924,
-   "to": 2137
+   "from": 1830,
+   "to": 2035
   },
   {
    "scene": "S03",
    "text": "and the code path Django closed is\nstill reachable in Ubuntu's build.",
-   "from": 2139,
-   "to": 2422
+   "from": 2037,
+   "to": 2309
   },
   {
    "scene": "S04",
    "text": "That test was run by Heirloom",
-   "from": 2484,
-   "to": 2601
+   "from": 2371,
+   "to": 2471
   },
   {
    "scene": "S04",
    "text": "— an agent that keeps\nend-of-life software patched,",
-   "from": 2603,
-   "to": 2827
+   "from": 2473,
+   "to": 2664
   },
   {
    "scene": "S04",
    "text": "and proves which old versions\nare actually vulnerable.",
-   "from": 2829,
-   "to": 3082
+   "from": 2666,
+   "to": 2882
   },
   {
    "scene": "S05",
    "text": "Its first rule: never trust\na test that hasn't failed.",
-   "from": 3144,
-   "to": 3398
+   "from": 2944,
+   "to": 3183
   },
   {
    "scene": "S05",
    "text": "For each advisory,\nHeirloom writes its own test,",
-   "from": 3400,
-   "to": 3612
+   "from": 3185,
+   "to": 3386
   },
   {
    "scene": "S05",
    "text": "proves it fails on Django's\nvulnerable code and passes on the fix…",
-   "from": 3614,
-   "to": 3917
+   "from": 3388,
+   "to": 3674
   },
   {
    "scene": "S05",
    "text": "and only then asks the real question:\nis the old version affected?",
-   "from": 3919,
-   "to": 4222
+   "from": 3676,
+   "to": 3962
   },
   {
    "scene": "S06",
    "text": "Then we let it run the whole\ncampaign: nineteen advisories,",
-   "from": 4284,
-   "to": 4530
+   "from": 4024,
+   "to": 4242
   },
   {
    "scene": "S06",
    "text": "replayed in the order\nDjango published them.",
-   "from": 4532,
-   "to": 4735
+   "from": 4244,
+   "to": 4424
   },
   {
    "scene": "S06",
    "text": "Thirteen candidate backports\n— each one failing before the fix,",
-   "from": 4737,
-   "to": 4999
+   "from": 4426,
+   "to": 4659
   },
   {
    "scene": "S06",
    "text": "and passing after.",
-   "from": 5001,
-   "to": 5102
+   "from": 4661,
+   "to": 4750
   },
   {
    "scene": "S06",
    "text": "Where it couldn't prove something,\nit filed the evidence instead of guessing.",
-   "from": 5104,
-   "to": 5437
+   "from": 4752,
+   "to": 5047
   },
   {
    "scene": "S06",
    "text": "And when a new fix amended\none it had already backported,",
-   "from": 5439,
-   "to": 5677
+   "from": 5049,
+   "to": 5261
   },
   {
    "scene": "S06",
    "text": "it stacked the follow-up\non its own pull request.",
-   "from": 5679,
-   "to": 5902
+   "from": 5263,
+   "to": 5460
   },
   {
    "scene": "S07",
    "text": "Across the whole campaign,\nit asked me one question",
-   "from": 5964,
-   "to": 6173
+   "from": 5522,
+   "to": 5710
   },
   {
    "scene": "S07",
    "text": "— a real judgement call about\nchanging Django's behaviour.",
-   "from": 6175,
-   "to": 6446
+   "from": 5712,
+   "to": 5957
   },
   {
    "scene": "S07",
    "text": "I answered once.",
-   "from": 6448,
-   "to": 6545
+   "from": 5959,
+   "to": 6046
   },
   {
    "scene": "S07",
    "text": "It sealed the answer as a precedent,",
-   "from": 6547,
-   "to": 6711
+   "from": 6048,
+   "to": 6196
   },
   {
    "scene": "S07",
    "text": "and the next case reused\nit without asking.",
-   "from": 6713,
-   "to": 6922
+   "from": 6198,
+   "to": 6386
   },
   {
    "scene": "S08",
    "text": "We tested the method on\ncases with known answers.",
-   "from": 6984,
-   "to": 7237
+   "from": 6448,
+   "to": 6648
   },
   {
    "scene": "S08",
    "text": "A naive pipeline once called\na vulnerable version safe.",
-   "from": 7239,
-   "to": 7519
+   "from": 6650,
+   "to": 6870
   },
   {
    "scene": "S08",
    "text": "Heirloom: zero times.",
-   "from": 7521,
-   "to": 7649
+   "from": 6872,
+   "to": 6973
   },
   {
    "scene": "S08",
    "text": "Every claim in every pull request\nlinks to its neat-logs trace,",
-   "from": 7651,
-   "to": 7949
+   "from": 6975,
+   "to": 7210
   },
   {
    "scene": "S08",
    "text": "and every backport links the Entire\nsession of the agent that wrote it.",
-   "from": 7951,
-   "to": 8302
+   "from": 7212,
+   "to": 7489
   },
   {
    "scene": "S09",
    "text": "Each advisory cost about\ntwenty cents of model time.",
-   "from": 8364,
-   "to": 8570
+   "from": 7551,
+   "to": 7759
   },
   {
    "scene": "S09",
    "text": "We modelled the business in C-F-O dot A-I:",
-   "from": 8572,
-   "to": 8730
+   "from": 7761,
+   "to": 7920
   },
   {
    "scene": "S09",
    "text": "what that's worth to the teams\nwho keep old software alive.",
-   "from": 8732,
-   "to": 8962
+   "from": 7922,
+   "to": 8155
   },
   {
    "scene": "S10",
    "text": "Heirloom.",
-   "from": 9024,
-   "to": 9130
+   "from": 8217,
+   "to": 8276
   },
   {
    "scene": "S10",
    "text": "Old software, kept honest.",
-   "from": 9132,
-   "to": 9346
+   "from": 8278,
+   "to": 8399
   },
   {
    "scene": "S10",
    "text": "Every verdict is a test run you can open.",
-   "from": 9348,
-   "to": 9658
+   "from": 8401,
+   "to": 8575
   }
  ],
  "sfx": [
@@ -368,7 +368,7 @@
    "name": "tick",
    "what": "the single escapement tick",
    "prompt": "a single crisp mechanical watch escapement tick, close macro, dry, no reverb",
-   "frame": 54
+   "frame": 43
   },
   {
    "scene": "S01",
@@ -376,7 +376,7 @@
    "name": "whoosh",
    "what": "date title gives way to 'Django 4.2 · end of life'",
    "prompt": "very soft low airy whoosh, short, cinematic, no high hiss",
-   "frame": 276
+   "frame": 220
   },
   {
    "scene": "S02",
@@ -384,7 +384,7 @@
    "name": "plate",
    "what": "Debian plate slides in",
    "prompt": "heavy brass plate sliding onto felt, short metallic slide, subtle",
-   "frame": 570
+   "frame": 463
   },
   {
    "scene": "S02",
@@ -392,7 +392,7 @@
    "name": "plate",
    "what": "Ubuntu plate slides in",
    "prompt": "heavy brass plate sliding onto felt, short metallic slide, subtle",
-   "frame": 618
+   "frame": 513
   },
   {
    "scene": "S02",
@@ -400,7 +400,7 @@
    "name": "stamp",
    "what": "first NO 4.2 PATCH stamp (the 19 follow in a rapid run, 0.16 s apart)",
    "prompt": "rubber ink stamp hitting paper, single, tight and dry",
-   "frame": 852
+   "frame": 760
   },
   {
    "scene": "S02",
@@ -408,7 +408,7 @@
    "name": "boom",
    "what": "the counter lands: 19 advisories · 0 upstream 4.2 patches",
    "prompt": "deep soft cinematic sub boom, short tail, no distortion",
-   "frame": 1092
+   "frame": 1013
   },
   {
    "scene": "S03",
@@ -416,7 +416,7 @@
    "name": "lock",
    "what": "date plates lock around the 5 days band",
    "prompt": "precise mechanical latch click, brass, small",
-   "frame": 1464
+   "frame": 1387
   },
   {
    "scene": "S03",
@@ -424,7 +424,7 @@
    "name": "tick",
    "what": "terminal run 1 FAIL",
    "prompt": "soft digital tick, muted, minimal UI sound",
-   "frame": 1704
+   "frame": 1618
   },
   {
    "scene": "S03",
@@ -432,7 +432,7 @@
    "name": "stamp",
    "what": "verdict chip AFFECTED",
    "prompt": "rubber ink stamp hitting paper, single, tight and dry",
-   "frame": 2040
+   "frame": 1942
   },
   {
    "scene": "S03",
@@ -440,7 +440,7 @@
    "name": "whoosh",
    "what": "brass iris opens onto the Heirloom reveal",
    "prompt": "slow rotating metallic iris whoosh, smooth, 1 second",
-   "frame": 2424
+   "frame": 2312
   },
   {
    "scene": "S04",
@@ -448,7 +448,7 @@
    "name": "stamp",
    "what": "hallmark seal stamps in",
    "prompt": "heavy wax seal press with a metallic ring, warm, short",
-   "frame": 2604
+   "frame": 2472
   },
   {
    "scene": "S05",
@@ -456,7 +456,7 @@
    "name": "tick",
    "what": "U⁻ lights FAIL ×3",
    "prompt": "three soft relay clicks in quick succession",
-   "frame": 3450
+   "frame": 3233
   },
   {
    "scene": "S05",
@@ -464,7 +464,7 @@
    "name": "tick",
    "what": "U⁺ lights PASS ×3",
    "prompt": "three soft relay clicks in quick succession, slightly higher pitch",
-   "frame": 3576
+   "frame": 3352
   },
   {
    "scene": "S05",
@@ -472,7 +472,7 @@
    "name": "stamp",
    "what": "verdict chip on Django 4.2.30",
    "prompt": "rubber ink stamp hitting paper, single, tight and dry",
-   "frame": 3726
+   "frame": 3494
   },
   {
    "scene": "S06",
@@ -480,7 +480,7 @@
    "name": "whoosh",
    "what": "first lower third",
    "prompt": "very soft low airy whoosh, short",
-   "frame": 4734
+   "frame": 4423
   },
   {
    "scene": "S07",
@@ -488,7 +488,7 @@
    "name": "tick",
    "what": "cut to GitHub issue #6 (the question and the answer)",
    "prompt": "soft digital tick, muted, minimal UI sound",
-   "frame": 6252
+   "frame": 5781
   },
   {
    "scene": "S07",
@@ -496,7 +496,7 @@
    "name": "stamp",
    "what": "PRECEDENT SEALED P001",
    "prompt": "heavy wax seal press with a metallic ring, warm, short",
-   "frame": 6576
+   "frame": 6075
   },
   {
    "scene": "S07",
@@ -504,7 +504,7 @@
    "name": "whoosh",
    "what": "brass iris into the proof act",
    "prompt": "slow rotating metallic iris whoosh, smooth, 1 second",
-   "frame": 6924
+   "frame": 6391
   },
   {
    "scene": "S08",
@@ -512,7 +512,7 @@
    "name": "stamp",
    "what": "the naive pipeline's red 1 lands",
    "prompt": "rubber ink stamp hitting paper, single, tight and dry",
-   "frame": 7170
+   "frame": 6592
   },
   {
    "scene": "S08",
@@ -520,7 +520,7 @@
    "name": "boom",
    "what": "Heirloom's 0 lands (\"Heirloom: zero times\")",
    "prompt": "deep soft cinematic sub boom, short tail",
-   "frame": 7410
+   "frame": 6784
   },
   {
    "scene": "S09",
@@ -528,7 +528,7 @@
    "name": "tick",
    "what": "$0.22 counter lands",
    "prompt": "a single crisp mechanical watch escapement tick",
-   "frame": 8496
+   "frame": 7684
   },
   {
    "scene": "S10",
@@ -536,7 +536,7 @@
    "name": "boom",
    "what": "end card: hallmark",
    "prompt": "deep warm cinematic hit with a soft metallic ring-out, 3 seconds",
-   "frame": 9366
+   "frame": 8447
   }
  ]
 }

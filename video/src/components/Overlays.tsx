@@ -132,11 +132,12 @@ export const EndCard: React.FC<{ at: number; site: string; repo: string; credit:
 };
 
 /** Burned-in captions from timing.json: Geist 34 px, bone on a 70% ink pill, bottom centre. */
-export const Captions: React.FC = () => {
+export const Captions: React.FC<{ cue?: number }> = ({ cue }) => {
   const frame = useCurrentFrame();
-  const c = timing.captions.find((x) => frame >= x.from && frame <= x.to);
+  // `cue` renders one caption at full opacity (for the ffmpeg overlay path)
+  const c = cue !== undefined ? timing.captions[cue] : timing.captions.find((x) => frame >= x.from && frame <= x.to);
   if (!c) return null;
-  const t = Math.min(io(frame, c.from, 8), 1 - io(frame, c.to - 6, 6));
+  const t = cue !== undefined ? 1 : Math.min(io(frame, c.from, 8), 1 - io(frame, c.to - 6, 6));
   return (
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 64, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
       <div

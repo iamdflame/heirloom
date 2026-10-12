@@ -2,111 +2,111 @@
  "CFO01": {
   "file": "captures/CFO01.mp4",
   "seconds": 8,
-  "source": "captures"
+  "source": "https://app.cfo.ai/s/25vRDQClPxqPWB5g"
  },
  "EOL01": {
   "file": "captures/EOL01.mp4",
   "seconds": 4,
-  "source": "captures"
+  "source": "https://endoflife.date/django"
  },
  "GH01": {
   "file": "captures/GH01.mp4",
   "seconds": 10,
-  "source": "captures"
+  "source": "https://github.com/iamdflame/django/pull/13"
  },
  "GH02": {
   "file": "captures/GH02.mp4",
   "seconds": 9,
-  "source": "captures"
+  "source": "https://github.com/iamdflame/heirloom/issues/6"
  },
  "GH03": {
   "file": "captures/GH03.mp4",
   "seconds": 6,
-  "source": "captures"
+  "source": "https://github.com/iamdflame/django/pull/19"
  },
  "GH04": {
   "file": "captures/GH04.mp4",
   "seconds": 5,
-  "source": "captures"
+  "source": "https://github.com/iamdflame/django/pull/21"
  },
  "GH05": {
   "file": "captures/GH05.mp4",
   "seconds": 5,
-  "source": "captures"
+  "source": "https://github.com/iamdflame/django/commit/35e2467152f2f463268ab58a672ed6b9bf318fd8"
  },
  "GH06": {
   "file": "captures/GH06.mp4",
   "seconds": 5,
-  "source": "captures"
- },
- "R3D01": {
-  "file": "captures/R3D01.mp4",
-  "seconds": 0.017,
-  "source": "captures"
+  "source": "https://github.com/iamdflame/django/pulls"
  },
  "SH01": {
   "file": "captures/SH01.mp4",
-  "seconds": 0.7,
-  "source": "captures"
+  "seconds": 8,
+  "source": "vite preview of main ?capture=1"
  },
  "SH02": {
   "file": "captures/SH02.mp4",
   "seconds": 4,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "SH03": {
   "file": "captures/SH03.mp4",
   "seconds": 16,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "SH04": {
   "file": "captures/SH04.mp4",
   "seconds": 9,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "SH05": {
   "file": "captures/SH05.mp4",
   "seconds": 10,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "SH06": {
   "file": "captures/SH06.mp4",
   "seconds": 8,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "SH07": {
   "file": "captures/SH07.mp4",
   "seconds": 9,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "SH08": {
   "file": "captures/SH08.mp4",
   "seconds": 6,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "SH09": {
   "file": "captures/SH09.mp4",
   "seconds": 6,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
+ },
+ "SH10": {
+  "file": "captures/SH10.mp4",
+  "seconds": 6,
+  "source": "vite preview of main ?capture=1"
  },
  "SHM": {
   "file": "captures/SHM.mp4",
   "seconds": 8,
-  "source": "captures"
+  "source": "vite preview of main ?capture=1"
  },
  "BR01-balance-wheel-skeleton": {
   "file": "captures/BR01-balance-wheel-skeleton.mp4",
   "seconds": 7.508,
-  "source": "broll"
+  "source": "https://www.pexels.com/video/close-up-of-watch-mechanism-11965370/ (Quang Viet Nguyen, Pexels License)"
  },
  "BR02-balance-wheel-gilt-train": {
   "file": "captures/BR02-balance-wheel-gilt-train.mp4",
   "seconds": 9.009,
-  "source": "broll"
+  "source": "https://www.pexels.com/video/close-up-of-clock-mechanism-12163205/ (Quang Viet Nguyen, Pexels License)"
  },
  "BR03-movement-through-caseback": {
   "file": "captures/BR03-movement-through-caseback.mp4",
   "seconds": 6.006,
-  "source": "broll"
+  "source": "https://mixkit.co/free-stock-video/mechanism-of-a-watch-through-a-glass-3652/ (Edgar Fernández, Mixkit License)"
  }
 }

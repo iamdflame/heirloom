@@ -1,188 +1,188 @@
 1
-00:00:00,400 --> 00:00:06,033
+00:00:00,400 --> 00:00:04,750
 On the seventh of April, Django
 four-point-two reached end of life.
 
 2
-00:00:06,067 --> 00:00:08,367
+00:00:04,783 --> 00:00:06,550
 No more security fixes.
 
 3
-00:00:09,400 --> 00:00:13,600
+00:00:07,583 --> 00:00:12,033
 But Debian thirteen and Ubuntu
 twenty-four-oh-four still ship it.
 
 4
-00:00:13,633 --> 00:00:17,117
+00:00:12,067 --> 00:00:15,767
 Since then, Django has published
 nineteen security advisories
 
 5
-00:00:17,150 --> 00:00:20,367
+00:00:15,800 --> 00:00:19,200
 — and not one official
 patch for four-point-two.
 
 6
-00:00:21,400 --> 00:00:25,567
+00:00:20,233 --> 00:00:24,233
 On October first, Ubuntu shipped
 a backport for one of them.
 
 7
-00:00:25,600 --> 00:00:29,817
+00:00:24,267 --> 00:00:28,333
 Five days later, Django said
 its original fix was incomplete.
 
 8
-00:00:29,850 --> 00:00:32,033
+00:00:28,367 --> 00:00:30,467
 We took Ubuntu's source package,
 
 9
-00:00:32,067 --> 00:00:35,617
+00:00:30,500 --> 00:00:33,917
 ran a test calibrated on
 Django's own fix commits…
 
 10
-00:00:35,650 --> 00:00:40,367
+00:00:33,950 --> 00:00:38,483
 and the code path Django closed is
 still reachable in Ubuntu's build.
 
 11
-00:00:41,400 --> 00:00:43,350
+00:00:39,517 --> 00:00:41,183
 That test was run by Heirloom
 
 12
-00:00:43,383 --> 00:00:47,117
+00:00:41,217 --> 00:00:44,400
 — an agent that keeps
 end-of-life software patched,
 
 13
-00:00:47,150 --> 00:00:51,367
+00:00:44,433 --> 00:00:48,033
 and proves which old versions
 are actually vulnerable.
 
 14
-00:00:52,400 --> 00:00:56,633
+00:00:49,067 --> 00:00:53,050
 Its first rule: never trust
 a test that hasn't failed.
 
 15
-00:00:56,667 --> 00:01:00,200
+00:00:53,083 --> 00:00:56,433
 For each advisory,
 Heirloom writes its own test,
 
 16
-00:01:00,233 --> 00:01:05,283
+00:00:56,467 --> 00:01:01,233
 proves it fails on Django's
 vulnerable code and passes on the fix…
 
 17
-00:01:05,317 --> 00:01:10,367
+00:01:01,267 --> 00:01:06,033
 and only then asks the real question:
 is the old version affected?
 
 18
-00:01:11,400 --> 00:01:15,500
+00:01:07,067 --> 00:01:10,700
 Then we let it run the whole
 campaign: nineteen advisories,
 
 19
-00:01:15,533 --> 00:01:18,917
+00:01:10,733 --> 00:01:13,733
 replayed in the order
 Django published them.
 
 20
-00:01:18,950 --> 00:01:23,317
+00:01:13,767 --> 00:01:17,650
 Thirteen candidate backports
 — each one failing before the fix,
 
 21
-00:01:23,350 --> 00:01:25,033
+00:01:17,683 --> 00:01:19,167
 and passing after.
 
 22
-00:01:25,067 --> 00:01:30,617
+00:01:19,200 --> 00:01:24,117
 Where it couldn't prove something,
 it filed the evidence instead of guessing.
 
 23
-00:01:30,650 --> 00:01:34,617
+00:01:24,150 --> 00:01:27,683
 And when a new fix amended
 one it had already backported,
 
 24
-00:01:34,650 --> 00:01:38,367
+00:01:27,717 --> 00:01:31,000
 it stacked the follow-up
 on its own pull request.
 
 25
-00:01:39,400 --> 00:01:42,883
+00:01:32,033 --> 00:01:35,167
 Across the whole campaign,
 it asked me one question
 
 26
-00:01:42,917 --> 00:01:47,433
+00:01:35,200 --> 00:01:39,283
 — a real judgement call about
 changing Django's behaviour.
 
 27
-00:01:47,467 --> 00:01:49,083
+00:01:39,317 --> 00:01:40,767
 I answered once.
 
 28
-00:01:49,117 --> 00:01:51,850
+00:01:40,800 --> 00:01:43,267
 It sealed the answer as a precedent,
 
 29
-00:01:51,883 --> 00:01:55,367
+00:01:43,300 --> 00:01:46,433
 and the next case reused
 it without asking.
 
 30
-00:01:56,400 --> 00:02:00,617
+00:01:47,467 --> 00:01:50,800
 We tested the method on
 cases with known answers.
 
 31
-00:02:00,650 --> 00:02:05,317
+00:01:50,833 --> 00:01:54,500
 A naive pipeline once called
 a vulnerable version safe.
 
 32
-00:02:05,350 --> 00:02:07,483
+00:01:54,533 --> 00:01:56,217
 Heirloom: zero times.
 
 33
-00:02:07,517 --> 00:02:12,483
+00:01:56,250 --> 00:02:00,167
 Every claim in every pull request
 links to its neat-logs trace,
 
 34
-00:02:12,517 --> 00:02:18,367
+00:02:00,200 --> 00:02:04,817
 and every backport links the Entire
 session of the agent that wrote it.
 
 35
-00:02:19,400 --> 00:02:22,833
+00:02:05,850 --> 00:02:09,317
 Each advisory cost about
 twenty cents of model time.
 
 36
-00:02:22,867 --> 00:02:25,500
+00:02:09,350 --> 00:02:12,000
 We modelled the business in C-F-O dot A-I:
 
 37
-00:02:25,533 --> 00:02:29,367
+00:02:12,033 --> 00:02:15,917
 what that's worth to the teams
 who keep old software alive.
 
 38
-00:02:30,400 --> 00:02:32,167
+00:02:16,950 --> 00:02:17,933
 Heirloom.
 
 39
-00:02:32,200 --> 00:02:35,767
+00:02:17,967 --> 00:02:19,983
 Old software, kept honest.
 
 40
-00:02:35,800 --> 00:02:40,967
+00:02:20,017 --> 00:02:22,917
 Every verdict is a test run you can open.

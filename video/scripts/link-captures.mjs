@@ -42,6 +42,11 @@ for (const dir of ['captures', 'broll']) {
     found[id] = { file: `captures/${id}.mp4`, seconds: Number(seconds.toFixed(3)), source: m?.source ?? dir };
   }
 }
+// drop stale copies whose source is gone; keep the owner's own files (NEATLOGS*)
+for (const f of readdirSync(dest)) {
+  const id = basename(f, '.mp4');
+  if (f.endsWith('.mp4') && !found[id] && !id.startsWith('NEATLOGS')) { unlinkSync(join(dest, f)); console.log(`  (removed stale ${f})`); }
+}
 // the owner's neatlogs recording, if dropped straight into public/captures
 for (const f of readdirSync(dest)) {
   const id = basename(f, '.mp4');

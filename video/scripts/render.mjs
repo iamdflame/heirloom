@@ -17,6 +17,7 @@ const only = (args.find((a) => a.startsWith('--scenes=')) ?? '').replace('--scen
 const steps = new Set(args.filter((a) => !a.startsWith('--')).length ? args.filter((a) => !a.startsWith('--')) : ['all']);
 const want = (s) => steps.has('all') || steps.has(s);
 const timing = JSON.parse(readFileSync(join(root, 'timing.json'), 'utf8'));
+const FPS = timing.fps;
 for (const d of ['master', 'scenes', 'stills']) mkdirSync(join(OUT, d), { recursive: true });
 
 const t0 = Date.now();
@@ -62,12 +63,26 @@ copyFileSync(join(root, 'captions.srt'), join(OUT, 'master', 'HeirloomDemo.srt')
 
 const master = join(OUT, 'master', 'HeirloomDemo-silent.mp4');
 if (want('captions')) {
-  // captions alone on transparency, then overlaid on the silent master (one x264 pass, no second full render)
-  const layer = join(root, 'out', 'captions-layer.mov');
-  const composition = await selectComposition({ serveUrl, id: 'CaptionsLayer', inputProps: {} });
-  await renderMedia({ composition, serveUrl, codec: 'prores', proresProfile: '4444', imageFormat: 'png', pixelFormat: 'yuva444p10le', concurrency: 8, outputLocation: layer, muted: true });
-  log('captions layer');
-  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', master, '-i', layer, '-filter_complex', '[0:v][1:v]overlay=0:0:format=auto,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-movflags', '+faststart', '-an', join(OUT, 'master', 'HeirloomDemo-captions.mp4')]);
+  // one transparent PNG per caption cue, overlaid on the silent master with 0.13 s alpha fades (one x264 pass)
+  const dir = join(root, 'out', 'caption-cues');
+  mkdirSync(dir, { recursive: true });
+  const composition = await selectComposition({ serveUrl, id: 'CaptionsLayer', inputProps: { cue: 0 } });
+  const cues = timing.captions;
+  for (let i = 0; i < cues.length; i++) {
+    await renderStill({ composition, serveUrl, inputProps: { cue: i }, frame: 0, output: join(dir, `c${i}.png`), imageFormat: 'png' });
+  }
+  log(`caption stills: ${cues.length}`);
+  const inputs = ['-i', master];
+  const chain = [];
+  let prev = '0:v';
+  cues.forEach((c, i) => {
+    const from = c.from / FPS, dur = (c.to - c.from + 1) / FPS;
+    inputs.push('-loop', '1', '-framerate', String(FPS), '-t', dur.toFixed(3), '-i', join(dir, `c${i}.png`));
+    chain.push(`[${i + 1}:v]format=rgba,fade=in:st=0:d=0.13:alpha=1,fade=out:st=${Math.max(0, dur - 0.1).toFixed(3)}:d=0.1:alpha=1,setpts=PTS-STARTPTS+${from.toFixed(4)}/TB[c${i}]`);
+    chain.push(`[${prev}][c${i}]overlay=0:0:eof_action=pass${i === cues.length - 1 ? ',format=yuv420p' : ''}[v${i}]`);
+    prev = `v${i}`;
+  });
+  execFileSync('ffmpeg', ['-v', 'error', '-y', ...inputs, '-filter_complex', chain.join(';'), '-map', `[${prev}]`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-r', String(FPS), '-movflags', '+faststart', '-an', join(OUT, 'master', 'HeirloomDemo-captions.mp4')], { maxBuffer: 1 << 26 });
   log('master/HeirloomDemo-captions.mp4');
 }
 
