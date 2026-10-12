@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 
 from heirloom.models.router import Budget, BudgetExceeded
-from heirloom.pipeline import run
+from heirloom.pipeline import adapt, calibrate, decide, locate, probe, run
 
 
 def test_budget_check_raises_when_the_cap_is_spent() -> None:
@@ -29,13 +29,13 @@ def test_adapt_over_the_per_cve_cap_is_unproven_budget(monkeypatch: pytest.Monke
         return {"decision": "publish-evidence"}
 
     affected = {"verdict": "AFFECTED", "reason": None, "calibrated": True, "detail": "d"}
-    monkeypatch.setattr(run.locate, "run", lambda ctx: {"fix_files": ["django/x.py"]})
-    monkeypatch.setattr(run.calibrate, "run_c0", lambda ctx, loc: {})
-    monkeypatch.setattr(run.probe, "run", lambda *a, **k: {"sha": "p"})
-    monkeypatch.setattr(run.calibrate, "run", lambda *a, **k: {})
-    monkeypatch.setattr(run.calibrate, "run_presence", lambda ctx, cal: dict(affected))
-    monkeypatch.setattr(run.adapt, "run", adapt_run)
-    monkeypatch.setattr(run.decide, "run", decide_run)
+    monkeypatch.setattr(locate, "run", lambda ctx: {"fix_files": ["django/x.py"]})
+    monkeypatch.setattr(calibrate, "run_c0", lambda ctx, loc: {})
+    monkeypatch.setattr(probe, "run", lambda *a, **k: {"sha": "p"})
+    monkeypatch.setattr(calibrate, "run", lambda *a, **k: {})
+    monkeypatch.setattr(calibrate, "run_presence", lambda ctx, cal: dict(affected))
+    monkeypatch.setattr(adapt, "run", adapt_run)
+    monkeypatch.setattr(decide, "run", decide_run)
     ctx = SimpleNamespace(
         cve="CVE-X", line="eval", run_id="r", settings_module="",
         s=SimpleNamespace(porter_models=lambda: ["m"]),
