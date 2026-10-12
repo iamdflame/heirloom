@@ -1,0 +1,49 @@
+You are running HEADLESS: nobody can answer you mid-run, so never wait for input. Make reasonable decisions within the brief, record them in hackathon.md, and keep going.
+
+Before anything else: run `entire session current` and `entire status`. If no active session is shown, or the id is f5117257-5211-42ae-823c-32aa228a28d9, stop and print why.
+
+Read ~/brief/BUILD-BRIEF.md §5 (sponsor integrations), §10.7 and §11. Then work through the steps below. Commit in small steps with real messages, push to main, and keep pytest, ruff and mypy --strict green.
+
+0. Carry-overs from B4 (read the B4 entry in hackathon.md first):
+   (a) (≤20 min) Evidence issue #3 (CVE-2026-53878) still renders "Independent probe by `?` … none of the ? line(s)" and strikes C0 and P1 as "(no artifact)".
+       - Render the real porter model and line count.
+       - Where a gate does not apply on the absent-symbol path, write "n/a (absent-symbol path)" instead of striking it.
+       - Add a unit test, then re-render the issue in place through its marker.
+   (c) NEATLOGS_TRACE_URL in .env now holds the real neatlogs link format (orgId and projectId; span id kept as a parameter). After (a), re-render every open campaign PR and evidence issue in place so their span links use it. This must be idempotent: no duplicate PRs or issues. Check one rendered link.
+   (b) The ask-once flow has ALREADY run. The owner answered #6 (`/heirloom answer adopt-upstream-tests`). `heirloom campaign --id b4-replay --continue` stored precedent P001, and:
+       - CVE-2026-15307 was published as PR #20;
+       - CVE-2026-84429 was published as PR #19, reusing P001 without a new question;
+       - CVE-2026-87890 became evidence issue #10, UNPROVEN (NO_REACH). The independent porter's probe never executed BaseSpatialField.get_prep_value on our 15307-stacked line (tip 96166f2ccc).
+       Do this (≤45 min total):
+       - Verify that #20 carries upstream's test hunks and that #19 cites #6/P001 and the asking trace. Fix the rendering if not.
+       - Record in hackathon.md the "asked once" trace (the #6 question) and the "reused without asking" trace (84429).
+       - For 87890: if the pipeline has no reach-feedback retry, add one as a general rule. On C3 NO_REACH, give the porter ONE retry whose feedback names the uncovered symbols. Names only, never fix lines, so the leakage guard still applies. Unit-test it.
+       - Then run `heirloom campaign --line 4.2 --replay --id b4-replay --continue --requeue CVE-2026-87890`.
+       - If 87890 becomes AFFECTED, it must publish as a follow-up stacked on our 15307 branch (PR #20), or carry a dependency note on both PRs. If it stays UNPROVEN, leave the honest evidence issue.
+       - In every case, the matrix's 87890 probe is hand-written (matrix.json says so). Any text citing the Ubuntu result must say "a hand-written probe calibrated on Django's own fix commits (fails before dd0558d1, passes after)", never "Heirloom's independent probe".
+
+1. (≤45 min) Entire depth:
+   - run `entire review` on main and `entire recap`, and save their outputs under docs/entire/ (use `entire agent-help` for flags; if a command needs interaction, record that and move on);
+   - run `entire checkpoint explain` on the runtime checkpoint of one campaign backport (PR #13 on iamdflame/django, CVE-2026-6907, checkpoint 01M4PD5ZE2YST8SFD7AMRSWCN6) and on this build session's latest checkpoint;
+   - add both to hackathon.md with what each shows.
+2. (≤60 min) The four outreach drafts from §10.7 in docs/outreach/, built ONLY from artifacts that exist in this repo or on GitHub, each linking its evidence:
+   - Ubuntu CVE-2026-87890: use the matrix result for ubuntu-noble and its logs. Use the required wording exactly. State that the probe is hand-written and calibrated on Django's own fix commits. No exploitability claim, no jammy claim.
+   - Debian CVE-2026-53878: use evidence issue #3 and its provenance chain.
+   - neatlogs PII DLQ.
+   - Entire empty-repo session.
+   Do not file anything; the owner files each one.
+3. (≤75 min) Business plan with cfo.ai. Run `claude mcp list`.
+   - If `cfoai` is connected:
+     - Use its tools (list_orgs, inspect_skills → build-model instructions first) to build Heirloom's business model from measured inputs only: cost and minutes per CVE from evals/results*.json and the campaign results; EC2 t2.2xlarge on-demand $/hour; human minutes per escalation, measured as question-open to answer time from the ledger or GitHub timestamps, and labelled as a single observation.
+     - Buyers: distro security teams and extended-support vendors for end-of-life open-source lines.
+     - Model pricing per verified backport and a per-package-line monthly subscription, with base/bear/bull Scenarios, costs, revenue and runway. Label every assumption that is not measured as an assumption.
+     - Publish a shared read-only Page and write docs/business-plan.md summarizing it, with the link and a table of every input and its source.
+   - If `cfoai` is NOT connected: write docs/business-plan.md with the measured inputs table only, state that the cfo.ai model is pending, and say so clearly in your final summary.
+4. Append a dated hackathon.md entry (only things that happened), commit and push.
+
+Finish with:
+- `entire status`;
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- a final summary: files written, the cfo.ai Page link (or why there is none), and anything you need from me.
+
+Budget: the campaign overflow cap is $18 in total, and B4 already spent $4.22 of it. Use provider-reported costs. No more PRs for CVE-2026-87975; never `clean --remote`. Never print .env values.
