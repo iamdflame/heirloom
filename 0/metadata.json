@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PX8WACK1CPJAR928KE3FG2",
+  "session_id": "ea42def1-7e83-4778-8eee-e5ca17bee164",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-12T01:57:42.062092317Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "hackathon.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "314bd203df86",
+  "checkpoint_transcript_start": 635,
+  "transcript_lines_at_start": 635,
+  "compact_transcript_start": 112,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 3765,
+    "cache_read_tokens": 379142,
+    "output_tokens": 665,
+    "api_call_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-12T01:57:41.9867082Z",
+    "agent_lines": 2,
+    "agent_removed": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 4,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
