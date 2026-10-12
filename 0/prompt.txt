@@ -1,0 +1,56 @@
+You are running HEADLESS: nobody can answer you mid-run, so never wait for input. Make reasonable decisions within the brief, record them in hackathon.md, and keep going. Usage is tight: work efficiently, don't re-read large files you don't need, and commit and push after every step.
+
+Before anything else: run `entire session current` and `entire status`. If no active session is shown, or the id is f5117257-5211-42ae-823c-32aa228a28d9, stop and print why.
+
+Context: this continues build session B5 (906e2055), which stopped at its usage limit. It already committed and pushed:
+- 7bbe5e5: evidence issues render n/a and the real porter;
+- ecce3be: precedent P001 and the --continue results;
+- 53346b4: NO_REACH feedback and one reach retry;
+- cbb68b0: `heirloom relink`, which re-rendered the span links;
+- a444c2a: precedent PRs cite their question and asking trace; replay-only rerender.
+
+PRs #19 (84429, reused P001 without asking) and #20 (15307, asked #6) are re-rendered. The owner re-ran CVE-2026-87890 with the reach retry (`heirloom campaign --id b4-replay --continue --requeue CVE-2026-87890`). Its log is the newest ~/runs/campaign-87890-*.log.
+
+Read ~/brief/BUILD-BRIEF.md §5 (sponsor integrations) and §10.7. Then:
+
+0. (≤20 min) Check the 87890 re-run outcome from its log and from work/campaign/b4-replay.json.
+   - If it is AFFECTED and published, verify the PR is a follow-up stacked on our 15307 branch (PR #20), or carries a dependency note on both PRs.
+   - If it is UNPROVEN, check that evidence issue #10 was updated in place.
+   - Record the outcome in hackathon.md, plus the "asked once" trace (#6) and the "reused without asking" trace (84429, PR #19).
+   - Commit and push.
+1. (≤40 min) Entire depth:
+   - run `entire review` on main and `entire recap` (`entire agent-help` for flags; if one needs interaction, record that and move on), and save the outputs under docs/entire/;
+   - run `entire checkpoint explain` on the runtime checkpoint of PR #13 (iamdflame/django, CVE-2026-6907, 01M4PD5ZE2YST8SFD7AMRSWCN6) and on one B5 build checkpoint (e.g. 01M4PR1YH3WPKT57E94SCTPJQ9);
+   - add both to hackathon.md with what each shows.
+   Commit and push.
+2. (≤60 min) The four outreach drafts from §10.7 in docs/outreach/, built ONLY from artifacts that exist in this repo or on GitHub, each linking its evidence:
+   - Ubuntu CVE-2026-87890:
+     - use the matrix's ubuntu-noble cell and its logs;
+     - use the required wording exactly;
+     - state that the probe is hand-written and calibrated on Django's own fix commits (fails before dd0558d1, passes after; matrix.json records its origin);
+     - include the candidate noble patch only if one exists;
+     - no exploitability claim, no jammy claim.
+   - Debian CVE-2026-53878: use evidence issue #3 and its provenance chain.
+   - neatlogs PII DLQ: minimal repro from docs/spikes.md and hackathon.md.
+   - Entire empty-repo session: "failed to get HEAD" before the first commit, from hackathon.md.
+   Do not file anything; the owner files each one. Commit and push.
+3. (≤60 min) Business plan with cfo.ai. Run `claude mcp list`.
+   - If `cfoai` is connected:
+     - Call list_orgs, then inspect_skills (list, then the build-model instructions).
+     - Build Heirloom's model from measured inputs only:
+       - cost and minutes per CVE from evals/results*.json and the campaign results;
+       - EC2 t2.2xlarge on-demand $/hour (state the price source);
+       - human minutes per escalation, from the #6 question-open to answer timestamps, labelled as one observation.
+     - Buyers: distro security teams and extended-support vendors for end-of-life open-source lines.
+     - Pricing: per verified backport, plus a per-package-line monthly subscription. Include base/bear/bull Scenarios, costs, revenue and runway, and label every assumption that is not measured as an assumption.
+     - Publish a shared read-only Page. Write docs/business-plan.md with the link and a table of every input and its source.
+   - If `cfoai` is NOT connected: write docs/business-plan.md with the measured inputs table only, and say clearly that the cfo.ai model is pending.
+   Commit and push.
+4. Append a dated hackathon.md entry (only things that happened), commit and push.
+
+Budget: campaign overflow cap $18 total, provider-reported costs. No more PRs for CVE-2026-87975; never `clean --remote`. Never print .env values.
+
+Finish with:
+- `entire status`;
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- a final summary: files written, the cfo.ai Page link (or why there is none), the 87890 outcome, and anything you need from me.
