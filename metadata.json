@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QT12249WGSMHD8QZ7YHKVK",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "site/web/PROGRESS.md",
+    "site/web/public/favicon-32.png",
+    "site/web/public/favicon.svg",
+    "site/web/public/guilloche/rosette.svg",
+    "site/web/public/hallmark.svg",
+    "site/web/public/robots.txt",
+    "site/web/scripts/frames.mjs",
+    "site/web/scripts/qa.mjs",
+    "site/web/src/components/Campaign.tsx",
+    "site/web/src/components/HeroVisual.tsx",
+    "site/web/src/components/Receipt.tsx",
+    "site/web/src/lib/guilloche.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 52,
+    "cache_creation_tokens": 27156,
+    "cache_read_tokens": 5377003,
+    "output_tokens": 14669,
+    "api_call_count": 26
+  }
+}
