@@ -469,3 +469,20 @@ Live: https://heirloom-proof.vercel.app (Vercel production; GitHub Pages now onl
 - **OG card** re-rendered in the new style (hero poster, headline, 13 / 0 / 1).
 
 QA cycle v2d (`node scripts/qa.mjs v2d`, production preview, 35 screenshots + a scroll video): axe 0 serious/critical; console 0 errors/warnings; keyboard flow PASS; 10 anchors resolve; deep link opens CVE-2026-87890; the live 3D mounts at 1440 (poster only at 390, by design). Lighthouse mobile: performance 94, accessibility 100, best-practices 100, SEO 100 (LCP 2.6 s, a text element, simulated throttling). First-load JS 128.9 kB gz (budget 200); the three.js chunk is lazy at 227.9 kB gz; fonts 66.1 kB. Counts tests 9/9 pass.
+
+## 2026-10-12: demo video and submission
+
+- **Demo video (2:27):** https://youtu.be/L4Zw555RuMs, produced from [video/](video/) in this repo (notes in `video/NOTES.md` and `video/capture/NOTES.md`).
+- **Submission post on X** (quote of the official neatlogs launch post, tagging @neatlogs, @EntireHQ and @arithecfo): https://x.com/i_am_dflame/status/2109675581776314381
+
+How the video was made:
+- **Captures:** frame-perfect, virtual-time captures of the real site and of GitHub (Playwright with a faked clock and a pump that sets every CSS/WAAPI animation's time per frame, frames taken over CDP at 60 fps). A proof run showed that 2 s of real waiting with the clock paused gives an identical frame, and that stepping the clock turns the 3D wheels.
+- **Motion design:** Remotion, 1920×1080 at 60 fps, 10 scenes (8817 frames). Every number on screen comes from the repo's data files.
+- **Voiceover:** the owner's ElevenLabs recording, split into scenes by its word timestamps. Each scene is 0.4 s + the VO piece + 0.6 s (the end card holds 4 s more).
+- **Captions:** word-accurate, aligned to the same word timestamps (41 cues, display text rather than the TTS spelling), burned in from per-cue transparent PNGs.
+- **Audio:** music at about −20 LUFS in the gaps, ducked 8 dB under each VO line with 0.35 s ramps, 3 s fade-out; final master loudness-normalised to −14 LUFS (true peak −1.5 dBTP).
+- **Known gaps, from the notes:** no neatlogs screen recording exists, so the neatlogs slot shows PR #13's claims table with its trace/span links; some GitHub captures were taken at 1536×864 and upscaled in Remotion.
+
+Stock-footage credits (full table in [video/capture/ASSETS.md](video/capture/ASSETS.md)):
+- BR01 "Close-up of watch mechanism" and BR02 "Close-up of clock mechanism", both by Quang Viet Nguyen, [Pexels License](https://www.pexels.com/license/) (https://www.pexels.com/video/close-up-of-watch-mechanism-11965370/, https://www.pexels.com/video/close-up-of-clock-mechanism-12163205/).
+- BR03 "Mechanism of a watch through a glass" by Edgar Fernández, [Mixkit Stock Video Free License](https://mixkit.co/license/#videoFree) (https://mixkit.co/free-stock-video/mechanism-of-a-watch-through-a-glass-3652/). Prepared as a fallback; the final cut uses the site's finale frame instead.
