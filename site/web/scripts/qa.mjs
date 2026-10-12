@@ -135,6 +135,42 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   await ctx.close();
 }
 
+// ---------- v2: hero after load, "Watch it work" pinned campaign at start / middle / end ----------
+{
+  const { p, ctx } = await page();
+  await p.waitForTimeout(2600);
+  await shot(p, 'hero-1440-after-load', false);
+  for (const [name, f] of [['campaign-start', 0.02], ['campaign-middle', 0.5], ['campaign-end', 0.99]]) {
+    await p.evaluate((f) => {
+      const el = document.querySelector('#watch');
+      const top = el.getBoundingClientRect().top + scrollY;
+      window.scrollTo(0, top + f * (el.offsetHeight - innerHeight));
+    }, f);
+    await p.waitForTimeout(1800);
+    await shot(p, name, false);
+  }
+  report.campaign_end_caption = await p.evaluate(() => document.querySelector('#watch .sticky')?.innerText.split('\n').slice(0, 4).join(' | '));
+  await ctx.close();
+}
+
+// ---------- a 10 s scroll recording (Playwright video) from the hero to the finale ----------
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark', recordVideo: { dir: OUT, size: { width: 1440, height: 900 } } });
+  const p = await ctx.newPage();
+  await p.goto(URL_, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(1500);
+  const end = await p.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  for (let t = 0; t <= 100; t++) {
+    await p.mouse.wheel(0, end / 100);
+    await p.waitForTimeout(85);
+  }
+  const video = p.video();
+  await ctx.close();
+  const { renameSync } = await import('node:fs');
+  renameSync(await video.path(), join(OUT, 'scroll-10s.webm'));
+  report.screenshots.push('scroll-10s.webm');
+}
+
 // ---------- replay: start, middle, end ----------
 {
   const { p, ctx } = await page();
@@ -302,6 +338,7 @@ console.log(
       replay_middle: report.replay_middle,
       replay_playing: report.replay_playing,
       hero_3d: [report.hero_3d_1440, report.hero_3d_390],
+      campaign_end_caption: report.campaign_end_caption,
       lighthouse: report.lighthouse,
       lighthouse_failed_audits: report.lighthouse_failed_audits,
       budgets: report.budgets,

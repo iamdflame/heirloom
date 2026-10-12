@@ -254,9 +254,9 @@ function Node({ k, sub, runs, at, children }: { k: string; sub: string; runs: st
             className="h-2.5 w-2.5 rounded-full bg-rule"
             style={
               o === 'FAIL'
-                ? { animation: `blink-fail 420ms ease-in-out ${700 + at * 300 + i * 90}ms 3 both`, background: 'rgb(var(--aff-fg))' }
+                ? { animation: `blink-fail 380ms ease-in-out ${350 + at * 250 + i * 80}ms 3 both`, background: 'rgb(var(--aff-fg))' }
                 : o === 'PASS'
-                  ? { animation: `light-pass 300ms ease-out ${1900 + at * 200 + i * 90}ms both` }
+                  ? { animation: `light-pass 300ms ease-out ${1500 + at * 150 + i * 80}ms both` }
                   : undefined
             }
           />
@@ -327,7 +327,7 @@ function TreatmentLink({ href, icon, children }: { href: string; icon: 'pr' | 'i
   return (
     <a
       href={href}
-      className="press inline-flex min-h-11 items-center gap-2 text-[1.1rem] font-medium underline decoration-ink/40 underline-offset-[0.2em] hover-underline"
+      className="btn btn-ghost press"
     >
       <Icon className="h-[1.1rem] w-[1.1rem] shrink-0" aria-hidden />
       {children}

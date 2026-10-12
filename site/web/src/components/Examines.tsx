@@ -29,7 +29,7 @@ export function Examines() {
           Django published {site.summary.cves} security advisories after 4.2&rsquo;s end of life on {longDate(site.eol)}. Heirloom
           checked each one on the three 4.2 release lines people still run.
         </p>
-        <ul className="mt-12 grid max-w-[60rem] gap-4 md:grid-cols-3" aria-label="The three release lines">
+        <ul className="mt-12 grid max-w-[64rem] gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="The three release lines">
           {site.lines.map((l, i) => (
             <m.li
               key={l.id}
@@ -44,7 +44,7 @@ export function Examines() {
               <p className="label">
                 {l.abbr} · {l.name} {l.note !== 'upstream' && `(${l.note})`}
               </p>
-              <p className="engraved mt-2 break-all font-mono text-[1.15rem] leading-tight md:text-[1.05rem] xl:text-[1.2rem]">{l.version}</p>
+              <p className="engraved mt-2 font-mono text-[1.15rem] leading-tight [overflow-wrap:anywhere] xl:text-[1.2rem]">{l.version}</p>
               <p className="mt-2 text-sm text-muted">{ORIGIN[l.kind] ?? ''}</p>
             </m.li>
           ))}

@@ -82,7 +82,7 @@ export function HeroVisual() {
       <div className="absolute inset-0 bg-gradient-to-r from-paper/90 via-paper/30 to-transparent lg:from-paper/70 lg:via-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-paper to-transparent" />
       <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-paper/80 to-transparent" />
-      <div className="absolute inset-0 bg-paper/55 md:hidden" />
+      <div className="absolute inset-0 bg-paper/40 md:hidden" />
     </div>
   );
 }
