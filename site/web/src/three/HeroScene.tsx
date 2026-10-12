@@ -10,6 +10,8 @@ export interface HeroSceneProps {
   className?: string;
   /** Called once the first frames are on screen (e.g. to cross-fade a poster away). */
   onReady?: () => void;
+  /** Video beauty renders only (three-demo.html?shot=…): a scripted camera path / speed ramp. */
+  shot?: 'orbit' | 'macro' | 'speed';
   /** Shown while the three.js chunk downloads (typically the poster <picture>). */
   fallback?: ReactNode;
 }

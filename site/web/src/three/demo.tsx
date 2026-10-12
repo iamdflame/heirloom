@@ -6,7 +6,9 @@ import HeroScene, { canRender3D } from './HeroScene';
 const q = new URLSearchParams(location.search);
 const still = q.has('still');
 const variant = q.get('variant') === 'finale' ? 'finale' : 'hero';
-const fixed = q.get('progress');
+const shotQ = q.get('shot');
+const shot = shotQ === 'orbit' || shotQ === 'macro' || shotQ === 'speed' ? shotQ : undefined;
+const fixed = q.get('progress') ?? (shot ? '0' : null);
 
 function Demo() {
   const [p, setP] = useState(fixed ? Number(fixed) : 0);
@@ -23,6 +25,7 @@ function Demo() {
           progress={p}
           variant={variant}
           still={still}
+          shot={shot}
           onReady={() => setTimeout(() => document.documentElement.setAttribute('data-ready', '1'), 600)}
         />
       </div>

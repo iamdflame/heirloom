@@ -214,7 +214,9 @@ function Plate() {
   return <mesh geometry={parts.geo} material={[parts.mat, parts.side]} position={[2.3, -0.42, -0.5]} />;
 }
 
-function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progress' | 'variant'>> & { still: boolean }) {
+const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+
+function Rig({ progress, variant, still, shot }: Required<Pick<HeroSceneProps, 'progress' | 'variant'>> & { still: boolean; shot?: HeroSceneProps['shot'] }) {
   const { brass, deep, steel, ruby } = useBrass();
   const angle = useRef(still ? 1.1 : 0);
   const speed = useRef(variant === 'finale' ? BASE_SPEED * 0.6 : BASE_SPEED);
@@ -223,6 +225,7 @@ function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progre
   const { camera, size } = useThree();
   const prog = useRef(progress);
   prog.current = progress;
+  const elapsed = useRef(0);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -248,6 +251,11 @@ function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progre
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
     const p = prog.current;
+    elapsed.current += dt;
+    if (shot) {
+      shotFrame(shot, elapsed.current, camera as THREE.PerspectiveCamera, speed, angle, dt);
+      return;
+    }
     const target = still ? 0 : variant === 'finale' ? BASE_SPEED * 0.6 * Math.max(0, 1 - p) : BASE_SPEED * (1 + 0.8 * p);
     speed.current = THREE.MathUtils.damp(speed.current, target, variant === 'finale' ? 1.2 : 3, dt);
     angle.current += speed.current * dt;
@@ -285,6 +293,45 @@ function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progre
   );
 }
 
+// beauty-render camera paths (three-demo.html?shot=orbit|macro|speed), t in seconds
+const CENTRE = new THREE.Vector3(-0.2, 0, 0.2);
+const MEDALLION = new THREE.Vector3(-1.2, 0.6, 0.4);
+function shotFrame(shot: NonNullable<HeroSceneProps['shot']>, t: number, cam: THREE.PerspectiveCamera, speed: { current: number }, angle: { current: number }, dt: number) {
+  if (cam.filmOffset !== 0) {
+    cam.filmOffset = 0;
+    cam.updateProjectionMatrix();
+  }
+  let look = CENTRE;
+  let dist = 15;
+  let elev = 52;
+  let az = 0;
+  if (shot === 'orbit') {
+    // a slow 70° arc over 10 s
+    const k = easeInOut(Math.min(1, t / 10));
+    az = -35 + 70 * k;
+    elev = 48 + 6 * k;
+    speed.current = BASE_SPEED;
+  } else if (shot === 'macro') {
+    // dolly from the whole movement onto the H medallion over 6 s
+    const k = easeInOut(Math.min(1, t / 6));
+    look = CENTRE.clone().lerp(MEDALLION, k);
+    dist = 15 - 9.4 * k;
+    elev = 52 + 18 * k;
+    az = -10 + 12 * k;
+    speed.current = BASE_SPEED;
+  } else {
+    // the train winds up: base speed → ×7 over 5 s
+    const k = easeInOut(Math.min(1, t / 5));
+    speed.current = BASE_SPEED * (1 + 6 * k);
+    dist = 14.5;
+  }
+  angle.current += speed.current * dt;
+  const e = (elev * Math.PI) / 180;
+  const a = (az * Math.PI) / 180;
+  cam.position.set(look.x + Math.sin(a) * Math.cos(e) * dist, look.y + Math.sin(e) * dist, look.z + Math.cos(a) * Math.cos(e) * dist);
+  cam.lookAt(look);
+}
+
 // fiber v8 still builds a THREE.Clock, which three r18x flags as deprecated on every canvas;
 // drop that one known warning so the console stays clean (everything else passes through).
 if (typeof console !== 'undefined' && !(console.warn as { heirloom?: boolean }).heirloom) {
@@ -297,7 +344,7 @@ if (typeof console !== 'undefined' && !(console.warn as { heirloom?: boolean }).
   console.warn = filtered;
 }
 
-export default function MovementCanvas({ progress = 0, variant = 'hero', still = false, className, onReady }: HeroSceneProps) {
+export default function MovementCanvas({ progress = 0, variant = 'hero', still = false, shot, className, onReady }: HeroSceneProps) {
   const host = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const [ready, setReady] = useState(false);
@@ -338,7 +385,7 @@ export default function MovementCanvas({ progress = 0, variant = 'hero', still =
         <pointLight position={[-4.5, 6, -6]} intensity={200} decay={2} color="#FFD49A" />
         <directionalLight position={[-6, 9, 5]} intensity={1.2} color="#FFE2B8" />
         <directionalLight position={[7, 3, -6]} intensity={0.8} color="#DCE4F0" />
-        <Rig progress={progress} variant={variant} still={still} />
+        <Rig progress={progress} variant={variant} still={still} shot={shot} />
       </Canvas>
     </div>
   );

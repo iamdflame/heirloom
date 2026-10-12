@@ -143,6 +143,8 @@ export function useSpotlight<T extends HTMLElement>(selector: string) {
 export function useSmoothScroll() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // ?capture=1 (video capture): native scroll, so the frame-by-frame capturer owns the position
+    if (new URLSearchParams(window.location.search).has('capture')) return;
     let destroy = () => {};
     let cancelled = false;
     import('lenis').then(({ default: Lenis }) => {

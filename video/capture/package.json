@@ -1,0 +1,12 @@
+{
+  "name": "heirloom-video-capture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "shots": "node shots.mjs",
+    "proof": "node proof.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.64.0"
+  }
+}
