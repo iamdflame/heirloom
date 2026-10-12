@@ -3,8 +3,28 @@
   "checkpoint_id": "01M4QWSFYSM1EJVEFN1EWY4KA1",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
-  "files_touched": null,
+  "checkpoints_count": 2,
+  "files_touched": [
+    "video/NOTES.md",
+    "video/captions.srt",
+    "video/package-lock.json",
+    "video/package.json",
+    "video/scripts/link-captures.mjs",
+    "video/scripts/retime.mjs",
+    "video/scripts/stills.mjs",
+    "video/src/components/Engraving.tsx",
+    "video/src/components/Overlays.tsx",
+    "video/src/components/Plates.tsx",
+    "video/src/components/Terminal.tsx",
+    "video/src/components/Verdict.tsx",
+    "video/src/scenes/S02.tsx",
+    "video/src/scenes/S03.tsx",
+    "video/src/scenes/S04.tsx",
+    "video/src/scenes/S05.tsx",
+    "video/src/scenes/S07.tsx",
+    "video/src/scenes/S09.tsx",
+    "video/timing.json"
+  ],
   "sessions": [
     {
       "metadata": "/0/metadata.json",
@@ -12,13 +32,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 46,
-    "cache_creation_tokens": 40188,
-    "cache_read_tokens": 2453895,
-    "output_tokens": 15551,
-    "api_call_count": 23
+    "input_tokens": 80,
+    "cache_creation_tokens": 99618,
+    "cache_read_tokens": 5338522,
+    "output_tokens": 35362,
+    "api_call_count": 40
   }
 }
