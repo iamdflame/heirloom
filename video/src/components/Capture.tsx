@@ -13,6 +13,8 @@ const resolve = (id: string) => (CAPS[id] ? id : Object.keys(CAPS).find((k) => k
 export const captureFile = (id: string) => (CAPS[resolve(id)] ? CAPS[resolve(id)].file : `captures/${id}.mp4`);
 export const hasCapture = (id: string) => has(captureFile(id));
 const capInfo = (id: string) => CAPS[resolve(id)];
+/** Seconds of a delivered clip (0 when missing). */
+export const captureSeconds = (id: string) => (hasCapture(id) ? capInfo(id)?.seconds ?? 0 : 0);
 
 /** Labelled stand-in until V-CAP's real clip lands in public/captures/. */
 const Placeholder: React.FC<{ id: string; label: string }> = ({ id, label }) => {

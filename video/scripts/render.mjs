@@ -12,7 +12,9 @@ import { join } from 'node:path';
 
 const root = join(import.meta.dirname, '..');
 const OUT = process.env.VIDEO_OUT ?? join(homedir(), 'video-out');
-const steps = new Set(process.argv.slice(2).length ? process.argv.slice(2) : ['all']);
+const args = process.argv.slice(2);
+const only = (args.find((a) => a.startsWith('--scenes=')) ?? '').replace('--scenes=', '').split(',').filter(Boolean);
+const steps = new Set(args.filter((a) => !a.startsWith('--')).length ? args.filter((a) => !a.startsWith('--')) : ['all']);
 const want = (s) => steps.has('all') || steps.has(s);
 const timing = JSON.parse(readFileSync(join(root, 'timing.json'), 'utf8'));
 for (const d of ['master', 'scenes', 'stills']) mkdirSync(join(OUT, d), { recursive: true });
@@ -29,6 +31,7 @@ const silentProps = { captions: false, audio: false };
 if (want('scenes') || want('master')) {
   const composition = await comp(silentProps);
   for (const s of timing.scenes) {
+    if (only.length && !only.includes(s.id)) continue;
     const out = join(OUT, 'scenes', `${s.id}.mp4`);
     let last = 0;
     await renderMedia({
@@ -45,6 +48,10 @@ if (want('scenes') || want('master')) {
     });
     log(`scene ${s.id} done`);
   }
+}
+if (want('master')) {
+  const missing = timing.scenes.filter((s) => !existsSync(join(OUT, 'scenes', `${s.id}.mp4`)));
+  if (missing.length) throw new Error(`missing scenes: ${missing.map((s) => s.id)}`);
   const list = join(OUT, 'scenes', 'concat.txt');
   writeFileSync(list, timing.scenes.map((s) => `file '${join(OUT, 'scenes', `${s.id}.mp4`)}'`).join('\n') + '\n');
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', '-movflags', '+faststart', join(OUT, 'master', 'HeirloomDemo-silent.mp4')]);
@@ -53,27 +60,25 @@ if (want('scenes') || want('master')) {
 
 copyFileSync(join(root, 'captions.srt'), join(OUT, 'master', 'HeirloomDemo.srt'));
 
+const master = join(OUT, 'master', 'HeirloomDemo-silent.mp4');
 if (want('captions')) {
-  const props = { captions: true, audio: false };
-  const composition = await comp(props);
-  let last = 0;
-  await renderMedia({
-    ...common,
-    composition,
-    serveUrl,
-    inputProps: props,
-    outputLocation: join(OUT, 'master', 'HeirloomDemo-captions.mp4'),
-    muted: true,
-    onProgress: ({ progress }) => { if (progress - last > 0.1) { last = progress; log(`captions ${(progress * 100).toFixed(0)}%`); } },
-  });
+  // captions alone on transparency, then overlaid on the silent master (one x264 pass, no second full render)
+  const layer = join(root, 'out', 'captions-layer.mov');
+  const composition = await selectComposition({ serveUrl, id: 'CaptionsLayer', inputProps: {} });
+  await renderMedia({ composition, serveUrl, codec: 'prores', proresProfile: '4444', imageFormat: 'png', pixelFormat: 'yuva444p10le', concurrency: 8, outputLocation: layer, muted: true });
+  log('captions layer');
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', master, '-i', layer, '-filter_complex', '[0:v][1:v]overlay=0:0:format=auto,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-movflags', '+faststart', '-an', join(OUT, 'master', 'HeirloomDemo-captions.mp4')]);
   log('master/HeirloomDemo-captions.mp4');
 }
 
 const vo = existsSync(join(root, 'public/audio/vo')) && readdirSync(join(root, 'public/audio/vo')).some((f) => f.endsWith('.mp3'));
 if (want('mix') && vo) {
+  // audio only (VO, music bed with ducking, SFX), muxed onto the silent master's picture without re-encoding
   const props = { captions: false, audio: true };
   const composition = await comp(props);
-  await renderMedia({ ...common, composition, serveUrl, inputProps: props, outputLocation: join(OUT, 'master', 'HeirloomDemo-mix.mp4'), audioCodec: 'aac', audioBitrate: '320k' });
+  const wav = join(root, 'out', 'mix.wav');
+  await renderMedia({ composition, serveUrl, inputProps: props, codec: 'wav', outputLocation: wav, concurrency: 8 });
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', master, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-shortest', '-movflags', '+faststart', join(OUT, 'master', 'HeirloomDemo-mix.mp4')]);
   log('master/HeirloomDemo-mix.mp4');
 } else if (want('mix')) log('mix skipped: no VO files in public/audio/vo');
 

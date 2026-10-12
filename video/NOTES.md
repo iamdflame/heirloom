@@ -29,3 +29,16 @@ Renders live in `video/out/` and `~/video-out/` and are never committed.
 | S04 0.35 s (iris) | The brass iris is good, but inside it the fallback rosettes were drawing on as half-finished squiggles. | Fallback rings are now fully engraved and fade in. |
 | S05 4.0 s | The kinetic line exits while the caption has already moved on, which is fine. But the caption split "hasn't failed. For each advisory, Heirloom" across a sentence. | New caption chunker: one or two balanced lines of ≤ 42 chars, never across a sentence end, breaks after punctuation preferred (71 fragments → 40 cues). Two-line cues use a rounded pill. |
 | S06 lower thirds | The lower third (y 860) collided with the captions (bottom 64 px). | Lower thirds moved to y 742. |
+
+## Pass 3: real captures in (V-CAP clips replace the placeholders)
+
+| Moment | What I saw | Fix |
+|---|---|---|
+| S01 / S04 b-roll | BR01 (skeleton balance wheel) and BR02 (gilt train) are superb macro plates; the title fought the engraved "SWISS MADE" lettering behind it. | Left gradient darkened to 0.94 → 0.82 at 38%. BR02 sits behind the hallmark and dims to 45% as the wordmark lands (R3D01 takes over if V-CAP delivers it). |
+| S06 SH03 | At 1× the dial only reached Jul 7 before the cut to the PR list. | 1.4× so the campaign reaches Oct before the cut; the second SH03 segment resumes at 10.4 s (or SH10, the evidence locker, when present). |
+| S06 GH04 | The 5 s clip would freeze for 4 s in a 9 s slot. | Played at 0.6×; the "Note: Stacked on #20" paragraph stays in view under the lower third. |
+| S07 GH02 | The answer comment only appears at the end of the 9 s scroll. | 1.6× from 1 s: question, then `/heirloom answer adopt-upstream-tests`, inside the 4.8 s slot. |
+| S08 GH01 / GH05 | PR #13's claims table is in the second half of the clip; the `Entire-Checkpoint:` trailer is tiny at window scale. | GH01 from 5.5 s at 1.3×; GH05 gets a deliberate 32% push toward the trailer (origin 10% 56%). |
+| S09 CFO01 | The first take had a sign-up modal and a Cloudflare box over the right side; the light page also turned grey in the vignette corners. | 1.3× crop anchored top-left (the "Model cost per CVE USD 0.217" row stays in frame, matching the $0.22 count-up); vignette 0.12 on this light page. V-CAP's re-take has no modal. |
+| Pipeline | A clip being rewritten by V-CAP broke a still render (hard links share the inode). | `link-captures.mjs` now takes snapshot copies, probes them, and skips files still being written. |
+| Speed | 5.4 fps with V-CAP's Chrome on the same 8 cores; the rotating 1500 px rosette was re-rasterised every frame. | The ground watermark is a pre-engraved SVG image (`scripts/make-rosette.mjs`); captions render as a transparent layer overlaid by ffmpeg; the mix is an audio-only render muxed onto the master. |

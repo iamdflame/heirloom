@@ -50,7 +50,7 @@
  },
  {
   "scene": "S03",
-  "at": 8.4,
+  "at": 7.4,
   "name": "tick",
   "what": "terminal run 1 FAIL",
   "prompt": "soft digital tick, muted, minimal UI sound"
@@ -71,7 +71,7 @@
  },
  {
   "scene": "S04",
-  "at": 3.0,
+  "at": 2.4,
   "name": "stamp",
   "what": "hallmark seal stamps in",
   "prompt": "heavy wax seal press with a metallic ring, warm, short"
@@ -99,7 +99,7 @@
  },
  {
   "scene": "S06",
-  "at": 6.2,
+  "at": 7.9,
   "name": "whoosh",
   "what": "first lower third",
   "prompt": "very soft low airy whoosh, short"
@@ -148,7 +148,7 @@
  },
  {
   "scene": "S10",
-  "at": 5.6,
+  "at": 6.1,
   "name": "boom",
   "what": "end card: hallmark",
   "prompt": "deep warm cinematic hit with a soft metallic ring-out, 3 seconds"

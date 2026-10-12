@@ -3,7 +3,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { EASE_IN_OUT } from '../theme';
 import { beats, io } from '../lib/anim';
 import { EndCard } from '../components/Overlays';
-import { CaptureClip } from '../components/Capture';
+import { CaptureClip, captureSeconds, hasCapture } from '../components/Capture';
 import { Ground } from '../components/Engraving';
 import { REPO, SITE_URL } from '../data';
 import { SceneProps, Seq } from './common';
@@ -19,7 +19,13 @@ export const S10: React.FC<SceneProps> = ({ scale, frames }) => {
       <Ground ringOpacity={0.06} />
       <Seq from={0} to={card + 30}>
         <AbsoluteFill style={{ opacity: 1 - fade }}>
-          <CaptureClip id="SH11" label="Site finale: the movement slowing to a stop" mode="full" push={0.035} />
+          {captureSeconds('SH11') >= 3 || !hasCapture('BR03') ? (
+            <CaptureClip id="SH11" label="Site finale: the movement slowing to a stop" mode="full" push={0.035} />
+          ) : (
+            <AbsoluteFill style={{ filter: 'saturate(0.7) brightness(0.75)' }}>
+              <CaptureClip id="BR03" label="macro movement" mode="full" rate={0.6} push={0.06} />
+            </AbsoluteFill>
+          )}
         </AbsoluteFill>
       </Seq>
       <Seq from={card} to={frames}>

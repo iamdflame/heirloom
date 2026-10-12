@@ -44,11 +44,6 @@
   "seconds": 0.7,
   "source": "captures"
  },
- "SH02": {
-  "file": "captures/SH02.mp4",
-  "seconds": 1.067,
-  "source": "captures"
- },
  "SH03": {
   "file": "captures/SH03.mp4",
   "seconds": 16,
@@ -64,11 +59,6 @@
   "seconds": 10,
   "source": "captures"
  },
- "SH06": {
-  "file": "captures/SH06.mp4",
-  "seconds": 8,
-  "source": "captures"
- },
  "SH07": {
   "file": "captures/SH07.mp4",
   "seconds": 9,
@@ -76,6 +66,11 @@
  },
  "SH08": {
   "file": "captures/SH08.mp4",
+  "seconds": 6,
+  "source": "captures"
+ },
+ "SH09": {
+  "file": "captures/SH09.mp4",
   "seconds": 6,
   "source": "captures"
  },

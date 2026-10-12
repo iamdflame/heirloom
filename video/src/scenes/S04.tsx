@@ -3,7 +3,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { C, EASE_IN_OUT } from '../theme';
 import { beats, io } from '../lib/anim';
 import { KineticTitle } from '../components/Kinetic';
-import { CaptureClip, hasCapture } from '../components/Capture';
+import { CaptureClip, captureSeconds, hasCapture } from '../components/Capture';
 import { Ground, GuillocheRing, Hallmark } from '../components/Engraving';
 import { SITE_URL } from '../data';
 import { SceneProps, Seq } from './common';
@@ -11,7 +11,9 @@ import { SceneProps, Seq } from './common';
 export const S04: React.FC<SceneProps> = ({ scale, frames }) => {
   const frame = useCurrentFrame();
   const b = beats(scale);
-  const cut = b(7.4);
+  // cut to the site hero only if V-CAP's clip is long enough to carry the rest of the scene
+  const heroOk = captureSeconds('SH01') >= 3;
+  const cut = heroOk ? b(7.4) : frames;
   const render3d = hasCapture('R3D01');
   const settle = io(frame, b(2.2), 60, EASE_IN_OUT);
   return (
@@ -43,10 +45,12 @@ export const S04: React.FC<SceneProps> = ({ scale, frames }) => {
           </div>
         </AbsoluteFill>
       </Seq>
+      {heroOk && (
       <Seq from={cut} to={frames}>
         <Ground ringOpacity={0.04} />
         <CaptureClip id="SH01" label="Site hero, the 3D movement turning" url={SITE_URL} />
       </Seq>
+      )}
     </AbsoluteFill>
   );
 };
