@@ -473,7 +473,7 @@ QA cycle v2d (`node scripts/qa.mjs v2d`, production preview, 35 screenshots + a 
 ## 2026-10-12: demo video and submission
 
 - **Demo video (2:27):** https://youtu.be/L4Zw555RuMs, produced from [video/](video/) in this repo (notes in `video/NOTES.md` and `video/capture/NOTES.md`).
-- **Submission post on X** (quote of the official neatlogs launch post, tagging @neatlogs, @EntireHQ and @arithecfo): https://x.com/i_am_dflame/status/2109675581776314381
+- **Submission post on X** (quote of the official neatlogs launch post, tagging @neatlogs, @EntireHQ and @arithecfo): https://x.com/i_am_dflame/status/2109683012480749807
 
 How the video was made:
 - **Captures:** frame-perfect, virtual-time captures of the real site and of GitHub (Playwright with a faked clock and a pump that sets every CSS/WAAPI animation's time per frame, frames taken over CDP at 60 fps). A proof run showed that 2 s of real waiting with the clock paused gives an identical frame, and that stepping the clock turns the 3D wheels.

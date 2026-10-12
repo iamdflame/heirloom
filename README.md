@@ -4,7 +4,7 @@
 
 **Demo video (2:27):** https://youtu.be/L4Zw555RuMs
 
-**Submission post:** https://x.com/i_am_dflame/status/2109675581776314381
+**Submission post:** https://x.com/i_am_dflame/status/2109683012480749807
 
 <!-- top:start -->
 **Heirloom is an agent that keeps end-of-life software patched.** For each new upstream security fix it writes an independent probe, calibrates it on upstream's own before/after commits, proves on the old line whether the bug is there, and then publishes either a verified candidate backport or the evidence of why it could not decide.

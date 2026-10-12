@@ -75,7 +75,7 @@ The README's numbers come from `evals/render_readme.py`.
 ## 6. Build-in-public links tagged #neatHack
 
 - **Submission post on X** (quote of the official neatlogs launch post, tagging @neatlogs, @EntireHQ and
-  @arithecfo): <https://x.com/i_am_dflame/status/2109675581776314381>
+  @arithecfo): <https://x.com/i_am_dflame/status/2109683012480749807>
 - **Demo video (YouTube, 2:27):** <https://youtu.be/L4Zw555RuMs>, produced from [video/](video/) in this repo.
 - Earlier #neatHack posts can be added here by the owner.
 
