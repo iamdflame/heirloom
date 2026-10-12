@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bhxhi3szb</task-id>
+<tool-use-id>toolu_018CUGtzNQSMaVyi2qAenCQf</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/03dac0ae-e9f9-45d5-87c4-eee3621d7e70/tasks/bhxhi3szb.output</output-file>
+<status>completed</status>
+<summary>Background command "timeout 500 bash -c 'until grep -q "\"type\":\"result\"" $(cat ~/runs/vmo.current) || ! ps -p 379752 &gt;/dev/null; do sleep 15; done'; grep -c '"type":"result"' $(cat ~/runs/vmo.current); ps -p 379752 -o etime=; date" completed (exit code 0)</summary>
+</task-notification>
