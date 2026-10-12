@@ -1,0 +1,69 @@
+You are running HEADLESS. Never wait for input and never end your turn to wait for a notification: poll in loops instead. Hard time box: 80 minutes. Work fast but to a very high visual standard.
+
+First run `entire session current` and stop if no session is shown or the id is f5117257-5211-42ae-823c-32aa228a28d9.
+
+You are V-CAP, the capture session for the Heirloom demo video. Read ~/brief/VIDEO-BRIEF.md fully. Another session (V-MO) builds the Remotion motion design in `video/` at the same time.
+- **You own `video/capture/`** (scripts, its own package.json, ASSETS.md, NOTES.md) and the output folders `~/video-out/captures/` and `~/video-out/broll/`. Don't touch other `video/` files.
+- If the site needs a capture mode, you may make a minimal, query-param-guarded change in `site/web`. Then run `npm run build` (tests must pass), commit, and redeploy to Vercel production the same way as before (`cd site/web && vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod`), and check https://heirloom-proof.vercel.app returns 200.
+- Before every push: `git pull --rebase`.
+
+Milestones (commit and push your scripts after each; outputs stay out of git):
+1. (≤10 min) Install ffmpeg (`sudo apt-get install -y ffmpeg`). Set up `video/capture` with Playwright and Chromium (reuse the browsers already installed for site/web if possible). Build `capture.mjs`: a reusable frame-perfect capturer.
+   - Uses Playwright's fake clock (`page.clock.install()` / `runFor(1000/60)`), eased scroll keyframes, an injected custom cursor (a bone dot with a brass ring) with eased moves and clicks, and JPEG frames → ffmpeg 60 fps CRF 14 yuv420p.
+   - **Prove that virtual time drives Motion and three.js:** two frames 1 s apart must differ in the 3D hero. If not, switch to CDP virtual time.
+   - Run the shots in parallel (up to 6 workers) to use the 8 cores.
+2. (≤35 min) Site shots SH01–SH11 + SHM from the brief, against a local `vite preview` of main's current build (port 4400) or production. Encode each, then **Read 2–3 frames of every shot** (extract with ffmpeg). Fix jank, blank frames, half-loaded fonts or images, and wrong scroll framing.
+3. (≤15 min) GitHub and web shots GH01–GH06, CFO01, EOL01:
+   - dark colour scheme, 125% zoom, smooth eased scrolls, cookie banners hidden;
+   - wait for fonts and network idle before frame 1.
+   If cfo.ai doesn't render headless, record that and skip it.
+4. (≤10 min) 3D beauty renders R3D01–R3D03 at 1920×1080, 60 fps, via virtual time (add a guarded `?shot=` camera path to the three demo if needed).
+5. (≤10 min) Stock b-roll: 2–4 clips from Pexels or Mixkit only (macro mechanical watch movement or escapement ticking, brass gears), each ≥1080p.
+   - Download the files directly (find the mp4 URLs on the clip pages).
+   - Trim the best 6–10 s and colour-grade towards ink/brass (ffmpeg eq/curves, slight desaturation, crush blacks a little) → `~/video-out/broll/`.
+   - Record the source page URL, author and licence for each in `video/capture/ASSETS.md`.
+6. Write `~/video-out/captures/manifest.json` (id, file, seconds, fps, source, notes) and `video/capture/NOTES.md` (what you checked and fixed). Commit and push the scripts.
+
+Rules:
+- Real UI only; never fake the neatlogs UI.
+- Never print .env values.
+- Delete intermediate frame folders after encoding (disk has ~15 GB free).
+
+Finish with the manifest contents, the total footage seconds, and any shot you couldn't get, with the reason.
+
+---
+
+<task-notification>
+<task-id>bgidgro9c</task-id>
+<tool-use-id>toolu_0143wcabZZ2bQmtb2gadUeDM</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/964adcc8-778e-4af5-ac5a-b1530613afac/tasks/bgidgro9c.output</output-file>
+<status>failed</status>
+<summary>Background command "cd ~/heirloom/video/capture &amp;&amp; python3 - &lt;&lt;'EOF'
+p='proof.mjs'
+s=open(p).read()
+s=s.replace("""const shot = async (n) =&gt; {
+  const p = `${dir}/${n}.png`;
+  writeFileSync(p, await page.screenshot({ clip }));
+  return p;
+};
+const psnr = (a, b) =&gt; {
+  const out = execFileSync('ffmpeg', ['-hide_banner', '-i', a, '-i', b, '-lavfi', 'psnr', '-f', 'null', '-'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).toString();
+  return out;
+};""","""const cdp = await page.context().newCDPSession(page);
+// raw CDP capture: page.screenshot waits on a rAF that a paused clock never delivers
+const shot = async (n) =&gt; {
+  const p = `${dir}/${n}.png`;
+  const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', clip: { ...clip, scale: 1 } });
+  writeFileSync(p, Buffer.from(data, 'base64'));
+  return p;
+};""")
+s=s.replace("""const run = (a, b) =&gt; {
+  try {
+    execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'info', '-i', a, '-i', b, '-lavfi', 'psnr', '-f', 'null', '-'], { stdio: ['ignore', 'ignore', 'pipe'] });
+  } catch {}
+  const r =""","""const run = (a, b) =&gt; {
+  const r =""")
+open(p,'w').write(s)
+EOF
+timeout 120 node proof.mjs" failed with exit code 124</summary>
+</task-notification>

@@ -1,0 +1,89 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QWCVPD04TKHGN7YW91MCPD",
+  "session_id": "964adcc8-778e-4af5-ac5a-b1530613afac",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-12T11:01:38.521834991Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "video/capture/capture.mjs",
+    "video/capture/proof.mjs"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "510124f7c2bd",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 48,
+    "cache_creation_tokens": 69088,
+    "cache_read_tokens": 1211799,
+    "output_tokens": 21829,
+    "api_call_count": 24
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-12T11:01:38.485182227Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 4,
+    "total_committed": 4,
+    "total_lines_changed": 8,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 6845,
+      "user_lines_removed": 4,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "site/web/src/components/fx.tsx": 2,
+        "site/web/src/three/HeroScene.tsx": 2,
+        "site/web/src/three/MovementCanvas.tsx": 50,
+        "site/web/src/three/demo.tsx": 4,
+        "video/.gitignore": 8,
+        "video/captions.srt": 223,
+        "video/capture/.gitignore": 2,
+        "video/capture/capture.mjs": 228,
+        "video/capture/package-lock.json": 40,
+        "video/capture/package.json": 12,
+        "video/capture/proof.mjs": 43,
+        "video/package-lock.json": 3877,
+        "video/package.json": 24,
+        "video/public/fonts/LICENSE-geist.txt": 93,
+        "video/public/fonts/LICENSE-instrument-serif.txt": 93,
+        "video/public/hallmark.svg": 1,
+        "video/remotion.config.ts": 11,
+        "video/scripts/extract-data.mjs": 39,
+        "video/scripts/retime.mjs": 95,
+        "video/scripts/scenes.mjs": 17,
+        "video/sfx-cues.json": 22,
+        "video/src/components/Capture.tsx": 149,
+        "video/src/components/Engraving.tsx": 129,
+        "video/src/components/Kinetic.tsx": 145,
+        "video/src/components/Overlays.tsx": 153,
+        "video/src/components/Plates.tsx": 193,
+        "video/src/components/Terminal.tsx": 80,
+        "video/src/components/Verdict.tsx": 197,
+        "video/src/data.ts": 72,
+        "video/src/data/captures.json": 1,
+        "video/src/data/terminal.json": 56,
+        "video/src/fonts.ts": 26,
+        "video/src/index.ts": 4,
+        "video/src/lib/anim.ts": 21,
+        "video/src/lib/guilloche.ts": 56,
+        "video/src/theme.ts": 40,
+        "video/timing.json": 622,
+        "video/tsconfig.json": 15
+      },
+      "user_removed_per_file": {
+        "site/web/src/three/MovementCanvas.tsx": 3,
+        "site/web/src/three/demo.tsx": 1
+      }
+    }
+  ]
+}
