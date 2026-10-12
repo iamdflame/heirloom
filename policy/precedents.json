@@ -1,0 +1,11 @@
+[
+  {
+    "id": "P001",
+    "kind": "UPSTREAM_TEST_CHANGE",
+    "scope": "django/4.2",
+    "answer": "adopt-upstream-tests",
+    "issue_url": "https://github.com/iamdflame/heirloom/issues/6",
+    "trace_id": "2976b1584b28aa7100fdee51b7eeed07",
+    "created_at": 1791763219.0168548
+  }
+]

@@ -2,7 +2,7 @@
   "campaign": "b4-replay",
   "line": "4.2",
   "created_at": "2026-10-11T21:07:49Z",
-  "generated_at": "2026-10-11T21:53:17Z",
+  "generated_at": "2026-10-12T00:03:41Z",
   "story_order": [
     "CVE-2026-15307",
     "CVE-2026-87890",
@@ -12,22 +12,19 @@
   "overflow": {
     "start_usd": 3.863553,
     "cap_usd": 18.0,
-    "spent_usd": 4.2225,
+    "spent_usd": 4.3444,
     "source": "max(our OpenRouter usage.cost / claude -p total_cost_usd records, the OpenRouter key's billed usage)"
   },
   "summary": {
     "cves": 19,
     "verdicts": {
       "AFFECTED": 12,
-      "PENDING": 1,
-      "UNPROVEN": 5,
+      "UNPROVEN": 6,
       "NOT_AFFECTED_PROVEN": 1
     },
     "statuses": {
-      "waiting_human": 2,
-      "blocked": 1,
-      "evidence": 6,
-      "published": 9,
+      "published": 11,
+      "evidence": 7,
       "skipped": 1
     },
     "prs": [
@@ -40,9 +37,12 @@
       "https://github.com/iamdflame/django/pull/16",
       "https://github.com/iamdflame/django/pull/17",
       "https://github.com/iamdflame/django/pull/18",
+      "https://github.com/iamdflame/django/pull/19",
+      "https://github.com/iamdflame/django/pull/20",
       "https://github.com/iamdflame/django/pull/9"
     ],
     "evidence_issues": [
+      "https://github.com/iamdflame/heirloom/issues/10",
       "https://github.com/iamdflame/heirloom/issues/3",
       "https://github.com/iamdflame/heirloom/issues/4",
       "https://github.com/iamdflame/heirloom/issues/5",
@@ -50,39 +50,35 @@
       "https://github.com/iamdflame/heirloom/issues/8",
       "https://github.com/iamdflame/heirloom/issues/9"
     ],
-    "questions": [
-      "https://github.com/iamdflame/heirloom/issues/6"
-    ],
-    "escalated": 7,
-    "escalation_rate": 0.368,
-    "blocked_on_question": [
-      "CVE-2026-87890"
-    ],
-    "ledger_cost_usd": 3.4533,
-    "minutes_total": 85.3
+    "questions": [],
+    "escalated": 6,
+    "escalation_rate": 0.316,
+    "blocked_on_question": [],
+    "ledger_cost_usd": 3.5752,
+    "minutes_total": 88.5
   },
   "per_cve": {
     "CVE-2026-15307": {
-      "status": "waiting_human",
+      "status": "published",
       "verdict": "AFFECTED",
       "reason": "NONE",
-      "link": "https://github.com/iamdflame/heirloom/issues/6",
+      "link": "https://github.com/iamdflame/django/pull/20",
       "depends_on": [],
-      "escalated": true,
+      "escalated": false,
       "ledger_cost_usd": 0.5017,
-      "minutes": 12.57
+      "minutes": 13.63
     },
     "CVE-2026-87890": {
-      "status": "blocked",
-      "verdict": null,
-      "reason": "DEPENDENCY",
-      "link": "",
+      "status": "evidence",
+      "verdict": "UNPROVEN",
+      "reason": "NO_REACH",
+      "link": "https://github.com/iamdflame/heirloom/issues/10",
       "depends_on": [
         "CVE-2026-15307"
       ],
-      "escalated": false,
-      "ledger_cost_usd": 0.0,
-      "minutes": 0.0
+      "escalated": true,
+      "ledger_cost_usd": 0.1219,
+      "minutes": 1.79
     },
     "CVE-2026-15830": {
       "status": "evidence",
@@ -235,14 +231,14 @@
       "minutes": 1.88
     },
     "CVE-2026-84429": {
-      "status": "waiting_human",
+      "status": "published",
       "verdict": "AFFECTED",
       "reason": "NONE",
-      "link": "https://github.com/iamdflame/heirloom/issues/6",
+      "link": "https://github.com/iamdflame/django/pull/19",
       "depends_on": [],
-      "escalated": true,
+      "escalated": false,
       "ledger_cost_usd": 0.3469,
-      "minutes": 3.04
+      "minutes": 3.35
     },
     "CVE-2026-87975": {
       "status": "skipped",
@@ -271,20 +267,20 @@
       ],
       "depends_on": [],
       "blamed_into": [],
-      "status": "waiting_human",
-      "worker": "w1",
-      "pid": 256213,
-      "started": 1791755423.4056292,
+      "status": "published",
+      "worker": "w0",
+      "pid": 273359,
+      "started": 1791763221.6900916,
       "verdict": "AFFECTED",
       "reason": "NONE",
-      "decision": "waiting_human",
-      "escalated": true,
-      "run_id": "20261011T215023Z-e061",
-      "pr": "",
+      "decision": "publish-fix",
+      "escalated": false,
+      "run_id": "20261012T000021Z-211f",
+      "pr": "https://github.com/iamdflame/django/pull/20",
       "issue": "",
-      "question": "https://github.com/iamdflame/heirloom/issues/6",
-      "checkpoint": "",
-      "message": "question: https://github.com/iamdflame/heirloom/issues/6",
+      "question": "",
+      "checkpoint": "01M4PPKTK5F2AR5Y0S5XWQNZ2X",
+      "message": "",
       "note": "",
       "spec_tip": "3396992e837d5146270ea8112bb622c83fa4a919",
       "base_branch": "stable/4.2.x-heirloom",
@@ -296,8 +292,8 @@
       },
       "cost_usd": 0.0,
       "overflow_usd": 0.0,
-      "minutes": 0.06,
-      "finished": 1791755426.783686
+      "minutes": 1.07,
+      "finished": 1791763286.0635414
     },
     {
       "id": "CVE-2026-87890@3b7ae042ce",
@@ -318,9 +314,33 @@
       "blamed_into": [
         "115ffd0463a765ab1cc93de18e94b5459b8a300e"
       ],
-      "status": "blocked",
-      "reason": "DEPENDENCY",
-      "note": "waits for CVE-2026-15307 (https://github.com/iamdflame/heirloom/issues/6)"
+      "status": "evidence",
+      "reason": "NO_REACH",
+      "note": "Stacked on https://github.com/iamdflame/django/pull/20 (CVE-2026-15307): CVE-2026-87890's upstream fix changes lines that CVE-2026-15307's fix introduced (blame: `115ffd0463`), so it is ported on top of Heirloom's CVE-2026-15307 branch (`96166f2ccc`). Merge that PR first.",
+      "worker": "w0",
+      "pid": 273359,
+      "started": 1791763286.1072967,
+      "verdict": "UNPROVEN",
+      "decision": "publish-evidence",
+      "escalated": true,
+      "run_id": "20261012T000126Z-90e8",
+      "pr": "",
+      "issue": "https://github.com/iamdflame/heirloom/issues/10",
+      "question": "",
+      "checkpoint": "",
+      "message": "",
+      "spec_tip": "96166f2ccc3692d09e5f88ade7f44b1f32ab3900",
+      "base_branch": "heirloom/cve-2026-15307-4.2",
+      "supersedes": {
+        "kind": "supersedes",
+        "of": "CVE-2026-15307",
+        "pr": "https://github.com/iamdflame/django/pull/20"
+      },
+      "reused_probe": null,
+      "cost_usd": 0.121922,
+      "overflow_usd": 0.070409,
+      "minutes": 1.79,
+      "finished": 1791763393.8556147
     },
     {
       "id": "CVE-2026-15830@7d75c0b928",
@@ -1002,20 +1022,20 @@
       ],
       "depends_on": [],
       "blamed_into": [],
-      "status": "waiting_human",
-      "worker": "w0",
-      "pid": 256212,
-      "started": 1791755431.7262583,
+      "status": "published",
+      "worker": "w1",
+      "pid": 273360,
+      "started": 1791763221.8425741,
       "verdict": "AFFECTED",
       "reason": "NONE",
-      "decision": "waiting_human",
-      "escalated": true,
-      "run_id": "20261011T215031Z-c96b",
-      "pr": "",
+      "decision": "publish-fix",
+      "escalated": false,
+      "run_id": "20261012T000021Z-ae48",
+      "pr": "https://github.com/iamdflame/django/pull/19",
       "issue": "",
-      "question": "https://github.com/iamdflame/heirloom/issues/6",
-      "checkpoint": "",
-      "message": "question: https://github.com/iamdflame/heirloom/issues/6",
+      "question": "",
+      "checkpoint": "01M4PPJEJCWZHP8VJT08C45FKH",
+      "message": "",
       "note": "",
       "spec_tip": "3396992e837d5146270ea8112bb622c83fa4a919",
       "base_branch": "stable/4.2.x-heirloom",
@@ -1027,8 +1047,8 @@
       },
       "cost_usd": 0.0,
       "overflow_usd": 0.0,
-      "minutes": 0.01,
-      "finished": 1791755432.1284635
+      "minutes": 0.31,
+      "finished": 1791763240.739548
     },
     {
       "id": "CVE-2026-87975@3b7ae042ce",
