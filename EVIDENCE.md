@@ -33,7 +33,7 @@ The README's numbers come from `evals/render_readme.py`.
 
 ## 3. Entire checkpoints / entire-graph output
 
-- **Build sessions:** 43 of the commits on `main` carry an `Entire-Checkpoint:` trailer, and the
+- **Build sessions:** 45+ of the commits on `main` carry an `Entire-Checkpoint:` trailer, and the
   checkpoint refs are pushed to `refs/entire/checkpoints/*` on this repo. To list them:
   `git log --format='%h %(trailers:key=Entire-Checkpoint,valueonly)'`.
 - **Runtime sessions:** each backport commit on the fork carries the checkpoint of the headless
