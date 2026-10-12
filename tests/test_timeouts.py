@@ -33,3 +33,28 @@ def test_entire_timeout_is_an_entire_error(monkeypatch: pytest.MonkeyPatch, tmp_
     monkeypatch.setattr(subprocess, "run", _expire)
     with pytest.raises(entire.EntireError, match="timed out"):
         entire._entire(tmp_path, "status")
+
+
+def test_report_renders_from_the_ledger_alone(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from typer.testing import CliRunner
+
+    from heirloom import cli, config
+    from heirloom.ledger import Ledger
+
+    db = tmp_path / "ledger.sqlite"  # Settings.ledger_path is work / "ledger.sqlite"
+    led = Ledger(db)
+    led.db.execute(
+        "INSERT INTO stages (cve, line, stage, attempt, status, effect, run_id, pid, "
+        "input_hash, started_at, output_json) "
+        "VALUES ('CVE-A', '4.2', 'presence', 1, 'done', 0, 'r', 1, 'h', 0, ?)",
+        ('{"verdict": "UNPROVEN", "reason": "NO_REACH", "detail": "d", "gates": {}}',),
+    )
+    led.close()
+    real = config.load()
+    monkeypatch.setattr(config, "load", lambda: type(real)(**{**real.__dict__, "work": tmp_path}))
+    monkeypatch.setattr(subprocess, "run", _expire)  # any network/git call would fail the test
+    out = CliRunner().invoke(cli.app, ["report", "--cve", "CVE-A", "--line", "4.2"])
+    assert out.exit_code == 0, out.output
+    assert "verdict     UNPROVEN (NO_REACH)" in out.output

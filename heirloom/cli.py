@@ -263,6 +263,37 @@ def status(cve_id: str = typer.Argument(..., metavar="CVE"), line: str = "4.2") 
 
 
 @app.command()
+def report(cve_id: str = typer.Option(..., "--cve", metavar="CVE"), line: str = "4.2") -> None:
+    """Render a CVE × line's outcome from the local ledger alone (no network, no model)."""
+    ledger = Ledger(config.load().ledger_path)
+    rows = ledger.stages(cve_id, line)
+    last = {r.key.stage: r.output or {} for r in rows if r.status == "done"}
+    if not last:
+        raise typer.BadParameter(f"no finished stage for {cve_id} on line {line!r} in the ledger")
+    pres, ver, dec = last.get("presence", {}), last.get("verify", {}), last.get("decide", {})
+    typer.echo(f"{cve_id} on {line} (from {config.load().ledger_path})")
+    typer.echo(f"  verdict     {pres.get('verdict', '?')} ({pres.get('reason') or 'NONE'})")
+    typer.echo(f"  detail      {pres.get('detail', '')}")
+    for gate, g in sorted((pres.get("gates") or {}).items()):
+        state = "holds" if (g or {}).get("ok") else f"fails ({(g or {}).get('reason')})"
+        typer.echo(f"  gate {gate:6} {state} {(g or {}).get('detail') or ''}".rstrip())
+    if ver:
+        before, after = ver.get("probe_before"), ver.get("probe_after")
+        typer.echo(f"  verify      ok={ver.get('ok')} probe {before} -> {after}")
+    typer.echo(f"  decision    {dec.get('decision', '?')}")
+    pr_url = last.get("publish.pr", {}).get("url")
+    ev_url = last.get("publish.evidence", {}).get("url")
+    if pr_url:
+        typer.echo(f"  pr          {pr_url}")
+    if ev_url:
+        typer.echo(
+            f"  evidence    {ev_url}" + (" (earlier run; superseded by the PR)" if pr_url else "")
+        )
+    typer.echo(f"  cost        ${ledger.cost_total(cve_id, line):.4f} (ledger)")
+    typer.echo(f"  stages      {len(rows)} rows, {len(last)} distinct stages done")
+
+
+@app.command()
 def campaign(
     line: str = "4.2",
     replay: bool = typer.Option(False, help="Replay the security archive commit by commit."),
