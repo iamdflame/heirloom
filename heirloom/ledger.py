@@ -248,6 +248,15 @@ class Ledger:
         ).fetchall()
         return [self._row(r) for r in rows]
 
+    def has_done(self, cve: str, line: str, stage: str, inputs: Any) -> bool:
+        """Whether begin() would return a cached result for these inputs (no claim made)."""
+        row = self.db.execute(
+            "SELECT 1 FROM stages WHERE cve=? AND line=? AND stage=? AND status='done' "
+            "AND input_hash=? LIMIT 1",
+            (cve, line, stage, canonical_hash(inputs)),
+        ).fetchone()
+        return row is not None
+
     def begin(
         self, cve: str, line: str, stage: str, inputs: Any, *, run_id: str, effect: bool = False
     ) -> Proceed | Cached:

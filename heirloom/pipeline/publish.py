@@ -19,9 +19,10 @@ from heirloom.claims import Claim, Link, SpanLink, render
 from heirloom.git_ops import git, git_ok
 from heirloom.git_ops import push as git_push
 from heirloom.integrations import entire, github
-from heirloom.integrations.neatlogs import StageSpan
+from heirloom.integrations.neatlogs import StageSpan, trace_url
 from heirloom.ledger import canonical_hash
 from heirloom.pipeline.context import Ctx, StageFailed, Unresolvable
+from heirloom.policy import PolicyStore
 
 KEY_TRAILER = "Heirloom-Key"
 
@@ -424,7 +425,10 @@ def claims(ctx: Ctx, d: dict[str, Any], base: str) -> list[Claim]:
         ),
         Claim(
             "D1",
-            "No human choice needed"
+            f"Decision {dec['decision']} by stored precedent {dec['precedent']['id']} "
+            "(the owner's answer to one question)"
+            if dec.get("precedent")
+            else "No human choice needed"
             if not dec.get("kind")
             else f"Decision {dec['decision']} for {dec['kind']}",
             _span(ctx, "decide"),
@@ -494,13 +498,37 @@ included in the commit as the regression test.
     return body, unlinked
 
 
+def _asking(ctx: Ctx, prec: dict[str, Any]) -> str:
+    """'asked once on <issue> (asking trace <link>)' for a stored precedent: the span of
+    the decide.question stage that opened its issue."""
+    issue = prec.get("issue", "")
+    number = issue.rstrip("/").rsplit("/", 1)[-1]
+    text = f"asked once on [#{number}]({issue})"
+    stored = next((p for p in PolicyStore(ctx.s.root / "policy" / "precedents.json").all()
+                   if p.id == prec.get("id")), None)  # fmt: skip
+    trace = stored.trace_id if stored else "NONE"
+    if trace in ("", "NONE"):
+        return text
+    row = ctx.ledger.db.execute(
+        "SELECT cve, span_id FROM stages WHERE stage='decide.question' AND trace_id=? LIMIT 1",
+        (trace,),
+    ).fetchone()
+    span = str(row["span_id"]) if row and row["span_id"] else ""
+    url = trace_url(ctx.s.neatlogs_trace_url, trace, span) if span else None
+    label = f"`{trace[:12]}`"
+    who = f" by {row['cve']}" if row else ""
+    return f"{text}{who}, asking trace " + (f"[{label}]({url})" if url else label)
+
+
 def _notes(ctx: Ctx, d: dict[str, Any]) -> str:
     notes = [n for n in (ctx.note, d.get("decide", {}).get("note")) if n]
     prec = (d.get("decide") or {}).get("precedent")
     if prec:
+        asking = _asking(ctx, prec)
+        tail = "." if f" by {ctx.cve}," in asking else f"; no new question for {ctx.cve}."
         notes.append(
             f"Decision `{d['decide']['decision']}` applies stored precedent "
-            f"**{prec['id']}** ({prec['issue']})."
+            f"**{prec['id']}** ({asking}){tail}"
         )
     return "".join(f"\n> **Note:** {n}\n" for n in notes)
 
@@ -544,7 +572,8 @@ def pr(ctx: Ctx, d: dict[str, Any], art: dict[str, Any]) -> dict[str, Any]:
         # body 2: C2/V1 link the tip-named calibration logs (were struck as unlinked);
         # body 3: P1 names a reused probe's original calibration run
         # body 4: span links in the real NEATLOGS_TRACE_URL format (orgId, projectId)
-        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 4},
+        # body 5: a precedent names its question and asking trace; D1 says it applied
+        {"sha": d["commit"]["sha"], "artifacts": art["commit"], "body": 5},
         body,
         effect=True,
         reconcile=reconcile,
@@ -747,7 +776,8 @@ def evidence(ctx: Ctx, d: dict[str, Any]) -> dict[str, Any]:
     return ctx.stage(
         "publish.evidence",
         # body 2: absent-path gates read n/a; P1 names the porter; trace URL with org/project
-        {"presence": canonical_hash(pres), "artifacts": art["commit"], "body": 2},
+        # body 3: a precedent names its question and asking trace
+        {"presence": canonical_hash(pres), "artifacts": art["commit"], "body": 3},
         body,
         effect=True,
         reconcile=reconcile,

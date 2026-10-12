@@ -266,3 +266,25 @@ def test_no_reach_retries_once_only(
 ) -> None:
     calls = _no_reach_pipeline(tmp_path, monkeypatch, ["NO_REACH"] * 5)
     assert len(calls) == 3  # the reach retry fits in the normal attempts; no extension
+
+
+def test_replay_only_refuses_any_stage_that_is_not_cached(tmp_path: Path) -> None:
+    from heirloom.pipeline.context import ReplayMiss
+
+    ctx = make_ctx(tmp_path, NON_PUBLISHING[0])
+    calls: list[str] = []
+
+    def work(span: Any) -> dict[str, Any]:
+        calls.append("ran")
+        return {"x": 1}
+
+    ctx.stage("locate", {"a": 1}, work)
+    ctx.replay_only = True
+    assert ctx.stage("locate", {"a": 1}, lambda span: {"x": 2}) == {"x": 1}  # cache hit
+    with pytest.raises(ReplayMiss):
+        ctx.stage("locate", {"a": 2}, work)
+    with pytest.raises(ReplayMiss):
+        ctx.stage("adapt", {"a": 1}, work)
+    assert calls == ["ran"]
+    # Body renders are the one exception: they edit a PR or issue in place.
+    assert ctx.stage("publish.evidence", {"b": 1}, lambda span: {"edited": True})["edited"]

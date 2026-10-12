@@ -316,6 +316,36 @@ def answers_cmd(
 
 
 @app.command()
+def rerender(
+    cves: list[str] = typer.Argument(..., metavar="CVE..."),
+    campaign_id: str = typer.Option(..., "--id", help="The campaign whose events to replay."),
+) -> None:
+    """Re-render the PR or evidence-issue body of each CVE's latest campaign event in
+    place, replay-only: every other stage must be a ledger cache hit (no model call, no
+    commit, no push); a miss aborts that CVE before any work starts."""
+    from heirloom import campaign as cmp
+    from heirloom.pipeline.context import ReplayMiss
+
+    s = config.load()
+    state = json.loads(cmp.state_path(s, campaign_id).read_text())
+    for cve_id in cves:
+        ev = cmp._outcome(state, cve_id)
+        if ev is None or cve_id in cmp.NO_MORE_PRS:
+            typer.echo(f"{cve_id}: no finished event to re-render")
+            continue
+        spec, reuse, done_fixes, note, _ = cmp.prepare(s, state, ev)
+        try:
+            r = execute(
+                s, cve_id, spec, reuse_probe=reuse, campaign_id=state["id"],
+                archive_ref=ev["ref"], done_fixes=done_fixes, note=note, replay_only=True,
+            )  # fmt: skip
+        except ReplayMiss as exc:
+            typer.echo(f"{cve_id}: not re-rendered ({exc})")
+            continue
+        typer.echo(f"{cve_id}: {r.status} {r.pr_url or r.issue_url} (run {r.run_id})")
+
+
+@app.command()
 def relink(
     apply: bool = typer.Option(False, help="Edit the bodies; without it, only report."),
 ) -> None:

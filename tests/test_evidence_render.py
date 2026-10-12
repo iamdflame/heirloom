@@ -87,3 +87,50 @@ def test_gates_still_count_off_the_absent_path(tmp_path: Path) -> None:
     by_id = {c.id: c.text for c in publish.evidence_claims(_ctx(tmp_path), out, "https://b")}
     assert "fails (PROBE_ERROR)" in by_id["C2"]
     assert "n/a" not in by_id["C0"] and "A0" not in by_id
+
+
+def _precedent_ctx(tmp_path: Path, cve: str) -> Ctx:
+    import json
+
+    ctx = _ctx(tmp_path)
+    ctx.cve = cve
+    root = tmp_path / "root"
+    (root / "policy").mkdir(parents=True)
+    (root / "policy" / "precedents.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "P001",
+                    "kind": "UPSTREAM_TEST_CHANGE",
+                    "scope": "django/4.2",
+                    "answer": "adopt-upstream-tests",
+                    "issue_url": "https://github.com/o/heirloom/issues/6",
+                    "trace_id": "c" * 32,
+                    "created_at": 0.0,
+                }
+            ]
+        )
+    )
+    ctx.s = config.Settings(**{**ctx.s.__dict__, "root": root, "neatlogs_trace_url": TEMPLATE})
+    ctx.ledger.db.execute(
+        "INSERT INTO stages (cve, line, stage, attempt, status, effect, run_id, pid, "
+        "input_hash, started_at, trace_id, span_id) VALUES "
+        "('CVE-A', '4.2', 'decide.question', 1, 'done', 1, 'r0', 1, 'h', 0, ?, ?)",
+        ("c" * 32, "d" * 16),
+    )
+    return ctx
+
+
+def test_reused_precedent_names_its_question_and_asking_trace(tmp_path: Path) -> None:
+    prec = {"decide": {"decision": "publish-fix", "precedent": {
+        "id": "P001", "issue": "https://github.com/o/heirloom/issues/6"}}}  # fmt: skip
+    reused = publish._notes(_precedent_ctx(tmp_path / "b", "CVE-B"), prec)
+    assert (
+        "stored precedent **P001** (asked once on [#6](https://github.com/o/heirloom/issues/6)"
+        in reused
+    )
+    assert "by CVE-A, asking trace [`cccccccccccc`](" in reused
+    assert f"traces/{'c' * 32}?orgId=o&projectId=p&span={'d' * 16})" in reused
+    assert "no new question for CVE-B." in reused
+    asker = publish._notes(_precedent_ctx(tmp_path / "a", "CVE-A"), prec)
+    assert "no new question" not in asker

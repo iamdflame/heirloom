@@ -368,22 +368,15 @@ def _pr_number(url: str) -> int | None:
     return int(m[1]) if m else None
 
 
-def process(s: Settings, state: dict[str, Any], ev: Event) -> dict[str, Any]:
-    """Run one event through the pipeline; returns the fields to record."""
-    from heirloom.pipeline.run import execute
+Prepared = tuple[LineSpec, "dict[str, Any] | None", tuple[str, ...], str, "dict[str, Any] | None"]
 
+
+def prepare(s: Settings, state: dict[str, Any], ev: Event) -> Prepared:
+    """The line spec (stacked or not), reused probe, done fixes, note and supersedes
+    record an event runs with."""
     line = state["line"]
     spec = LINES[line]
     cve = ev["cve"]
-    if cve in NO_MORE_PRS:
-        found = github.find_pr(s.fork, _branch(cve, line))
-        return {
-            "status": "skipped",
-            "verdict": "AFFECTED",
-            "reason": "ALREADY_PUBLISHED",
-            "pr": found["url"] if found else "",
-            "note": "published earlier by the L0 golden path; no new PR (B4 brief)",
-        }
     done_fixes: tuple[str, ...] = ()
     note = ""
     supersedes: dict[str, Any] | None = None
@@ -428,6 +421,25 @@ def process(s: Settings, state: dict[str, Any], ev: Event) -> dict[str, Any]:
     reuse = None
     if ev["kind"] == "new" and supersedes is None:
         reuse = reusable_probe(s, cve)
+    return spec, reuse, done_fixes, note, supersedes
+
+
+def process(s: Settings, state: dict[str, Any], ev: Event) -> dict[str, Any]:
+    """Run one event through the pipeline; returns the fields to record."""
+    from heirloom.pipeline.run import execute
+
+    line = state["line"]
+    cve = ev["cve"]
+    if cve in NO_MORE_PRS:
+        found = github.find_pr(s.fork, _branch(cve, line))
+        return {
+            "status": "skipped",
+            "verdict": "AFFECTED",
+            "reason": "ALREADY_PUBLISHED",
+            "pr": found["url"] if found else "",
+            "note": "published earlier by the L0 golden path; no new PR (B4 brief)",
+        }
+    spec, reuse, done_fixes, note, supersedes = prepare(s, state, ev)
     ledger = Ledger(s.ledger_path)
     cost_before = ledger.cost_total(cve, line)
     ledger.close()

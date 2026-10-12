@@ -30,6 +30,14 @@ class StageFailed(RuntimeError):
     pass
 
 
+class ReplayMiss(RuntimeError):
+    """Replay-only run: a stage other than a body render would have done new work."""
+
+
+# The only stages a replay-only run may execute: they edit a PR/issue body in place.
+REPLAY_RENDERS = frozenset({"publish.pr", "publish.evidence"})
+
+
 @dataclass(frozen=True)
 class SpanRef:
     stage: str
@@ -60,6 +68,7 @@ class Ctx:
     tests_edited_after_red: bool = False
     spans: dict[str, SpanRef] = field(default_factory=dict)
     out: dict[str, dict[str, Any]] = field(default_factory=dict)
+    replay_only: bool = False  # re-render bodies from the ledger; never run other work
 
     @property
     def repo(self) -> Path:
@@ -136,6 +145,12 @@ class Ctx:
         """Run (or reuse) a stage. ``scope`` keys line-independent stages (e.g. U⁻/U⁺
         evidence) under a shared ledger scope instead of this run's line."""
         key_line = scope or self.line
+        if (
+            self.replay_only
+            and name not in REPLAY_RENDERS
+            and not self.ledger.has_done(self.cve, key_line, name, inputs)
+        ):
+            raise ReplayMiss(f"replay-only: stage {name} of {self.cve} is not cached")
         while True:
             try:
                 claim = self.ledger.begin(

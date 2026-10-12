@@ -277,6 +277,7 @@ def execute(
     archive_ref: str = "origin/main",
     done_fixes: tuple[str, ...] = (),
     note: str = "",
+    replay_only: bool = False,
 ) -> Result:
     line = spec.name
     with lock(s.work / "locks" / f"{cve}-{line}.lock"):
@@ -294,6 +295,7 @@ def execute(
         )
         ctx = Ctx(s, ledger, tel, spec, cve, line, run_id, campaign_id=campaign)
         ctx.archive_ref, ctx.done_fixes, ctx.note = archive_ref, done_fixes, note
+        ctx.replay_only = replay_only
         status = "failed"
         try:
             with tel.cve_root(cve, line, run_id, campaign), guard.publishing(spec):
