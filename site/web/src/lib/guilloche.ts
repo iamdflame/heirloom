@@ -27,7 +27,8 @@ export function rosette({
   copies = 10,
   steps = 360,
 }: { cx?: number; cy?: number; r?: number; amp?: number; lobes?: number; copies?: number; steps?: number } = {}) {
-  return Array.from({ length: copies }, (_, k) => polar(cx, cy, r, amp, lobes, (k / copies) * ((Math.PI * 2) / lobes) * 2, steps));
+  // the copies are shifted across one full period of the sine, so they braid into the moiré
+  return Array.from({ length: copies }, (_, k) => polar(cx, cy, r, amp, lobes, (k / copies) * Math.PI * 2, steps));
 }
 
 /** A band of `copies` phase-shifted sine waves across [0, width], centred on y. */

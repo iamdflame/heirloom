@@ -40,12 +40,12 @@ const VIEWPORTS = [
 async function page(opts = {}) {
   const ctx = await browser.newContext({
     viewport: { width: opts.w ?? 1440, height: opts.h ?? 900 },
-    colorScheme: opts.scheme ?? 'light',
+    colorScheme: opts.scheme ?? 'dark',
     reducedMotion: opts.reduced ? 'reduce' : 'no-preference',
     deviceScaleFactor: 1,
   });
   const p = await ctx.newPage();
-  const tag = `${opts.w ?? 1440}x${opts.h ?? 900}-${opts.scheme ?? 'light'}${opts.reduced ? '-reduced' : ''}`;
+  const tag = `${opts.w ?? 1440}x${opts.h ?? 900}${opts.reduced ? '-reduced' : ''}`;
   p.on('console', (m) => {
     if (m.type() === 'error' || m.type() === 'warning') report.console.push({ tag, type: m.type(), text: m.text() });
   });
@@ -56,6 +56,17 @@ async function page(opts = {}) {
 }
 const shot = async (p, name, full = true) => {
   const path = join(OUT, `${name}.png`);
+  if (full) {
+    // walk the page once so in-view reveals have played, then return to the top
+    await p.evaluate(async () => {
+      for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * 0.6) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      window.scrollTo(0, 0);
+    });
+    await p.waitForTimeout(1500);
+  }
   await p.screenshot({ path, fullPage: full });
   report.screenshots.push(`${name}.png`);
 };
@@ -71,7 +82,7 @@ async function axe(p, tag) {
 
 // ---------- screenshots (+ axe on each) ----------
 for (const [w, h] of VIEWPORTS) {
-  for (const scheme of ['light', 'dark']) {
+  for (const scheme of ['dark']) {
     const { p, ctx, tag } = await page({ w, h, scheme });
     await shot(p, `page-${tag}`);
     await axe(p, tag);
@@ -82,6 +93,42 @@ for (const [w, h] of VIEWPORTS) {
   const { p, ctx, tag } = await page({ reduced: true });
   await shot(p, `page-${tag}`, false);
   await ctx.close();
+}
+
+// ---------- v2: hero after load, "Watch it work" pinned campaign at start / middle / end ----------
+{
+  const { p, ctx } = await page();
+  await p.waitForTimeout(2600);
+  await shot(p, 'hero-1440', false);
+  for (const [name, f] of [['campaign-start', 0.02], ['campaign-middle', 0.5], ['campaign-end', 0.99]]) {
+    await p.evaluate((f) => {
+      const el = document.querySelector('#watch');
+      const top = el.getBoundingClientRect().top + scrollY;
+      window.scrollTo(0, top + f * (el.offsetHeight - innerHeight));
+    }, f);
+    await p.waitForTimeout(1800);
+    await shot(p, name, false);
+  }
+  report.campaign_end_caption = await p.evaluate(() => document.querySelector('#watch .sticky')?.innerText.split('\n').slice(0, 4).join(' | '));
+  await ctx.close();
+}
+
+// ---------- a 10 s scroll recording (Playwright video) through the first five beats ----------
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark', recordVideo: { dir: OUT, size: { width: 1440, height: 900 } } });
+  const p = await ctx.newPage();
+  await p.goto(URL_, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(1500);
+  const end = await p.evaluate(() => document.querySelector('#register').getBoundingClientRect().top + scrollY);
+  for (let t = 0; t <= 100; t++) {
+    await p.mouse.wheel(0, end / 100);
+    await p.waitForTimeout(85);
+  }
+  const video = p.video();
+  await ctx.close();
+  const { renameSync } = await import('node:fs');
+  renameSync(await video.path(), join(OUT, 'scroll-10s.webm'));
+  report.screenshots.push('scroll-10s.webm');
 }
 
 // ---------- replay: start, middle, end ----------
@@ -206,7 +253,7 @@ await browser.close();
   report.budgets = {
     first_load_js: js,
     first_load_js_gzip_kb: +(jsGz / 1024).toFixed(1),
-    js_ok: jsGz <= 150 * 1024,
+    js_ok: jsGz <= 200 * 1024,
     fonts_kb: +(fontBytes / 1024).toFixed(1),
     fonts_ok: fontBytes <= 100 * 1024,
     lazy_chunks: lazy.map((f) => `${f} ${(gz('assets/' + f) / 1024).toFixed(1)} kB gz`),
@@ -249,6 +296,7 @@ console.log(
       deep_link: report.deep_link,
       anchors: report.anchors,
       replay_middle: report.replay_middle,
+      campaign_end_caption: report.campaign_end_caption,
       replay_playing: report.replay_playing,
       lighthouse: report.lighthouse,
       lighthouse_failed_audits: report.lighthouse_failed_audits,

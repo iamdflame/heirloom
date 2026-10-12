@@ -40,7 +40,7 @@ export function HeroVisual() {
       </m.div>
       {/* the engraved rosette, centred on the photo's main wheel */}
       <m.div
-        className="absolute left-1/2 top-1/2 aspect-square w-[min(88vh,62vw)] -translate-x-1/2 -translate-y-1/2 opacity-40 mix-blend-screen max-lg:w-[110vw]"
+        className="absolute left-1/2 top-1/2 aspect-square w-[min(74vh,48vw)] -translate-x-1/2 -translate-y-1/2 opacity-30 mix-blend-screen max-lg:w-[100vw]"
         style={reduce ? undefined : { rotate: turn }}
       >
         <img src={`${import.meta.env.BASE_URL}guilloche/rosette.svg`} alt="" width={800} height={800} decoding="async" className="spin-slow h-full w-full" />

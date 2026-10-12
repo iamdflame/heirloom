@@ -7,6 +7,7 @@ import { WRAP } from '@/lib/layout';
 import { useMedia } from '@/lib/useMedia';
 import { cn } from '@/lib/utils';
 import { Reveal } from './fx';
+import { Photo } from './Photo';
 
 const TILE: Record<ChipT, string> = {
   FIX_READY: 'bg-fix-bg text-fix-fg border-fix-fg/50',
@@ -54,7 +55,11 @@ function Pinned() {
   const t = tally(step);
   return (
     <div ref={ref} style={{ height: `${N * 42 + 100}vh` }} className="relative">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+      <div className="sticky top-0 isolate flex h-screen items-center overflow-hidden">
+        <div aria-hidden className="absolute inset-0 -z-10">
+          <Photo name="gears-brass" sizes="100vw" className="h-full w-full opacity-[0.16]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_65%_55%,transparent_0%,rgb(var(--paper))_70%)]" />
+        </div>
         <div className={cn(WRAP, 'grid grid-cols-12 items-center gap-8')}>
           <div className="col-span-5 xl:col-span-4">
             <p className="eyebrow" aria-hidden>
@@ -140,7 +145,7 @@ function Instrument({ step, rotate }: { step: number; rotate: ReturnType<typeof 
   const cur = STEPS[step]!;
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[52rem] [perspective:1800px]">
-      <div className="absolute inset-0 [transform-style:preserve-3d] [transform:rotateX(38deg)_rotateZ(-10deg)]">
+      <div className="absolute inset-0 [transform-style:preserve-3d] [transform:rotateX(30deg)_rotateZ(-8deg)]">
         <m.div className="absolute inset-[4%]" style={{ rotate }}>
           <Dial />
         </m.div>
@@ -202,8 +207,8 @@ export function Tiles({ step, size, animate = true }: { step: number; size: 'lg'
   const cur = STEPS[step]!;
   const qi = STEPS.findIndex((s) => s.kind === 'question');
   const amendI = STEPS.findIndex((s) => s.kind === 'amend');
-  const pitch = size === 'lg' ? 36 : 15;
-  const tile = size === 'lg' ? 30 : 12;
+  const pitch = size === 'lg' ? 39 : 15;
+  const tile = size === 'lg' ? 33 : 12;
   const head = size === 'lg' ? 34 : 0;
   const top = size === 'lg' ? 64 : 34;
   const w = head + site.rows.length * pitch;
