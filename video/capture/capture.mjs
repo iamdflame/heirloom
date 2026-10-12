@@ -125,7 +125,8 @@ export async function captureShot(browser, shot, log = console.log) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(PAGE_INIT);
-  await page.clock.install({ time: new Date('2026-10-12T09:00:00Z') });
+  await page.clock.install({ time: new Date() }); // real now, so relative times ("2 hours ago") read true
+  if (shot.css) await page.addInitScript((css) => addEventListener('DOMContentLoaded', () => document.head.append(Object.assign(document.createElement('style'), { textContent: css }))), shot.css);
   await page.goto(shot.url, { waitUntil: 'networkidle', timeout: 90_000 });
   await page.evaluate(() => document.fonts.ready);
   // eager-load every image so nothing pops in mid-shot
@@ -138,8 +139,16 @@ export async function captureShot(browser, shot, log = console.log) {
   await page.evaluate(() => document.fonts.ready);
 
   // freeze time: from here on only runFor moves it
-  const now = await page.evaluate(() => Date.now());
-  await page.clock.pauseAt(now + 50);
+  // (under load the page clock can pass `now + margin` before pauseAt lands: retry with a wider margin)
+  for (let margin = 100; ; margin *= 2) {
+    const now = await page.evaluate(() => Date.now());
+    try {
+      await page.clock.pauseAt(now + margin);
+      break;
+    } catch (e) {
+      if (margin > 20_000) throw e;
+    }
+  }
   const plan = (await shot.plan?.(page)) ?? {};
   const cdp = await ctx.newCDPSession(page);
   const step = 1000 / fps;
