@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QXB4N1D0X2YB7TCE7SCQJ1",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "video/public/rosette-ground.svg",
+    "video/scripts/link-captures.mjs",
+    "video/scripts/make-rosette.mjs",
+    "video/scripts/poll-captures.sh",
+    "video/scripts/render.mjs",
+    "video/sfx-cues.json",
+    "video/src/components/Capture.tsx",
+    "video/src/components/Engraving.tsx",
+    "video/src/data/captures.json",
+    "video/src/scenes/S01.tsx",
+    "video/src/scenes/S04.tsx",
+    "video/src/scenes/S06.tsx",
+    "video/src/scenes/S07.tsx",
+    "video/src/scenes/S08.tsx",
+    "video/src/scenes/S09.tsx",
+    "video/timing.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 42,
+    "cache_creation_tokens": 33434,
+    "cache_read_tokens": 3408525,
+    "output_tokens": 11770,
+    "api_call_count": 21
+  }
+}
