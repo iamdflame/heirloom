@@ -1,0 +1,56 @@
+{
+ "probe": {
+  "ref": "artifacts",
+  "dir": "matrix/b4-20261011/CVE-2026-87890/ubuntu-noble/logs/calibrate/2e97ddd6",
+  "runs": [
+   {
+    "file": "L-f566e91a2c-0.log",
+    "exit": "# exit=1 seconds=1.5",
+    "test": "test_bytes_lookup_values_never_reach_gdalraster (hl_cve_2026_87890.tests.SpatialLookupBytesTests.test_bytes_lookup_values_never_reach_gdalraster) ... FAIL",
+    "assertion": "AssertionError: Lists differ: [<class 'bytes'>, <class 'bytes'>] != []",
+    "result": "FAILED (failures=1)"
+   },
+   {
+    "file": "L-f566e91a2c-1.log",
+    "exit": "# exit=1 seconds=1.1",
+    "test": "test_bytes_lookup_values_never_reach_gdalraster (hl_cve_2026_87890.tests.SpatialLookupBytesTests.test_bytes_lookup_values_never_reach_gdalraster) ... FAIL",
+    "assertion": "AssertionError: Lists differ: [<class 'bytes'>, <class 'bytes'>] != []",
+    "result": "FAILED (failures=1)"
+   },
+   {
+    "file": "L-f566e91a2c-2.log",
+    "exit": "# exit=1 seconds=1.1",
+    "test": "test_bytes_lookup_values_never_reach_gdalraster (hl_cve_2026_87890.tests.SpatialLookupBytesTests.test_bytes_lookup_values_never_reach_gdalraster) ... FAIL",
+    "assertion": "AssertionError: Lists differ: [<class 'bytes'>, <class 'bytes'>] != []",
+    "result": "FAILED (failures=1)"
+   }
+  ]
+ },
+ "checkpoint": {
+  "id": "01M4PD5ZE2YST8SFD7AMRSWCN6",
+  "file": "docs/entire/checkpoint-pr13-01M4PD5ZE2YST8SFD7AMRSWCN6.txt",
+  "lines": [
+   "● Checkpoint 01M4PD5ZE2YST8SFD7AMRSWCN6",
+   "  session  96d41bc2-14f6-45ed-a5e1-d45a8f400af6",
+   "  created  2026-10-11 21:16:27",
+   "  author   Dflame <306545410+iamdflame@users.noreply.github.com>",
+   "  tokens   165.1k",
+   "  commits  (none on this branch)",
+   "────────────────────────────────────────────────────────────",
+   "## Intent",
+   "",
+   "Backport a security fix to Django 4.2 (this checkout: tag 4.2.30 + fork base)...",
+   "",
+   "## Summary",
+   "",
+   "*Not generated yet. Run ‘entire checkpoint explain --generate 01M4PD5ZE2YST8SFD7AMRSWCN6‘ to create an AI summary.*",
+   "",
+   "## Files (1)",
+   "",
+   "- `django/middleware/cache.py`",
+   "",
+   "── Transcript (checkpoint scope) ───────────────────────────",
+   "[User] Backport a security fix to Django 4.2 (this checkout: tag 4.2.30 + fork base)."
+  ]
+ }
+}

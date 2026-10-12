@@ -1,0 +1,223 @@
+1
+00:00:00,400 --> 00:00:02,733
+On the seventh of April, Django
+
+2
+00:00:02,767 --> 00:00:06,000
+four-point-two reached end of life.
+
+3
+00:00:06,033 --> 00:00:08,367
+No more security fixes.
+
+4
+00:00:09,400 --> 00:00:11,117
+But Debian thirteen and Ubuntu
+
+5
+00:00:11,150 --> 00:00:13,583
+twenty-four-oh-four still ship it.
+
+6
+00:00:13,617 --> 00:00:15,983
+Since then, Django has published nineteen
+
+7
+00:00:16,017 --> 00:00:18,433
+security advisories — and not one official
+
+8
+00:00:18,467 --> 00:00:20,367
+patch for four-point-two.
+
+9
+00:00:21,400 --> 00:00:23,567
+On October first, Ubuntu shipped a
+
+10
+00:00:23,600 --> 00:00:25,717
+backport for one of them.
+
+11
+00:00:25,750 --> 00:00:28,367
+Five days later, Django said its original
+
+12
+00:00:28,400 --> 00:00:30,117
+fix was incomplete.
+
+13
+00:00:30,150 --> 00:00:32,583
+We took Ubuntu's source package, ran a
+
+14
+00:00:32,617 --> 00:00:34,850
+test calibrated on Django's own fix
+
+15
+00:00:34,883 --> 00:00:37,450
+commits… and the code path Django closed
+
+16
+00:00:37,483 --> 00:00:40,367
+is still reachable in Ubuntu's build.
+
+17
+00:00:41,400 --> 00:00:44,133
+That test was run by Heirloom — an agent
+
+18
+00:00:44,167 --> 00:00:47,167
+that keeps end-of-life software patched,
+
+19
+00:00:47,200 --> 00:00:50,050
+and proves which old versions are actually
+
+20
+00:00:50,083 --> 00:00:51,367
+vulnerable.
+
+21
+00:00:52,400 --> 00:00:55,250
+Its first rule: never trust a test that
+
+22
+00:00:55,283 --> 00:00:58,350
+hasn't failed. For each advisory, Heirloom
+
+23
+00:00:58,383 --> 00:01:01,217
+writes its own test, proves it fails on
+
+24
+00:01:01,250 --> 00:01:04,317
+Django's vulnerable code and passes on the
+
+25
+00:01:04,350 --> 00:01:07,717
+fix… and only then asks the real question:
+
+26
+00:01:07,750 --> 00:01:10,367
+is the old version affected?
+
+27
+00:01:11,400 --> 00:01:14,200
+Then we let it run the whole campaign:
+
+28
+00:01:14,233 --> 00:01:17,033
+nineteen advisories, replayed in the order
+
+29
+00:01:17,067 --> 00:01:19,067
+Django published them.
+
+30
+00:01:19,100 --> 00:01:21,700
+Thirteen candidate backports — each one
+
+31
+00:01:21,733 --> 00:01:25,067
+failing before the fix, and passing after.
+
+32
+00:01:25,100 --> 00:01:27,567
+Where it couldn't prove something, it
+
+33
+00:01:27,600 --> 00:01:30,733
+filed the evidence instead of guessing.
+
+34
+00:01:30,767 --> 00:01:33,233
+And when a new fix amended one it had
+
+35
+00:01:33,267 --> 00:01:35,533
+already backported, it stacked the
+
+36
+00:01:35,567 --> 00:01:38,367
+follow-up on its own pull request.
+
+37
+00:01:39,400 --> 00:01:42,433
+Across the whole campaign, it asked me one
+
+38
+00:01:42,467 --> 00:01:45,217
+question — a real judgement call about
+
+39
+00:01:45,250 --> 00:01:47,833
+changing Django's behaviour.
+
+40
+00:01:47,867 --> 00:01:50,917
+I answered once. It sealed the answer as a
+
+41
+00:01:50,950 --> 00:01:53,683
+precedent, and the next case reused it
+
+42
+00:01:53,717 --> 00:01:55,367
+without asking.
+
+43
+00:01:56,400 --> 00:01:59,517
+We tested the method on cases with known
+
+44
+00:01:59,550 --> 00:02:02,567
+answers. A naive pipeline once called a
+
+45
+00:02:02,600 --> 00:02:05,083
+vulnerable version safe.
+
+46
+00:02:05,117 --> 00:02:07,367
+Heirloom: zero times.
+
+47
+00:02:07,400 --> 00:02:10,667
+Every claim in every pull request links to
+
+48
+00:02:10,700 --> 00:02:13,733
+its neat-logs trace, and every backport
+
+49
+00:02:13,767 --> 00:02:17,033
+links the Entire session of the agent that
+
+50
+00:02:17,067 --> 00:02:18,367
+wrote it.
+
+51
+00:02:19,400 --> 00:02:21,867
+Each advisory cost about twenty cents of
+
+52
+00:02:21,900 --> 00:02:24,300
+model time. We modelled the business in
+
+53
+00:02:24,333 --> 00:02:26,750
+C-F-O dot A-I: what that's worth to the
+
+54
+00:02:26,783 --> 00:02:29,367
+teams who keep old software alive.
+
+55
+00:02:30,400 --> 00:02:35,383
+Heirloom. Old software, kept honest.
+
+56
+00:02:35,417 --> 00:02:40,967
+Every verdict is a test run you can open.

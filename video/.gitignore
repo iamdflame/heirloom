@@ -1,0 +1,8 @@
+node_modules/
+out/
+public/captures/*
+!public/captures/.gitkeep
+public/broll/
+public/audio/**/*.mp3
+public/audio/**/*.wav
+.remotion/

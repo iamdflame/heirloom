@@ -1,0 +1,22 @@
+[
+ { "scene": "S01", "at": 0.9, "name": "tick", "what": "the single escapement tick", "prompt": "a single crisp mechanical watch escapement tick, close macro, dry, no reverb" },
+ { "scene": "S01", "at": 4.6, "name": "whoosh", "what": "date title gives way to 'Django 4.2 · end of life'", "prompt": "very soft low airy whoosh, short, cinematic, no high hiss" },
+ { "scene": "S02", "at": 0.5, "name": "plate", "what": "Debian plate slides in", "prompt": "heavy brass plate sliding onto felt, short metallic slide, subtle" },
+ { "scene": "S02", "at": 1.3, "name": "plate", "what": "Ubuntu plate slides in", "prompt": "heavy brass plate sliding onto felt, short metallic slide, subtle" },
+ { "scene": "S02", "at": 5.2, "name": "stamp", "what": "first NO 4.2 PATCH stamp (the 19 follow in a rapid run, 0.16 s apart)", "prompt": "rubber ink stamp hitting paper, single, tight and dry" },
+ { "scene": "S02", "at": 9.2, "name": "boom", "what": "the counter lands: 19 advisories · 0 upstream 4.2 patches", "prompt": "deep soft cinematic sub boom, short tail, no distortion" },
+ { "scene": "S03", "at": 3.4, "name": "lock", "what": "date plates lock around the 5 days band", "prompt": "precise mechanical latch click, brass, small" },
+ { "scene": "S03", "at": 8.4, "name": "tick", "what": "terminal run 1 FAIL", "prompt": "soft digital tick, muted, minimal UI sound" },
+ { "scene": "S03", "at": 13.0, "name": "stamp", "what": "verdict chip AFFECTED", "prompt": "rubber ink stamp hitting paper, single, tight and dry" },
+ { "scene": "S03", "at": 19.4, "name": "whoosh", "what": "brass iris opens onto the Heirloom reveal", "prompt": "slow rotating metallic iris whoosh, smooth, 1 second" },
+ { "scene": "S04", "at": 3.0, "name": "stamp", "what": "hallmark seal stamps in", "prompt": "heavy wax seal press with a metallic ring, warm, short" },
+ { "scene": "S05", "at": 5.5, "name": "tick", "what": "U⁻ lights FAIL ×3", "prompt": "three soft relay clicks in quick succession" },
+ { "scene": "S05", "at": 7.6, "name": "tick", "what": "U⁺ lights PASS ×3", "prompt": "three soft relay clicks in quick succession, slightly higher pitch" },
+ { "scene": "S05", "at": 10.1, "name": "stamp", "what": "verdict chip on Django 4.2.30", "prompt": "rubber ink stamp hitting paper, single, tight and dry" },
+ { "scene": "S06", "at": 6.2, "name": "whoosh", "what": "first lower third", "prompt": "very soft low airy whoosh, short" },
+ { "scene": "S07", "at": 10.6, "name": "stamp", "what": "PRECEDENT SEALED P001", "prompt": "heavy wax seal press with a metallic ring, warm, short" },
+ { "scene": "S07", "at": 16.4, "name": "whoosh", "what": "brass iris into the proof act", "prompt": "slow rotating metallic iris whoosh, smooth, 1 second" },
+ { "scene": "S08", "at": 2.4, "name": "boom", "what": "backtest split lands (1 vs 0)", "prompt": "deep soft cinematic sub boom, short tail" },
+ { "scene": "S09", "at": 2.6, "name": "tick", "what": "$0.22 counter lands", "prompt": "a single crisp mechanical watch escapement tick" },
+ { "scene": "S10", "at": 5.6, "name": "boom", "what": "end card: hallmark", "prompt": "deep warm cinematic hit with a soft metallic ring-out, 3 seconds" }
+]
