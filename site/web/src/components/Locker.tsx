@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { m, useInView, useReducedMotion } from 'motion/react';
 import { ArrowUpRight } from 'lucide-react';
-import { REASONS, prNum, site } from '@/lib/site';
+import { DEMO_LABEL, DEMO_URL, REASONS, prNum, site } from '@/lib/site';
 import { WRAP } from '@/lib/layout';
 import { RstTitle } from './Code';
 import { CopyButton } from './CopyButton';
@@ -78,6 +78,10 @@ export function Locker() {
           . Claim by claim:{' '}
           <a className="link" href={site.files.evidence_md}>
             EVIDENCE.md
+          </a>
+          . Or{' '}
+          <a className="link" href={DEMO_URL} target="_blank" rel="noopener">
+            {DEMO_LABEL}
           </a>
           .
         </p>

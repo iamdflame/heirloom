@@ -48,4 +48,7 @@ export function longDate(iso: string) {
   const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
   return `${d} ${full[(m ?? 1) - 1]} ${y}`;
 }
+export const DEMO_URL = 'https://youtu.be/L4Zw555RuMs';
+export const DEMO_LABEL = 'Watch the demo (2:27)';
+
 export const prNum = (url: string) => `#${url.split('/').pop()}`;

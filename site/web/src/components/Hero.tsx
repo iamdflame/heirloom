@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowRight } from 'lucide-react';
-import { site, longDate } from '@/lib/site';
+import { ArrowDown, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { DEMO_LABEL, DEMO_URL, site, longDate } from '@/lib/site';
 import { CountUp, Magnetic, WordReveal } from './fx';
 import { HeroVisual } from './HeroVisual';
 
@@ -48,6 +48,9 @@ export function Hero() {
             </Magnetic>
             <Magnetic href="#finding" className="btn btn-ghost press">
               Open the proof <ArrowRight className="h-4 w-4" aria-hidden />
+            </Magnetic>
+            <Magnetic href={DEMO_URL} target="_blank" rel="noopener" className="btn btn-ghost press">
+              {DEMO_LABEL} <ArrowUpRight className="h-4 w-4" aria-hidden />
             </Magnetic>
           </div>
         </div>
