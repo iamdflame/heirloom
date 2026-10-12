@@ -434,7 +434,7 @@ Started headless at 01:40 UTC. `entire session current` showed `ea42def1-7e83-47
 **Loose ends (step 1)**
 - **Issue #10** (CVE-2026-87890 UNPROVEN, NO_REACH, run `20261012T000126Z-90e8`): I edited it in place. It now opens with "Superseded by iamdflame/django#21", names the reach-retry run `20261012T002657Z-0879` (presence #4 still NO_REACH; the reach-retry probe #4 reached `BaseSpatialField.get_prep_value` and `GDALRaster.check_raster_lookup_value`; presence #5 calibrated → AFFECTED), its ledger, trace `a64e2127…` and checkpoint, and keeps the original record below. The title was updated and the issue closed.
 - **`evals/results_live.json`** was committed in its final state: 13 AFFECTED, 5 UNPROVEN, 1 NOT_AFFECTED_PROVEN; 12 published, 6 evidence, 1 skipped; 13 PRs; 6 evidence issues (#10 dropped); escalation 26.3%; ledger $3.91; campaign spend $4.67 of the $18 cap.
-- **Noble probe logs:** I published 9 raw logs of the 87890 matrix probe (`2e97ddd6`) to the `artifacts` branch at `matrix/b4-20261011/CVE-2026-87890/` (commit `82c16032`): `Um`/`Up`/`L` on 4.2.30 and `L` on noble. They were checked against every `.env` value (0 hits; the only sensitive-looking content is local paths). The Ubuntu draft now links them, and both raw URLs return 200.
+- **Noble probe logs:** I published 12 raw logs of the 87890 matrix probe (`2e97ddd6`) to the `artifacts` branch at `matrix/b4-20261011/CVE-2026-87890/` (commit `82c16032`): `Um`/`Up`/`L` on 4.2.30 and `L` on noble. They were checked against every `.env` value (0 hits; the only sensitive-looking content is local paths). The Ubuntu draft now links them, and both raw URLs return 200.
 - **`entire review` mediums:** #2 is fixed (`_asking` returns the asking CVE, orders its query, and "no new question" appears only when the ledger shows another CVE asked), together with the `[#]()` low, plus a test. #1 (`rerender`/`prepare`) is listed under known limitations because it is more than 10 minutes of work.
 
 **DoD (step 2):** [docs/DOD-status.md](docs/DOD-status.md) has 23 PASS, 5 PARTIAL, 3 FAIL and 1 NOT LIVE. Fixes made because items failed:
@@ -451,5 +451,5 @@ Started headless at 01:40 UTC. `entire session current` showed `ea42def1-7e83-47
 
 **EVIDENCE.md (step 4):** each item on the evidence list is mapped to links. Build-in-public is a marked placeholder.
 
-**Tests that actually ran (B6):** pytest **197 passed**; `ruff check heirloom tests` clean; `ruff format --check heirloom tests` 67 files formatted; `mypy --strict heirloom tests` no issues in 67 files. Plus the targeted DoD subset (10 passed). Re-run at the end of the session; the result is recorded in the final commit.
+**Tests that actually ran (B6):** pytest **197 passed**; `ruff check heirloom tests` clean; `ruff format --check heirloom tests` 67 files formatted; `mypy --strict heirloom tests` no issues in 67 files. Plus the targeted DoD subset (10 passed). Final re-run at the end of B6 (≈02:2x UTC): 197 passed, ruff clean, 67 files formatted, mypy --strict clean. README re-render produced no diff.
 
