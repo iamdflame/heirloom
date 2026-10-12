@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PYZWMM4M2KFKTDKSBJZ892",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/pages.yml",
+    "site/web/404.html",
+    "site/web/PROGRESS.md",
+    "site/web/index.html",
+    "site/web/package.json",
+    "site/web/postcss.config.js",
+    "site/web/public/favicon-32.png",
+    "site/web/public/favicon.svg",
+    "site/web/public/fonts/LICENSE-ibm-plex-mono.txt",
+    "site/web/public/fonts/LICENSE-newsreader.txt",
+    "site/web/public/fonts/ibm-plex-mono-latin-400.woff2",
+    "site/web/public/fonts/ibm-plex-mono-latin-500.woff2",
+    "site/web/public/fonts/newsreader-latin-opsz-wght400-500.woff2",
+    "site/web/public/seal.svg",
+    "site/web/scripts/favicon.mjs",
+    "site/web/scripts/seal.mjs",
+    "site/web/scripts/subset-fonts.sh",
+    "site/web/src/App.tsx",
+    "site/web/src/components/Footer.tsx",
+    "site/web/src/components/GithubMark.tsx",
+    "site/web/src/components/MobileMenu.tsx",
+    "site/web/src/components/Nav.tsx",
+    "site/web/src/components/Seal.tsx",
+    "site/web/src/components/ThemeToggle.tsx",
+    "site/web/src/components/ui/button.tsx",
+    "site/web/src/components/ui/sheet.tsx",
+    "site/web/src/components/ui/toggle-group.tsx",
+    "site/web/src/index.css",
+    "site/web/src/lib/seal-paths.ts",
+    "site/web/src/lib/sections.ts",
+    "site/web/src/lib/utils.ts",
+    "site/web/src/main.tsx",
+    "site/web/src/notfound.tsx",
+    "site/web/tailwind.config.js",
+    "site/web/tsconfig.json",
+    "site/web/vite.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 34689,
+    "cache_read_tokens": 1612292,
+    "output_tokens": 25709,
+    "api_call_count": 22
+  }
+}
