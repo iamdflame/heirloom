@@ -221,3 +221,48 @@ def test_an_invalid_cheap_probe_escalates_to_the_stronger_model(
     with guard.publishing(spec):
         run.pipeline(ctx)
     assert models == [ctx.s.porter_first_model, ctx.s.probe_model]
+
+
+def _no_reach_pipeline(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, reasons: list[str]
+) -> list[str | None]:
+    """Run the pipeline with calibration verdicts ``reasons`` (one per probe attempt);
+    returns the feedback each porter call received."""
+    spec = NON_PUBLISHING[0]
+    feedbacks: list[str | None] = []
+
+    def porter(ctx: Ctx, loc: Any, c0: Any, fb: Any, model: str | None = None) -> Any:
+        feedbacks.append(fb)
+        return {"sha": f"p{len(feedbacks)}", "files": {}}
+
+    def presence(ctx: Ctx, cal: Any) -> Any:
+        return {"verdict": "UNPROVEN", "reason": cal["reason"], "detail": "", "gates": {}}
+
+    monkeypatch.setattr(locate, "run", lambda ctx, *a, **k: LOC)
+    monkeypatch.setattr(calibrate, "run_c0", lambda ctx, loc: {"structural": False})
+    monkeypatch.setattr(probe, "run", porter)
+    monkeypatch.setattr(
+        calibrate,
+        "run",
+        lambda ctx, loc, pr: {"reason": reasons[len(feedbacks) - 1], "feedback": "fb"},
+    )
+    monkeypatch.setattr(calibrate, "run_presence", presence)
+    with guard.publishing(spec):
+        run.pipeline(make_ctx(tmp_path, spec))
+    return feedbacks
+
+
+def test_no_reach_on_the_last_attempt_still_gets_one_retry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, no_subprocess: list[list[str]]
+) -> None:
+    calls = _no_reach_pipeline(
+        tmp_path, monkeypatch, ["NON_DISCRIMINATING", "FLAKY", "NO_REACH", "NO_REACH", "X"]
+    )
+    assert len(calls) == 4  # 3 attempts, then exactly one reach retry
+
+
+def test_no_reach_retries_once_only(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, no_subprocess: list[list[str]]
+) -> None:
+    calls = _no_reach_pipeline(tmp_path, monkeypatch, ["NO_REACH"] * 5)
+    assert len(calls) == 3  # the reach retry fits in the normal attempts; no extension

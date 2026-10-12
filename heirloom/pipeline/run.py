@@ -110,7 +110,11 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
     # Reuse mode (other lines, fixed twins, matrix): no porter call and no retries;
     # an ERROR on the new line is UNPROVEN(PROBE_ERROR) by the verdict table.
     models = ctx.s.porter_models()
-    for attempt in range(1 if reuse_probe else 3):  # first probe + up to 2 porter retries
+    attempts = 1 if reuse_probe else 3  # first probe + up to 2 porter retries
+    reach_retried = False  # NO_REACH earns exactly one retry with the unreached symbols
+    attempt = -1
+    while attempt + 1 < attempts:
+        attempt += 1
         try:
             # The cheaper model first; retries (with calibration feedback) use the stronger.
             model = models[min(attempt, len(models) - 1)]
@@ -137,6 +141,9 @@ def pipeline(ctx: Ctx, reuse_probe: dict[str, Any] | None = None) -> Result:
         if not cal.get("feedback"):
             break
         feedback = cal["feedback"]
+        if pres.get("reason") == "NO_REACH" and reuse_probe is None and not reach_retried:
+            reach_retried = True
+            attempts = max(attempts, attempt + 2)  # even when NO_REACH came last
 
     ad: dict[str, Any] | None = None
     ver: dict[str, Any] | None = None

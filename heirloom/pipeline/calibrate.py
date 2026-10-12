@@ -724,16 +724,43 @@ def feedback_for(cal: dict[str, Any], verdict: Presence) -> str | None:
         lines += [f"    harness: {h[:300]}" for r in runs[:1] for h in r["harness_errors"][:3]]
         return "\n".join(lines)
 
-    return "\n".join(
-        [
-            f"Calibration rejected the probe: {verdict.reason} ({verdict.detail}).",
-            "Required: FAIL (AssertionError) on the vulnerable trees, PASS on the fixed tree,",
-            "no ERROR or SKIP anywhere, identical failing tests on every run.",
-            describe("vulnerable 5.2 tree (U⁻)", cal["um"]),
-            describe("fixed 5.2 tree (U⁺)", cal["up"]),
-            describe("Django 4.2 (L)", cal["lt"]),
-        ]
-    )
+    parts = [
+        f"Calibration rejected the probe: {verdict.reason} ({verdict.detail}).",
+        "Required: FAIL (AssertionError) on the vulnerable trees, PASS on the fixed tree,",
+        "no ERROR or SKIP anywhere, identical failing tests on every run.",
+        describe("vulnerable 5.2 tree (U⁻)", cal["um"]),
+        describe("fixed 5.2 tree (U⁺)", cal["up"]),
+        describe("Django 4.2 (L)", cal["lt"]),
+    ]
+    if verdict.reason == "NO_REACH":
+        parts.append(reach_feedback(mapped))
+    return "\n".join(parts)
+
+
+def reach_feedback(mapped: list[dict[str, Any]]) -> str:
+    """NO_REACH: the fix's symbols on L by name, file and line range, with the body lines
+    the probe executed. Names and locations only, never a line of the fix, so the
+    leakage guard still checks the whole prompt."""
+    present = [m for m in mapped if m.get("how") != "absent" and m.get("l_path")]
+
+    def where(m: dict[str, Any]) -> str:
+        span = m.get("l_lines") or []
+        return f"`{m['qualname']}` in {m['l_path']}" + (
+            f" (lines {span[0]}-{span[1]} on L)" if len(span) == 2 else ""
+        )
+
+    missed = [m for m in present if not m.get("body_lines_hit")]
+    reached = [m for m in present if m.get("body_lines_hit")]
+    lines = [
+        "Reach (coverage on L): the probe must execute every function below on L,",
+        "through Django's public API, and assert on what it does there.",
+        "Not executed (0 body lines):",
+        *(f"- {where(m)}" for m in missed),
+    ]
+    if reached:
+        lines.append("Executed:")
+        lines += [f"- {where(m)}: {m['body_lines_hit']} body lines" for m in reached]
+    return "\n".join(lines)
 
 
 def reference(ctx: Ctx, loc: dict[str, Any], probe: dict[str, Any]) -> dict[str, Any]:

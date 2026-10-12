@@ -311,3 +311,43 @@ def test_no_porter_retry_when_no_fix_symbol_exists_on_l() -> None:
     # Without C1 the probe itself is broken on U⁻/U⁺: the porter still gets feedback.
     no_c1 = Presence("UNPROVEN", "NON_DISCRIMINATING", {"C1": Gate(False)}, "no FAIL on U⁻")
     assert feedback_for({**cal, "mapped": absent}, no_c1) is not None
+
+
+def test_no_reach_feedback_names_unreached_symbols_but_no_fix_line() -> None:
+    from heirloom.pipeline.calibrate import feedback_for
+    from heirloom.pipeline.presence import Presence
+    from heirloom.pipeline.probe import assert_no_leak
+
+    runs = [{"outcome": "FAIL", "details": {}, "harness_errors": []}]
+    mapped = [
+        {
+            "qualname": "BaseSpatialField.get_prep_value",
+            "how": "same-path",
+            "l_path": "django/contrib/gis/db/models/fields.py",
+            "l_lines": [190, 237],
+            "body_lines_hit": 0,
+        },
+        {
+            "qualname": "GDALRaster.check_raster_lookup_value",
+            "how": "same-path",
+            "l_path": "django/contrib/gis/gdal/raster/source.py",
+            "l_lines": [247, 261],
+            "body_lines_hit": 4,
+        },
+    ]
+    cal: dict[str, Any] = {"um": runs, "up": runs, "lt": runs, "mapped": mapped}
+    gates = {"C1": Gate(True)}
+    no_reach = Presence("UNPROVEN", "NO_REACH", gates, "probe never executed X on L")
+    fb = feedback_for(cal, no_reach)
+    assert fb is not None
+    missed = fb.split("Not executed (0 body lines):")[1].split("Executed:")[0]
+    assert "`BaseSpatialField.get_prep_value` in django/contrib/gis/db/models/fields.py" in missed
+    assert "(lines 190-237 on L)" in missed
+    assert "GDALRaster.check_raster_lookup_value" not in missed
+    assert "GDALRaster.check_raster_lookup_value` in django/contrib/gis/gdal/raster/source.py" in fb
+    # A fix line in the feedback would still trip the guard; names alone do not.
+    fix_line = "if isinstance(value, (bytes, memoryview)):"
+    assert assert_no_leak(fb, [fix_line]) == 1
+    # Other rejections carry no reach section.
+    flaky = Presence("UNPROVEN", "FLAKY", gates, "ids differ")
+    assert "Reach (coverage on L)" not in (feedback_for(cal, flaky) or "")
