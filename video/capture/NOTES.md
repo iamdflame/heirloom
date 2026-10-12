@@ -36,9 +36,17 @@ is identical (PSNR inf: nothing advances on real time), then `runFor` 1 s → fr
 ## What I checked and fixed (2–4 frames read per shot)
 - **pauseAt race** under load ("Cannot fast-forward to the past"; SH09, SH10 failed): retry with a doubling margin.
 - **`page.waitForTimeout` stalls** with a faked clock (SH01/SH02/SH11 hung for minutes): node-side sleeps instead.
-- **3D first frame**: while the page waits in real time, R3F queues frames faster than SwiftShader draws them, so the
-  first captured frame waits ~90 s for the backlog; later frames cost ~0.9 s alone, 2–3 s with 6 parallel jobs. Just
-  slow, not wrong.
+- **WebGL backlog**: while a page waits in real time, R3F queues frames far faster than SwiftShader draws them, so
+  the first captured frame waited minutes for the backlog (SH01/SH11/R3D sat on frame 0 for 7–12 min under load).
+  Fix: WebGL shots (`virtualReady`) pause at DOMContentLoaded and step the clock in 100 ms slices, draining the GPU
+  with a throwaway capture every 5 slices, until the 3D is ready; then a 0.3 s hold, no settle.
+- **WebGL cost**: on this box (8 cores, no GPU, shared with V-MO's Remotion renders) a 1920×1080 frame of the movement
+  costs ~1 s of SwiftShader time alone and 2–5 s under contention, so parallel workers do not help. With ~2 460 WebGL
+  frames planned (SH01, SH11, R3D01–03) and ~30 min left, I kept SH01 and dropped SH11 and R3D01–R3D03 (see below).
+- **Resolution at DSF ≠ 1**: raw `Page.captureScreenshot` returns CSS pixels, so the first GitHub/web takes came out
+  1536×864 and SHM 390×844. Now each frame asks for the viewport (`Page.getLayoutMetrics` page offsets) as a clip at
+  `scale: dsf` → 1920×1080 and 1170×2532. Clips are written to `.ID.part.mp4` and renamed on success.
+- Killing one encoder crashed the pool once (an unhandled rejection): the encoder promise is now caught per shot.
 - **SH06** overshot the pinned gear train (gears slid under the nav at the end): it now ends at the pin's end (13 800).
 - **SH07** overshot (the sticky heading went under the nav): it now ends at 15 470.
 - **CFO01**: a "Keep your access" sign-in prompt with a Cloudflare check covered the sheet; closed via its ×. The
@@ -54,3 +62,10 @@ is identical (PSNR inf: nothing advances on real time), then `runFor` 1 s → fr
 - SHM: 390×844 @3x → 1170×2532 (portrait; the phone hero shows the poster, by design: no 3D under 768 px).
 - GitHub: dark scheme logged out, 125 % (1536×864 CSS at DSF 1.25), no cookie banner seen (hidden by CSS if served).
   GH03/GH04/GH05 pages are short, so their scrolls clamp to the bottom; the target text is mid-frame throughout.
+
+## Not captured (time box)
+- **SH11** (finale, movement slowing to a stop) and **R3D01–R3D03** (beauty renders): not rendered; WebGL frames
+  are too slow on this machine to fit the time box (see "WebGL cost"). Everything to make them is in place:
+  `node shots.mjs -j 1 SH11` against `vite preview --port 4400`, and `node shots.mjs -j 1 R3D01 R3D02 R3D03` against
+  `vite --port 4401` in `site/web` (camera paths `three-demo.html?shot=orbit|macro|speed`). Run them one at a time on
+  an idle box: ~10–20 min each. Meanwhile SH01 (the live hero movement), SHM and the graded b-roll cover the movement.

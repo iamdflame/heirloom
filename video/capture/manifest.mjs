@@ -19,7 +19,14 @@ const out = [];
 for (const s of ALL) {
   const file = `${HOME}/video-out/captures/${s.id}.mp4`;
   if (!existsSync(file)) continue;
-  out.push({ id: s.id, file, ...probe(file), source: s.source ?? s.url, url: s.url, notes: s.notes ?? '' });
+  let meta;
+  try {
+    meta = probe(file);
+  } catch {
+    console.warn(`${s.id}: unreadable (still encoding?), skipped`);
+    continue;
+  }
+  out.push({ id: s.id, file, ...meta, source: s.source ?? s.url, url: s.url, notes: s.notes ?? '' });
 }
 const bdir = `${HOME}/video-out/broll`;
 for (const f of existsSync(bdir) ? readdirSync(bdir).filter((f) => f.endsWith('.mp4')).sort() : []) {

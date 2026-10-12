@@ -5,7 +5,7 @@
 // Each frame: set scroll + cursor for t, runFor(1000/fps), pump, screenshot (JPEG q92) → ffmpeg pipe.
 // So the output is smooth 60 fps however slowly the box renders WebGL.
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 export const OUT = `${process.env.HOME}/video-out/captures`;
@@ -176,15 +176,17 @@ export async function captureShot(browser, shot, log = console.log) {
   const events = [...(plan.events ?? [])].sort((a, b) => a.t - b.t);
 
   const out = `${OUT}/${shot.id}.mp4`;
+  const tmp = `${OUT}/.${shot.id}.part.mp4`; // renamed on success, so a killed run never clobbers a good clip
   mkdirSync(dirname(out), { recursive: true });
   const ff = spawn('ffmpeg', [
     '-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
     '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p',
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-pix_fmt', 'yuv420p',
     '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
-    '-movflags', '+faststart', '-r', String(fps), out,
+    '-movflags', '+faststart', '-r', String(fps), tmp,
   ], { stdio: ['pipe', 'inherit', 'inherit'] });
   const done = new Promise((res, rej) => ff.on('close', (c) => (c === 0 ? res() : rej(new Error(`ffmpeg exit ${c}`)))));
+  done.catch(() => {}); // a dead encoder must fail this shot, not crash the whole pool
 
   const apply = async (t) => {
     const y = plan.scroll?.(t);
@@ -220,13 +222,20 @@ export async function captureShot(browser, shot, log = console.log) {
     while (ei < events.length && events[ei].t <= t) await events[ei++].run(page);
     await apply(t);
     await tick();
-    const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92, optimizeForSpeed: false });
+    // raw CDP captures CSS pixels; at DSF ≠ 1 ask for the viewport (document coords) at device scale
+    let clip;
+    if (dsf !== 1) {
+      const { cssVisualViewport: v } = await cdp.send('Page.getLayoutMetrics');
+      clip = { x: v.pageX, y: v.pageY, width: w, height: h, scale: dsf };
+    }
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92, optimizeForSpeed: false, ...(clip ? { clip } : {}) });
     const buf = Buffer.from(data, 'base64');
     if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once('drain', r));
     if (f % (shot.logEvery ?? 60) === 0) log(`${shot.id} ${f}/${frames} (${((Date.now() - t0) / Math.max(1, f)).toFixed(0)} ms/frame)`);
   }
   ff.stdin.end();
   await done;
+  renameSync(tmp, out);
   await ctx.close();
   log(`${shot.id} → ${out} in ${((Date.now() - t0) / 1000).toFixed(0)} s${errors.length ? ` (page errors: ${errors.slice(0, 3).join(' | ')})` : ''}`);
   return { id: shot.id, file: out, seconds: frames / fps, fps, w: w * dsf, h: h * dsf, errors };
