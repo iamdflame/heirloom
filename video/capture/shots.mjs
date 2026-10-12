@@ -67,8 +67,8 @@ export const SITE_SHOTS = [
       };
     },
   },
-  scrollShot('SH06', 8, [[0, 11900], [7.6, 14231, R], [8, 14231]], { notes: 'method gear train (pinned)' }),
-  scrollShot('SH07', 9, [[0, 15100], [9, 15620, R]], { notes: 'question thread' }),
+  scrollShot('SH06', 8, [[0, 11900], [7.3, 13800, R], [8, 13800]], { notes: 'method gear train (pinned)' }),
+  scrollShot('SH07', 9, [[0, 15100], [9, 15470, R]], { notes: 'question thread' }),
   scrollShot('SH08', 6, [[0, 16330], [1.8, 16700, ease.out], [6, 16740, ease.linear]], { notes: 'proof numbers, count-ups' }),
   scrollShot('SH09', 6, [[0, 17800], [6, 18330, R]], { notes: 'economics cards' }),
   scrollShot('SH10', 6, [[0, 19380], [6, 20020, R]], { notes: 'evidence locker' }),
@@ -139,14 +139,57 @@ export const WEB_SHOTS = [
     },
   }),
   gh('GH06', `${GHR}/django/pulls`, 5, async () => [[0, 0], [0.8, 0], [4.4, 420, R], [5, 420]], 'fork PR list: 13 open candidate backports'),
-  gh('EOL01', 'https://endoflife.date/django', 4, async (p) => {
-    const n = await yOf(p, '4.2', 0).catch(() => 300);
-    return [[0, Math.max(0, n - 700)], [3.4, Math.max(0, n - 380), R], [4, Math.max(0, n - 380)]];
-  }, 'endoflife.date/django: 4.2 end of security support'),
-  gh('CFO01', 'https://app.cfo.ai/s/25vRDQClPxqPWB5g', 8, async (p) => {
-    const mx = await maxY(p);
-    return [[0, 0], [1.6, 0], [7.4, Math.min(mx, 900), R], [8, Math.min(mx, 900)]];
-  }, 'cfo.ai Base Page (shared)', { prepare: async (page) => sleep(4000) }),
+  {
+    ...gh('EOL01', 'https://endoflife.date/django', 4, async () => [], 'endoflife.date/django: the release table down to the 4.2 row; the site has no dark theme', {
+      // 4.2 sits under "Show more unmaintained releases"
+      prepare: async (page) => {
+        await page.getByRole('button', { name: /unmaintained releases/i }).click().catch(() => {});
+        await sleep(600);
+      },
+    }),
+    plan: async (page) => {
+      // the page scrolls an inner container on some layouts: use whichever element actually scrolls
+      const { sel, y } = await page.evaluate(() => {
+        const cand = [document.scrollingElement, ...document.querySelectorAll('*')].filter(
+          (e) => e && e.scrollHeight - e.clientHeight > 200 && (e === document.scrollingElement || /(auto|scroll)/.test(getComputedStyle(e).overflowY)),
+        );
+        const sc = cand[0];
+        if (sc !== document.scrollingElement) sc.setAttribute('data-cap-scroll', '');
+        const td = [...document.querySelectorAll('table td, table th')].find((e) => /^4\.2\b/.test(e.textContent.trim()));
+        const top = td ? td.getBoundingClientRect().top - (sc === document.scrollingElement ? 0 : sc.getBoundingClientRect().top) + sc.scrollTop : 600;
+        return { sel: sc === document.scrollingElement ? null : '[data-cap-scroll]', y: Math.round(top) };
+      });
+      const end = Math.max(0, y - 430);
+      return { scrollEl: sel, scroll: track([[0, Math.max(0, end - 260)], [3.4, end, R], [4, end]]) };
+    },
+  },
+  {
+    ...gh('CFO01', 'https://app.cfo.ai/s/25vRDQClPxqPWB5g', 8, async () => [], 'cfo.ai shared Base page (light UI; the sign-in prompt closed with its ×)', {
+      prepare: async (page) => {
+        await sleep(4000);
+        // close the "Keep your access" sign-in prompt (its × button), then tag the main scroller
+        await page.evaluate(() => {
+          const hit = [...document.querySelectorAll('*')].find((e) => e.childElementCount === 0 && e.textContent.trim() === 'Keep your access');
+          let box = hit;
+          for (let i = 0; box && i < 8 && !box.querySelector('button'); i++) box = box.parentElement;
+          box?.querySelector('button')?.click();
+          const sc = [...document.querySelectorAll('*')]
+            .filter((e) => /(auto|scroll)/.test(getComputedStyle(e).overflowY) && e.scrollHeight - e.clientHeight > 200)
+            .sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
+          if (sc) sc.id ||= '__cap_scroll', sc.setAttribute('data-cap-scroll', '');
+        });
+        await sleep(800);
+      },
+    }),
+    plan: async (page) => {
+      const mx = await page.evaluate(() => {
+        const e = document.querySelector('[data-cap-scroll]');
+        return e ? e.scrollHeight - e.clientHeight : 0;
+      });
+      const y = Math.min(mx, 620);
+      return { scrollEl: '[data-cap-scroll]', scroll: track([[0, 0], [1.6, 0], [7.2, y, R], [8, y]]) };
+    },
+  },
 ];
 
 // ---------------------------------------------------------------- 3D beauty renders (three-demo.html?shot=…, vite dev)
@@ -154,7 +197,7 @@ const r3d = (id, shot, seconds, notes) => ({
   id, url: `${DEMO}/three-demo.html?shot=${shot}`, seconds, notes, settle: 0.1,
   source: `site/web three-demo.html?shot=${shot} (vite dev)`,
   prepare: async (page) => {
-    await page.waitForSelector('html[data-ready]', { timeout: 90_000 });
+    await page.waitForSelector('html[data-ready]', { state: 'attached', timeout: 90_000 });
     await sleep(1200);
   },
   plan: async () => ({ events: [{ t: 0, run: (p) => p.evaluate(() => (window.__shotRestart = true)) }] }),

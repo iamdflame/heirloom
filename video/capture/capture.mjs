@@ -203,7 +203,7 @@ export async function captureShot(browser, shot, log = console.log) {
     const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92, optimizeForSpeed: false });
     const buf = Buffer.from(data, 'base64');
     if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once('drain', r));
-    if (f % 120 === 0) log(`${shot.id} ${f}/${frames} (${((Date.now() - t0) / Math.max(1, f)).toFixed(0)} ms/frame)`);
+    if (f % (shot.logEvery ?? 60) === 0) log(`${shot.id} ${f}/${frames} (${((Date.now() - t0) / Math.max(1, f)).toFixed(0)} ms/frame)`);
   }
   ff.stdin.end();
   await done;
