@@ -1,0 +1,47 @@
+<task-notification>
+<task-id>bm6qgdyzs</task-id>
+<tool-use-id>toolu_01KL2ZheHnPVERkqRR2Ya6WA</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/03dac0ae-e9f9-45d5-87c4-eee3621d7e70/tasks/bm6qgdyzs.output</output-file>
+<status>completed</status>
+<summary>Background command "cd ~/heirloom/video &amp;&amp; cat &gt; scripts/captions-burn.mjs &lt;&lt;'EOF'
+// Burns the captions into the silent master: one transparent PNG per cue (renderStill of CaptionsLayer at the cue's
+// middle frame), overlaid by ffmpeg with 0.1 s alpha fades. → master/HeirloomDemo-captions.mp4
+// (The ProRes 4444 layer route came out without alpha on this box.)
+import { bundle } from '@remotion/bundler';
+import { renderStill, selectComposition } from '@remotion/renderer';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+
+const root = join(import.meta.dirname, '..');
+const OUT = process.env.VIDEO_OUT ?? join(homedir(), 'video-out');
+const T = JSON.parse(readFileSync(join(root, 'timing-vo.json'), 'utf8'));
+const dir = join(root, 'out/cues');
+mkdirSync(dir, { recursive: true });
+const serveUrl = await bundle({ entryPoint: join(root, 'src/polish/index.ts'), publicDir: join(root, 'public') });
+const composition = await selectComposition({ serveUrl, id: 'CaptionsLayer', inputProps: {} });
+const files = [];
+for (const [i, c] of T.captions.entries()) {
+  const f = join(dir, `c${String(i).padStart(2, '0')}.png`);
+  await renderStill({ composition, serveUrl, frame: Math.round((c.from + c.to) / 2), output: f, imageFormat: 'png' });
+  files.push(f);
+}
+console.log(`${files.length} cue PNGs`);
+const fps = T.fps;
+const inputs = ['-i', join(OUT, 'master/HeirloomDemo-silent.mp4')];
+const chains = [];
+let last = '0:v';
+T.captions.forEach((c, i) =&gt; {
+  const a = c.from / fps, d = (c.to - c.from + 1) / fps;
+  inputs.push('-loop', '1', '-t', d.toFixed(3), '-i', files[i]);
+  chains.push(`[${i + 1}:v]format=rgba,fade=t=in:st=0:d=0.1:alpha=1,fade=t=out:st=${(d - 0.1).toFixed(3)}:d=0.1:alpha=1,setpts=PTS+${a.toFixed(3)}/TB[p${i}]`);
+  chains.push(`[${last}][p${i}]overlay=0:0:eof_action=pass[v${i}]`);
+  last = `v${i}`;
+});
+chains.push(`[${last}]format=yuv420p[out]`);
+execFileSync('ffmpeg', ['-v', 'error', '-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-r', String(fps), '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-movflags', '+faststart', '-an', join(OUT, 'master/HeirloomDemo-captions.mp4')], { stdio: 'inherit' });
+console.log('master/HeirloomDemo-captions.mp4');
+EOF
+time node scripts/captions-burn.mjs 2&gt;&amp;1 | tail -3" completed (exit code 0)</summary>
+</task-notification>
