@@ -6,7 +6,7 @@
   "scripts": {
     "data": "node scripts/build-data.mjs",
     "dev": "node scripts/build-data.mjs && vite",
-    "build": "node scripts/build-data.mjs && tsc --noEmit && vitest run && vite build",
+    "build": "node scripts/build-data.mjs && tsc --noEmit && vitest run && vite build && vite build --ssr src/prerender.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview --port 4173 --strictPort",
     "test": "vitest run",
     "qa": "node scripts/qa.mjs",
