@@ -69,6 +69,9 @@ const LINE_LABEL = {
   'ubuntu-noble': { name: 'Ubuntu 24.04', note: 'noble' },
 };
 const RECORD = 'HL–4.2';
+const OBJECT = 'Django 4.2 LTS';
+const EOL_SOURCE = 'https://endoflife.date/django'; // outside confirmation of the EOL date
+const LINE_ABBR = { '4.2.30': 'DJ', 'debian-trixie': 'DE', 'ubuntu-noble': 'UB' };
 
 // ---------- campaign scope: the 19 post-EOL CVEs ----------
 const perCve = need(campaign, 'per_cve', 'campaign.json');
@@ -103,6 +106,7 @@ const lines = LINE_ORDER.map((id) => {
     id,
     name: lab.name,
     note: lab.note,
+    abbr: LINE_ABBR[id],
     kind: need(spec, 'kind', `matrix.lines.${id}`),
     version, // exact package version string (or the upstream tag for the eval line)
     upstream, // the upstream 4.2.x it is built on
@@ -334,13 +338,102 @@ const inputs = [];
   }
   if (!inputs.length) fail('business-plan.md inputs table is empty');
 }
-const cfoPages = [...businessPlan.matchAll(/\[(Base|Bear|Bull)\]\((https:\/\/app\.cfo\.ai\/s\/[^)]+)\)/g)].map((m) => ({ name: m[1], url: m[2] }));
+// "- Base: <https://app.cfo.ai/s/…>" in the plan (or "[Base](…)" in the README)
+const cfoPages = [...businessPlan.matchAll(/(?:\[|- )(Base|Bear|Bull)(?:\]\(|: <)(https:\/\/app\.cfo\.ai\/s\/[^)>]+)[)>]/g)]
+  .map((m) => ({ name: m[1], url: m[2] }))
+  .filter((p, i, a) => a.findIndex((q) => q.name === p.name) === i);
+if (cfoPages.length !== 3) fail(`business-plan.md: expected the Base/Bear/Bull cfo.ai links, found ${cfoPages.length}`);
+// the plan's results table, read back from cfo.ai (hypothesis outputs)
+const planResults = [];
+{
+  const tbl = businessPlan.split('## Results')[1]?.split('\n## ')[0] ?? fail('business-plan.md has no results table');
+  for (const line of tbl.split('\n')) {
+    const cols = line.split('|').slice(1, -1).map((s) => s.trim());
+    if (cols.length !== 4 || !cols[0] || cols[0].startsWith('---')) continue;
+    planResults.push({ name: cols[0], base: cols[1], bear: cols[2], bull: cols[3] });
+  }
+  if (planResults.length < 3) fail('business-plan.md results table is too short');
+}
 
 // ---------- detections ----------
 const det = Object.entries(need(detections, 'neatlogs', 'detections.json')).map(([name, d]) => ({ name, hits: d.hits }));
 
+// ---------- Fig. 2: the Ubuntu finding (the stacked CVE on noble) ----------
+const readme = readFileSync(join(ROOT, 'README.md'), 'utf8');
+const hackathon = readFileSync(join(ROOT, 'hackathon.md'), 'utf8');
+const repoFile = (path) => {
+  try {
+    readFileSync(join(ROOT, path));
+  } catch {
+    fail(`linked repo file ${path} does not exist`);
+  }
+  return `${REPO}/blob/main/${path}`;
+};
+let finding;
+if (stacked && stackedOn) {
+  const noble = cellsBy.get(`${stacked.cve}|ubuntu-noble`) ?? fail(`no noble cell for ${stacked.cve}`);
+  const outcomes = (k) => need(noble, ['runs', k], `noble cell ${stacked.cve}`).map((r) => r.outcome);
+  const claim = readme.match(/\*\*Ubuntu finding:\*\* (.+?;.+?\.) /)?.[1] ?? fail('README has no "Ubuntu finding" sentence');
+  const distroStop = stops.find((x) => x.kind === 'distro') ?? fail('no distro stop');
+  const sha = need(noble, 'fix.commits.0', `noble cell ${stacked.cve}`);
+  const logs = receipts[stacked.cve]?.matrix_logs ?? fail(`no matrix logs for ${stacked.cve}`);
+  finding = {
+    cve: stacked.cve,
+    title: stacked.title,
+    advisory_date: stacked.date,
+    advisory_url: stacked.url,
+    amends: stackedOn.cve,
+    distro_date: distroStop.date,
+    line: 'ubuntu-noble',
+    version: lines.find((l) => l.id === 'ubuntu-noble').version,
+    um: outcomes('um'),
+    up: outcomes('up'),
+    lt: outcomes('lt'),
+    fix_commit: sha,
+    fix_url: `https://github.com/django/django/commit/${sha}`,
+    hand_written: String(need(noble, 'probe.origin', 'noble probe')).startsWith('hand-written'),
+    probe_sha: need(noble, 'probe.sha', 'noble probe'),
+    logs,
+    claim,
+    draft: repoFile('docs/outreach/ubuntu-cve-2026-87890.md'),
+    amends_noble: cellsBy.get(`${stackedOn.cve}|ubuntu-noble`)?.verdict,
+  };
+}
+
+// ---------- Method: the artifact behind each stage ----------
+const example = rows.find((r) => r.campaign.number === 13 && r.campaign.treatment === 'pr') ?? rows.find((r) => r.campaign.treatment === 'pr');
+const exampleIssue = rows.find((r) => r.campaign.treatment === 'issue');
+const method = {
+  example: { cve: example.cve, anchor: example.anchor, pr: example.campaign.link, number: example.campaign.number },
+  issue: { cve: exampleIssue.cve, anchor: exampleIssue.anchor, url: exampleIssue.campaign.link, number: exampleIssue.campaign.number },
+  code: {
+    locate: repoFile('heirloom/pipeline/locate.py'),
+    probe: repoFile('heirloom/pipeline/probe.py'),
+    calibrate: repoFile('heirloom/pipeline/calibrate.py'),
+    verify: repoFile('heirloom/pipeline/verify.py'),
+    decide: repoFile('heirloom/pipeline/decide.py'),
+  },
+  evidence: repoFile('evals/campaign_evidence.json'),
+};
+
+// ---------- Stated limits: the facts behind them ----------
+const recovery = read(join(EVALS, 'recovery_b4.json'));
+const WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+const restartsWord = hackathon.match(/restarted the campaign workers (\w+) times/)?.[1] ?? fail('hackathon.md: no restart count');
+const limits = {
+  restarts: WORDS[restartsWord] ?? Number(restartsWord),
+  recovery: {
+    cve: need(recovery, 'cve', 'recovery_b4.json'),
+    run_id: need(recovery, 'runs.0.run_id', 'recovery_b4.json'),
+    url: repoFile('evals/recovery_b4.json'),
+  },
+};
+
 const site = {
   record: RECORD,
+  object: OBJECT,
+  eol_source: EOL_SOURCE,
+  repo: REPO,
   generated_at: need(campaign, 'generated_at', 'campaign.json'),
   eol: EOL,
   campaign: need(campaign, 'campaign', 'campaign.json'),
@@ -369,7 +462,23 @@ const site = {
   query,
   backtest,
   detections: det,
-  economics: { inputs, pages: cfoPages },
+  economics: {
+    inputs,
+    pages: cfoPages,
+    results: planResults,
+    plan: repoFile('docs/business-plan.md'),
+  },
+  finding,
+  method,
+  limits,
+  files: {
+    detections: repoFile('evals/detections.json'),
+    detections_flag_check: repoFile('evals/detections_flag_check.json'),
+    results: repoFile('evals/results.json'),
+    results_live: repoFile('evals/results_live.json'),
+    entire_docs: `${REPO}/tree/main/docs/entire`,
+    evidence_md: repoFile('EVIDENCE.md'),
+  },
   links: { prs: prs.sort((a, b) => numOf(a) - numOf(b)), issues: issues.sort((a, b) => numOf(a) - numOf(b)) },
   live_summary: live.summary?.verdicts,
 };
@@ -398,6 +507,7 @@ export interface Line {
   id: LineId;
   name: string;
   note: string;
+  abbr: string;
   kind: string;
   version: string;
   upstream: string;
@@ -454,8 +564,33 @@ export interface Stop {
   label: string;
 }
 
+export interface Finding {
+  cve: string;
+  title: string;
+  advisory_date: string;
+  advisory_url?: string;
+  amends: string;
+  distro_date: string;
+  line: LineId;
+  version: string;
+  um: string[];
+  up: string[];
+  lt: string[];
+  fix_commit: string;
+  fix_url: string;
+  hand_written: boolean;
+  probe_sha: string;
+  logs: string;
+  claim: string;
+  draft: string;
+  amends_noble?: MatrixVerdict;
+}
+
 export interface Site {
   record: string;
+  object: string;
+  eol_source: string;
+  repo: string;
   generated_at: string;
   eol: string;
   campaign: string;
@@ -505,7 +640,21 @@ export interface Site {
     usd_per_case: number;
   }>;
   detections: { name: string; hits: number }[];
-  economics: { inputs: { name: string; base: string; bear: string; bull: string; status: string }[]; pages: { name: string; url: string }[] };
+  economics: {
+    inputs: { name: string; base: string; bear: string; bull: string; status: string }[];
+    pages: { name: string; url: string }[];
+    results: { name: string; base: string; bear: string; bull: string }[];
+    plan: string;
+  };
+  finding?: Finding;
+  method: {
+    example: { cve: string; anchor: string; pr: string; number: number };
+    issue: { cve: string; anchor: string; url: string; number: number };
+    code: Record<'locate' | 'probe' | 'calibrate' | 'verify' | 'decide', string>;
+    evidence: string;
+  };
+  limits: { restarts: number; recovery: { cve: string; run_id: string; url: string } };
+  files: Record<'detections' | 'detections_flag_check' | 'results' | 'results_live' | 'entire_docs' | 'evidence_md', string>;
   links: { prs: string[]; issues: string[] };
 }
 

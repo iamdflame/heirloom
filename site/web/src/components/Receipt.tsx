@@ -3,7 +3,8 @@ import type { LineId, Receipt as ReceiptT, ReceiptCell, Row } from '@/data/types
 import { CHIP_META, GATES, REASONS, lineById, prNum, shortDate, site } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { Chip } from './Chip';
-import { RstTitle } from './Code';
+import { Breakable, RstTitle } from './Code';
+import { FileText, GitPullRequest } from 'lucide-react';
 import { CopyButton } from './CopyButton';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from './ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -172,9 +173,11 @@ function Examination({ cell, row }: { cell: ReceiptCell; row: Row }) {
       {ids.length > 0 && (
         <div>
           <p className="label mb-1">Failing tests</p>
-          <ul className="grid gap-1 font-mono text-[0.72rem] leading-snug [overflow-wrap:anywhere]">
+          <ul className="grid gap-1 font-mono text-[0.72rem] leading-snug">
             {ids.map((id) => (
-              <li key={id}>{id}</li>
+              <li key={id}>
+                <Breakable text={id} />
+              </li>
             ))}
           </ul>
         </div>
@@ -247,12 +250,12 @@ function Treatment({ row }: { row: Row }) {
   if (c.treatment === 'pr') {
     return (
       <div className="grid gap-2 text-[0.95rem]">
-        <p>
-          <a className="link" href={c.link}>
-            Candidate backport PR {prNum(c.link)}
-          </a>
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <TreatmentLink href={c.link} icon="pr">
+            Open the candidate backport, PR {prNum(c.link)}
+          </TreatmentLink>
           {c.fail_to_pass && (
-            <span className="ml-2 font-mono text-[0.8rem]">
+            <span className="font-mono text-[0.8rem]">
               probe {c.fail_to_pass.before[0]}×{c.fail_to_pass.before.length} → {c.fail_to_pass.after[0]}×{c.fail_to_pass.after.length}
             </span>
           )}
@@ -281,11 +284,11 @@ function Treatment({ row }: { row: Row }) {
   }
   return (
     <div className="grid gap-2 text-[0.95rem]">
-      <p>
-        <a className="link" href={c.link}>
-          Evidence issue {prNum(c.link)}
-        </a>
-        <span className="ml-2 font-mono text-[0.75rem] text-muted">{c.verdict.replaceAll('_', ' ')}{c.reason ? ` · ${c.reason}` : ''}</span>
+      <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <TreatmentLink href={c.link} icon="issue">
+          Open the evidence, issue {prNum(c.link)}
+        </TreatmentLink>
+        <span className="font-mono text-[0.75rem] text-muted">{c.verdict.replaceAll('_', ' ')}{c.reason ? ` · ${c.reason}` : ''}</span>
       </p>
       <p className="text-muted">
         {c.verdict === 'NOT_AFFECTED_PROVEN'
@@ -293,6 +296,19 @@ function Treatment({ row }: { row: Row }) {
           : `No code: ${c.reason && REASONS[c.reason] ? REASONS[c.reason] : 'it could not prove either way'}, so it published the evidence instead of a guess.`}
       </p>
     </div>
+  );
+}
+
+function TreatmentLink({ href, icon, children }: { href: string; icon: 'pr' | 'issue'; children: React.ReactNode }) {
+  const Icon = icon === 'pr' ? GitPullRequest : FileText;
+  return (
+    <a
+      href={href}
+      className="press inline-flex min-h-11 items-center gap-2 text-[1.1rem] font-medium underline decoration-ink/40 underline-offset-[0.2em] hover-underline"
+    >
+      <Icon className="h-[1.1rem] w-[1.1rem] shrink-0" aria-hidden />
+      {children}
+    </a>
   );
 }
 

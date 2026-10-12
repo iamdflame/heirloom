@@ -7,6 +7,7 @@ export interface Line {
   id: LineId;
   name: string;
   note: string;
+  abbr: string;
   kind: string;
   version: string;
   upstream: string;
@@ -63,8 +64,33 @@ export interface Stop {
   label: string;
 }
 
+export interface Finding {
+  cve: string;
+  title: string;
+  advisory_date: string;
+  advisory_url?: string;
+  amends: string;
+  distro_date: string;
+  line: LineId;
+  version: string;
+  um: string[];
+  up: string[];
+  lt: string[];
+  fix_commit: string;
+  fix_url: string;
+  hand_written: boolean;
+  probe_sha: string;
+  logs: string;
+  claim: string;
+  draft: string;
+  amends_noble?: MatrixVerdict;
+}
+
 export interface Site {
   record: string;
+  object: string;
+  eol_source: string;
+  repo: string;
   generated_at: string;
   eol: string;
   campaign: string;
@@ -114,7 +140,21 @@ export interface Site {
     usd_per_case: number;
   }>;
   detections: { name: string; hits: number }[];
-  economics: { inputs: { name: string; base: string; bear: string; bull: string; status: string }[]; pages: { name: string; url: string }[] };
+  economics: {
+    inputs: { name: string; base: string; bear: string; bull: string; status: string }[];
+    pages: { name: string; url: string }[];
+    results: { name: string; base: string; bear: string; bull: string }[];
+    plan: string;
+  };
+  finding?: Finding;
+  method: {
+    example: { cve: string; anchor: string; pr: string; number: number };
+    issue: { cve: string; anchor: string; url: string; number: number };
+    code: Record<'locate' | 'probe' | 'calibrate' | 'verify' | 'decide', string>;
+    evidence: string;
+  };
+  limits: { restarts: number; recovery: { cve: string; run_id: string; url: string } };
+  files: Record<'detections' | 'detections_flag_check' | 'results' | 'results_live' | 'entire_docs' | 'evidence_md', string>;
   links: { prs: string[]; issues: string[] };
 }
 

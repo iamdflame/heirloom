@@ -6,17 +6,26 @@ export function RstTitle({ text }: { text: string }) {
       {parts.map((p, i) =>
         i % 2 ? (
           <code key={i} className="font-mono text-[0.86em]">
-            {p.split(/(?<=[._])/).map((seg, j) => (
-              <span key={j}>
-                {j > 0 && <wbr />}
-                {seg}
-              </span>
-            ))}
+            <Breakable text={p} />
           </code>
         ) : (
           <span key={i}>{p}</span>
         ),
       )}
+    </>
+  );
+}
+
+/** A long identifier with break opportunities after . and _ (never mid-word). */
+export function Breakable({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/(?<=[._])/).map((seg, j) => (
+        <span key={j}>
+          {j > 0 && <wbr />}
+          {seg}
+        </span>
+      ))}
     </>
   );
 }

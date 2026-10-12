@@ -5,6 +5,7 @@ import { CHIP_META, lineById, shortDate, site } from '@/lib/site';
 import { Chip, ChipLegend } from './Chip';
 import { RstTitle } from './Code';
 import { Replay } from './Replay';
+import { onGoto, type Goto } from '@/lib/goto';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 
 export type OpenReceipt = (anchor: string, line: LineId, trigger: HTMLElement | null) => void;
@@ -76,6 +77,41 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
       f();
     }
   };
+
+  // ---- jumps from the hero's mini register: show everything, then focus the cell ----
+  const [hit, setHit] = useState<string | null>(null);
+  const [pending, setPending] = useState<Goto | null>(null);
+  useEffect(
+    () =>
+      onGoto((g) => {
+        setFilter('ALL');
+        setStop(last);
+        setHit(g.anchor);
+        setPending({ ...g });
+      }),
+    [last],
+  );
+  useEffect(() => {
+    if (!pending) return;
+    const wide = window.matchMedia('(min-width: 768px)').matches;
+    const el = wide
+      ? cellRefs.current.get(key(pending.anchor, pending.col))
+      : document.querySelector<HTMLElement>(`[data-card="${pending.anchor}|${pending.col}"]`);
+    if (el) {
+      // desktop: centre the row; mobile: the whole card, its top under the nav
+      (wide ? el : el.closest('li[data-row]') ?? el).scrollIntoView({ block: wide ? 'center' : 'start' });
+      el.focus({ preventScroll: true });
+    }
+    setPending(null);
+  }, [pending]);
+  useEffect(() => {
+    if (!hit) return;
+    const clear = (e: PointerEvent) => {
+      if (!(e.target as Element).closest?.(`[data-row="${hit}"]`)) setHit(null);
+    };
+    document.addEventListener('pointerdown', clear);
+    return () => document.removeEventListener('pointerdown', clear);
+  }, [hit]);
 
   // ---- the 87890 → 15307 connector, drawn in the right margin ----
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -153,7 +189,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
 
         {/* desktop/tablet: the ledger sheet */}
         <div ref={sheetRef} className="relative mt-5 hidden md:block xl:pr-44">
-          <div className="overflow-x-auto rounded-[2px] border border-ledger-rule bg-ledger">
+          <div className="overflow-x-auto rounded-[2px] border border-ledger-rule bg-ledger lg:overflow-visible">
             <p id="register-help" className="sr-only">
               Each verdict cell is a button. Use the arrow keys to move between cells, Home and End for the start or end of a
               row, and Enter to open the receipt.
@@ -163,12 +199,12 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                 <col className="w-[7.25rem]" />
                 <col />
                 {site.lines.map((l) => (
-                  <col key={l.id} className="w-[8.25rem] lg:w-[9rem]" />
+                  <col key={l.id} className="w-[8.25rem] lg:w-[9rem] xl:w-[10rem]" />
                 ))}
                 <col className="hidden w-[11rem] lg:table-column" />
               </colgroup>
               <thead>
-                <tr className="border-b-2 border-ledger-rule align-bottom">
+                <tr className="border-b-2 border-ledger-rule align-bottom lg:border-b-0">
                   <th scope="col" className="ledger-acc sticky left-0 z-10 bg-ledger px-3 py-3 label">
                     Accession
                   </th>
@@ -204,6 +240,8 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                         else rowRefs.current.delete(r.anchor);
                       }}
                       className="border-b border-ledger-rule"
+                      data-row={r.anchor}
+                      data-hit={hit === r.anchor ? '' : undefined}
                       aria-hidden={isArrived ? undefined : true}
                     >
                       <th scope="row" className="ledger-acc sticky left-0 z-10 bg-ledger px-3 py-2 text-left align-middle font-mono text-[0.8rem] font-normal">
@@ -283,7 +321,12 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
         {/* mobile: one card per CVE */}
         <ol className="mt-5 grid gap-3 md:hidden" aria-label="Register entries">
           {shown.map((r) => (
-            <li key={r.anchor} className="min-w-0 rounded-[2px] border border-ledger-rule bg-ledger p-4">
+            <li
+              key={r.anchor}
+              data-row={r.anchor}
+              data-hit={hit === r.anchor ? '' : undefined}
+              className="min-w-0 rounded-[2px] border border-ledger-rule bg-ledger p-4"
+            >
               <p className="flex items-baseline justify-between gap-3 font-mono text-[0.75rem] text-muted">
                 <span>{r.acc}</span>
                 <span>{shortDate(r.date)}</span>
@@ -305,12 +348,13 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                 </p>
               )}
               <ul className="mt-3 divide-y divide-ledger-rule border-t border-ledger-rule">
-                {r.cells.map((cell) => {
+                {r.cells.map((cell, ci) => {
                   const line = lineById[cell.line];
                   return (
                     <li key={cell.line}>
                       <button
                         type="button"
+                        data-card={`${r.anchor}|${ci}`}
                         onClick={(e) => onOpen(r.anchor, cell.line, e.currentTarget)}
                         className="press flex min-h-12 w-full items-center justify-between gap-3 py-2 text-left"
                       >

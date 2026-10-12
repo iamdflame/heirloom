@@ -29,10 +29,10 @@ export const SheetContent = React.forwardRef<
       ref={ref}
       data-side={side}
       className={cn(
-        'sheet fixed z-50 flex flex-col bg-surface text-ink shadow-[0_8px_40px_rgb(0_0_0/0.18)]',
+        'sheet fixed z-50 flex flex-col bg-surface text-ink',
         side === 'right'
-          ? 'inset-y-0 right-0 h-full w-[min(40rem,100vw)] rounded-l-sheet'
-          : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-sheet',
+          ? 'inset-y-0 right-0 h-full w-[min(40rem,100vw)] rounded-l-sheet shadow-[0_8px_40px_rgb(0_0_0/0.18)]'
+          : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-sheet shadow-[0_-2px_12px_rgb(0_0_0/0.12)]',
         className,
       )}
       {...props}
