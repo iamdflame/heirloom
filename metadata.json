@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QSKEDE2D9BED3KDFCQ0MA3",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "site/web/src/components/Campaign.tsx",
+    "site/web/src/components/Finding.tsx",
+    "site/web/src/lib/campaign.ts",
+    "site/web/src/lib/guilloche.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 72,
+    "cache_creation_tokens": 74465,
+    "cache_read_tokens": 5645358,
+    "output_tokens": 53123,
+    "api_call_count": 36
+  }
+}
