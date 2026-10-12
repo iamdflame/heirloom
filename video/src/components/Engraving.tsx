@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useCurrentFrame } from 'remotion';
+import { Img, staticFile, useCurrentFrame } from 'remotion';
 import { C } from '../theme';
 import { HALLMARK_H, hallmarkRing, rosette, waveBand } from '../lib/guilloche';
 import { io, springStamp } from '../lib/anim';
@@ -108,9 +108,10 @@ export const Ground: React.FC<{ glow?: number; ring?: boolean; ringOpacity?: num
         }}
       />
       {ring && (
-        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: `translate(-50%,-50%) rotate(${frame * 0.02}deg)` }}>
-          <GuillocheRing size={1500} copies={14} lobes={36} amp={3} strokeWidth={0.06} opacity={ringOpacity} at={-999} />
-        </div>
+        <Img
+          src={staticFile('rosette-ground.svg')}
+          style={{ position: 'absolute', left: 210, top: -210, width: 1500, height: 1500, opacity: ringOpacity, transform: `rotate(${frame * 0.02}deg)` }}
+        />
       )}
       <Vignette />
     </div>

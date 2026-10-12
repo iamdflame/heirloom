@@ -8,8 +8,11 @@ import { GuillocheRing, Vignette } from './Engraving';
 const CAPS = captures as Record<string, { seconds: number; file: string; source?: string }>;
 
 const has = (name: string) => getStaticFiles().some((f) => f.name === name);
-export const captureFile = (id: string) => (CAPS[id] ? CAPS[id].file : `captures/${id}.mp4`);
+/** "BR01" also matches V-CAP's descriptive names such as "BR01-balance-wheel-skeleton". */
+const resolve = (id: string) => (CAPS[id] ? id : Object.keys(CAPS).find((k) => k.startsWith(`${id}-`)) ?? id);
+export const captureFile = (id: string) => (CAPS[resolve(id)] ? CAPS[resolve(id)].file : `captures/${id}.mp4`);
 export const hasCapture = (id: string) => has(captureFile(id));
+const capInfo = (id: string) => CAPS[resolve(id)];
 
 /** Labelled stand-in until V-CAP's real clip lands in public/captures/. */
 const Placeholder: React.FC<{ id: string; label: string }> = ({ id, label }) => {
@@ -52,13 +55,16 @@ export const CaptureClip: React.FC<{
   origin?: string;
   scale?: number; // window size relative to the frame
   enter?: boolean;
-}> = ({ id, label, url, mode = 'window', startFrom = 0, rate = 1, push = 0.03, origin = '50% 50%', scale = 0.86, enter = true }) => {
+  vignette?: number;
+  baseZoom?: number; // crop into the clip (e.g. to keep a site's modal out of frame)
+}> = ({ id, label, url, mode = 'window', startFrom = 0, rate = 1, push = 0.03, origin = '50% 50%', scale = 0.86, enter = true, baseZoom = 1, vignette = 0.35 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames, fps } = useVideoConfig();
   const ok = hasCapture(id);
   const p = frame / Math.max(1, durationInFrames);
-  const zoom = 1 + push * p;
-  const clipFrames = CAPS[id] ? Math.floor((CAPS[id].seconds - startFrom) * fps / rate) - 1 : Infinity;
+  const zoom = baseZoom * (1 + push * p);
+  const info = capInfo(id);
+  const clipFrames = info ? Math.floor(((info.seconds - startFrom) * fps) / rate) - 1 : Infinity;
   const src = ok ? staticFile(captureFile(id)) : '';
   const media = ok ? (
     <>
@@ -109,7 +115,7 @@ export const CaptureClip: React.FC<{
       >
         <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 18.5, overflow: 'hidden', background: C.ink }}>
           <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: 1080, transform: `scale(${scale})`, transformOrigin: '0 0' }}>{inner}</div>
-          <Vignette strength={0.35} />
+          {vignette > 0 && <Vignette strength={vignette} />}
         </div>
       </div>
       {url && (

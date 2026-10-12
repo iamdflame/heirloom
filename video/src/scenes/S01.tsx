@@ -52,7 +52,7 @@ export const S01: React.FC<SceneProps> = ({ scale }) => {
     <AbsoluteFill style={{ background: '#000' }}>
       <AbsoluteFill style={{ opacity: fadeUp }}>
         {broll ? <CaptureClip id="BR01" label="macro watch movement" mode="full" push={0.04} /> : <Photo src="photos/movement-1920.webp" dim={0.62} push={0.05} origin="70% 50%" />}
-        <AbsoluteFill style={{ background: 'linear-gradient(90deg, rgba(8,9,10,0.92) 0%, rgba(8,9,10,0.55) 50%, rgba(8,9,10,0.2) 100%)' }} />
+        <AbsoluteFill style={{ background: 'linear-gradient(90deg, rgba(8,9,10,0.94) 0%, rgba(8,9,10,0.82) 38%, rgba(8,9,10,0.35) 70%, rgba(8,9,10,0.25) 100%)' }} />
       </AbsoluteFill>
       <div style={{ position: 'absolute', right: 120, top: 540 - 380, opacity: 0.85 * fadeUp }}>
         <Dial tickAt={b(0.9)} size={760} />

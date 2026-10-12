@@ -484,6 +484,14 @@
   },
   {
    "scene": "S07",
+   "at": 5.2,
+   "name": "tick",
+   "what": "cut to GitHub issue #6 (the question and the answer)",
+   "prompt": "soft digital tick, muted, minimal UI sound",
+   "frame": 6252
+  },
+  {
+   "scene": "S07",
    "at": 10.6,
    "name": "stamp",
    "what": "PRECEDENT SEALED P001",
@@ -500,11 +508,19 @@
   },
   {
    "scene": "S08",
-   "at": 2.4,
+   "at": 3.5,
+   "name": "stamp",
+   "what": "the naive pipeline's red 1 lands",
+   "prompt": "rubber ink stamp hitting paper, single, tight and dry",
+   "frame": 7170
+  },
+  {
+   "scene": "S08",
+   "at": 7.5,
    "name": "boom",
-   "what": "backtest split lands (1 vs 0)",
+   "what": "Heirloom's 0 lands (\"Heirloom: zero times\")",
    "prompt": "deep soft cinematic sub boom, short tail",
-   "frame": 7104
+   "frame": 7410
   },
   {
    "scene": "S09",

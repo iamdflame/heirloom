@@ -31,7 +31,7 @@ export const S09: React.FC<SceneProps> = ({ scale, frames }) => {
         <CaptureClip id="SH09" label="Site economics cards" url={`${SITE_URL} · economics`} />
       </Seq>
       <Seq from={t2} to={frames}>
-        <CaptureClip id="CFO01" label="cfo.ai Base page: the business model" url={CFO_BASE.replace('https://', '')} enter={false} />
+        <CaptureClip id="CFO01" vignette={0.12} baseZoom={1.3} origin="0% 0%" label="cfo.ai Base page: the business model" url={CFO_BASE.replace('https://', '')} enter={false} />
       </Seq>
     </AbsoluteFill>
   );

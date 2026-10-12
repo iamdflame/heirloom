@@ -18,9 +18,9 @@ export const S04: React.FC<SceneProps> = ({ scale, frames }) => {
     <AbsoluteFill>
       <Seq from={0} to={cut}>
         <Ground ring={false} glow={1.6} />
-        {render3d ? (
+        {render3d || hasCapture('BR02') ? (
           <AbsoluteFill style={{ opacity: 1 - 0.55 * settle }}>
-            <CaptureClip id="R3D01" label="3D brass movement, slow orbit" mode="full" push={0.05} />
+            <CaptureClip id={render3d ? 'R3D01' : 'BR02'} label="3D brass movement, slow orbit" mode="full" push={0.05} />
           </AbsoluteFill>
         ) : (
           <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', opacity: 0.9 - 0.4 * settle }}>

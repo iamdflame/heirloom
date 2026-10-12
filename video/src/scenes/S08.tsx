@@ -49,7 +49,7 @@ export const S08: React.FC<SceneProps> = ({ scale, frames }) => {
   const t1 = b(9.4);
   const t2 = b(12.4);
   const t3 = t2 + sec(6); // the slot is exactly 6 s
-  const t4 = t3 + b(2.0);
+  const t4 = Math.min(t3 + b(2.0), frames - 90);
   const cp = terminal.checkpoint;
   const lines: TermLine[] = [{ text: `$ entire checkpoint explain ${cp.id}`, at: 6, typed: true, cps: 60, color: C.brassHi }];
   cp.lines.slice(0, 14).forEach((l, i) => lines.push({ text: l, at: 6 + 46 + i * 4, color: l.startsWith('##') || l.startsWith('●') ? C.bone : C.muted }));
@@ -61,13 +61,13 @@ export const S08: React.FC<SceneProps> = ({ scale, frames }) => {
         <BacktestSplit at={b(3.4)} v1={BACKTEST.v1} v2={BACKTEST.v2} heirloomDelay={b(7.4) - b(3.4)} />
       </Seq>
       <Seq from={t1} to={t2}>
-        <CaptureClip id="GH01" label={`PR #${EXAMPLE.pr}: verdict table → claims table`} url={`github.com/iamdflame/django/pull/${EXAMPLE.pr}`} startFrom={4} />
+        <CaptureClip id="GH01" label={`PR #${EXAMPLE.pr}: verdict table → claims table`} url={`github.com/iamdflame/django/pull/${EXAMPLE.pr}`} startFrom={5.5} rate={1.3} />
       </Seq>
       <Seq from={t2} to={t3}>
         <NeatlogsSlot />
       </Seq>
       <Seq from={t3} to={t4}>
-        <CaptureClip id="GH05" label="Backport commit: the Entire-Checkpoint: trailer" url="github.com/iamdflame/django · commit" />
+        <CaptureClip id="GH05" push={0.32} origin="10% 56%" label="Backport commit: the Entire-Checkpoint: trailer" url="github.com/iamdflame/django · commit" />
       </Seq>
       <Seq from={t4} to={frames}>
         <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>

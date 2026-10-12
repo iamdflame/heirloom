@@ -3,7 +3,7 @@ import { AbsoluteFill } from 'remotion';
 import { C, FONT, VERDICT } from '../theme';
 import { beats } from '../lib/anim';
 import { LowerThird } from '../components/Overlays';
-import { CaptureClip } from '../components/Capture';
+import { CaptureClip, hasCapture } from '../components/Capture';
 import { Ground } from '../components/Engraving';
 import { CONNECTOR, shortDate, SITE_URL, SUMMARY, UNPROVEN_N } from '../data';
 import { SceneProps, Seq } from './common';
@@ -18,7 +18,7 @@ export const S06: React.FC<SceneProps> = ({ scale, frames }) => {
     <AbsoluteFill>
       <Ground ringOpacity={0.04} />
       <Seq from={0} to={t1}>
-        <CaptureClip id="SH03" label="“Watch it work”: the campaign dial turning, tiles stamping in" url={`${SITE_URL} · watch it work`} />
+        <CaptureClip id="SH03" rate={1.4} label="“Watch it work”: the campaign dial turning, tiles stamping in" url={`${SITE_URL} · watch it work`} />
       </Seq>
       <Seq from={t1} to={t2}>
         <CaptureClip id="GH06" label="The fork's pull-request list: 13 candidate backports" url="github.com/iamdflame/django/pulls" enter={false} />
@@ -34,7 +34,11 @@ export const S06: React.FC<SceneProps> = ({ scale, frames }) => {
         />
       </Seq>
       <Seq from={t2} to={t3}>
-        <CaptureClip id="SH03" startFrom={7.4} label="“Watch it work”: UNPROVEN tiles file evidence" url={`${SITE_URL} · watch it work`} enter={false} />
+        {hasCapture('SH10') ? (
+          <CaptureClip id="SH10" label="The evidence locker" url={`${SITE_URL} · evidence`} enter={false} />
+        ) : (
+          <CaptureClip id="SH03" startFrom={10.4} label="“Watch it work”: UNPROVEN tiles file evidence" url={`${SITE_URL} · watch it work`} enter={false} />
+        )}
         <LowerThird
           at={b(0.5)}
           out={t3 - t2 - 6}
@@ -47,7 +51,7 @@ export const S06: React.FC<SceneProps> = ({ scale, frames }) => {
         />
       </Seq>
       <Seq from={t3} to={frames}>
-        <CaptureClip id="GH04" label={`PR #${CONNECTOR.pr}: “Stacked on #${CONNECTOR.on}”`} url={`github.com/iamdflame/django/pull/${CONNECTOR.pr}`} enter={false} />
+        <CaptureClip id="GH04" rate={0.6} label={`PR #${CONNECTOR.pr}: “Stacked on #${CONNECTOR.on}”`} url={`github.com/iamdflame/django/pull/${CONNECTOR.pr}`} enter={false} />
         <LowerThird
           at={b(1.2)}
           out={frames - t3 - 4}
