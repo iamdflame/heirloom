@@ -35,6 +35,8 @@ jobs:
           cache-dependency-path: site/web/package-lock.json
       - run: npm ci
       - run: npm run build
+        env:
+          VITE_BASE: /heirloom/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/web/dist

@@ -1,0 +1,56 @@
+{
+ "movement": {
+  "id": "HmIwomthlWw",
+  "ratio": 1.105,
+  "widths": [
+   640,
+   1280,
+   1920
+  ]
+ },
+ "gears-dark": {
+  "id": "snk-X32c8tE",
+  "ratio": 1.0013,
+  "widths": [
+   640,
+   1280,
+   1920
+  ]
+ },
+ "dial": {
+  "id": "FCsA8Adcgr4",
+  "ratio": 1.5,
+  "widths": [
+   640,
+   1280,
+   1920
+  ]
+ },
+ "gears-brass": {
+  "id": "UQ2Fw_9oApU",
+  "ratio": 1.4981,
+  "widths": [
+   640,
+   1280,
+   1920
+  ]
+ },
+ "archive": {
+  "id": "Ph4ZJrwf4x8",
+  "ratio": 1.5,
+  "widths": [
+   640,
+   1280,
+   1920
+  ]
+ },
+ "watch-dark": {
+  "id": "LaFLlEKx1c0",
+  "ratio": 0.7493,
+  "widths": [
+   640,
+   1280,
+   1920
+  ]
+ }
+}
