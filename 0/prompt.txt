@@ -1,0 +1,55 @@
+You are running HEADLESS: nobody can answer you mid-run, so never wait for input, and never end your turn to "wait for a notification". Poll in a loop instead (e.g. `gh run watch` or a curl loop) until things finish. Make reasonable decisions within the brief, record them in site/web/PROGRESS.md, and keep going. Usage is limited: commit and push after every milestone.
+
+Before anything else: run `entire session current` and `entire status`. If no active session is shown, or the id is f5117257-5211-42ae-823c-32aa228a28d9, stop and print why.
+
+This is B7b, the second half of the public site. Read ~/brief/FRONTEND-BRIEF.md (the spec) and site/web/PROGRESS.md (B7a's state, decisions and remaining defects) first.
+
+## Design review of B7a's screenshots (apply these)
+1. **Above the fold on desktop is half empty.** At 1440×900 the right half of the hero is blank, and the evidence (the register) starts below the fold.
+   At ≥1024 px make the hero two columns. On the right, add a **"Treatment record" catalogue card**: an index card on the ledger paper, with fine rules, the seal pressed into its top-right corner, and fields in mono small caps with values in Newsreader. Every value comes from site.json.
+   - Object: Django 4.2 LTS
+   - End of life: 2026-04-07 (link endoflife.date/django)
+   - Still shipped by: Debian 13 `3:4.2.28-0+deb13u2` · Ubuntu 24.04 `3:4.2.11-1ubuntu1.18`
+   - Advisories examined: 19
+   - Treatments proposed: 13 (fix ready)
+   - Proven sound: 1
+   - Unproven, evidence filed: 5
+   - Queries to the owner: 1
+   Below the fields, a **miniature register**: a 19×3 grid of small square chips, coloured and symbol-coded by verdict, in accession order, with the line initials as column heads. Each square is a link or button to that row in Fig. 1, and it carries an aria-label. Caption: "The whole register at a glance".
+   On mobile the card goes under the abstract, with the mini register kept. Widen the sub paragraph's measure to about 44ch.
+2. **Replay timeline.** Space the stops in proportion to real time (Apr 7 → Oct 9), so Oct 1 / Oct 6 / Oct 9 cluster visibly. Add a quiet band between Oct 1 and Oct 6 labelled "5 days", with the Ubuntu patch on one side and Django's amendment on the other. Keep labels collision-free (only dates below `lg`).
+3. **Register:** make the table header sticky while scrolling the register on desktop.
+4. **Receipt:** failing-test ids wrap mid-identifier. Add `<wbr>` after `.` and `_`, the same as the titles. Make the Treatment PR or issue link prominent (a clear text button near the top of Treatment).
+5. Keep everything else. The type, chips, ledger sheet, red margin, connector, query marker and calibration triangle are right.
+
+## Milestones (commit and push after each; check the deploy succeeds)
+1. (≤40 min) Design review items 1–4.
+2. (≤60 min) Sections 5–12 per brief §3:
+   - The finding (Fig. 2): three dated steps plus the verbatim claim sentence plus the hand-written-probe sentence plus the raw-log link;
+   - Method: 5 stages;
+   - The conservator's query: timeline from `site.query`;
+   - Table 2, the backtest: emphasise false NOT AFFECTED 1 vs **0**;
+   - Stated limits;
+   - Economics: label the hypotheses; link the three cfo.ai Pages;
+   - Verify it yourself: all PRs, all evidence issues, Entire command, neatlogs detections, endoflife.date, repo;
+   - the full colophon.
+   Every nav anchor must resolve.
+3. (≤20 min) OG card: an `og.html` view rendered by Playwright to `public/og.png` (1200×630; seal, headline, mini register, counts). Add OG and Twitter `summary_large_image` meta, a canonical URL and a description, and check the meta in the built HTML.
+4. (≤40 min) QA cycles 3 and 4 with `scripts/qa.mjs`:
+   - read every PNG;
+   - write defects in PROGRESS.md and fix them;
+   - re-verify. Targets: axe 0 serious/critical, console 0, keyboard flow PASS, Lighthouse mobile ≥95 on all four (try for 100 performance per PROGRESS' notes), budgets held.
+   - Check the 390 px receipt stacking (nav vs overlay), and dark mode for every new section.
+5. (≤10 min) Add the site link at the top of README.md's first screen (one line: "Live: https://iamdflame.github.io/heirloom/"). Keep render_readme.py's markers intact, so re-rendering keeps the line (put it above `<!-- top:start -->` or in the script). Add a dated hackathon.md entry (only things that happened, numbers from the QA report).
+
+Rules:
+- Don't touch heirloom/ Python code; keep pytest, ruff and mypy green if you must.
+- Never print .env values. Before the final push, run `python3 ~/brief/secretscan.py` and confirm every surface is clean.
+- Copy stays plain and honest (brief rule 10). "Candidate backport" wording everywhere.
+
+Finish with:
+- `entire status`;
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- the live URL status;
+- the final QA numbers;
+- any remaining defects.
