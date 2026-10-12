@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>blyflnv8j</task-id>
+<tool-use-id>toolu_01Q9YVCeSBY4UBdaMDiWmCn7</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/e4d9799d-b448-4f78-ac2a-e96919e4ab17/tasks/blyflnv8j.output</output-file>
+<status>completed</status>
+<summary>Background command "./scripts/poll-captures.sh" completed (exit code 0)</summary>
+</task-notification>
