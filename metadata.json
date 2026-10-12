@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4RDPTK740WX78QRQHCKCXVF",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "site/web/src/components/Hero.tsx",
+    "site/web/src/components/Locker.tsx",
+    "site/web/src/lib/site.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 8730,
+    "cache_read_tokens": 282292,
+    "output_tokens": 1835,
+    "api_call_count": 6
+  }
+}
