@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PW1RQNHXHWS3V9ZPCJ5QJ5",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/outreach/debian-cve-2026-53878.md",
+    "docs/outreach/entire-empty-repo-session.md",
+    "docs/outreach/neatlogs-pii-dlq-emit_s4.py",
+    "docs/outreach/neatlogs-pii-dlq.md",
+    "docs/outreach/ubuntu-cve-2026-87890.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 15837,
+    "cache_read_tokens": 951866,
+    "output_tokens": 11226,
+    "api_call_count": 10
+  }
+}

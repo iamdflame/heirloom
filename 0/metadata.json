@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PW1RQNHXHWS3V9ZPCJ5QJ5",
+  "session_id": "0a27285b-bb1e-45d1-b409-e7373f0d9d5c",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-12T01:36:20.795370432Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/outreach/debian-cve-2026-53878.md",
+    "docs/outreach/entire-empty-repo-session.md",
+    "docs/outreach/neatlogs-pii-dlq-emit_s4.py",
+    "docs/outreach/neatlogs-pii-dlq.md",
+    "docs/outreach/ubuntu-cve-2026-87890.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "cc019a696474",
+  "checkpoint_transcript_start": 181,
+  "transcript_lines_at_start": 181,
+  "compact_transcript_start": 35,
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 15837,
+    "cache_read_tokens": 951866,
+    "output_tokens": 11226,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-12T01:36:20.757081995Z",
+    "agent_lines": 192,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 192,
+    "total_lines_changed": 192,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
