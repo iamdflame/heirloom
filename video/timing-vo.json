@@ -1,0 +1,2053 @@
+{
+ "fps": 60,
+ "width": 1920,
+ "height": 1080,
+ "totalFrames": 8817,
+ "voPresent": true,
+ "head": 0.4,
+ "tail": 0.6,
+ "endHold": 4,
+ "scenes": [
+  {
+   "id": "S01",
+   "title": "End of life",
+   "start": 0,
+   "frames": 431,
+   "target": 540,
+   "scale": 0.7981,
+   "vo": "On 7 April, Django 4.2 reached end of life. No more security fixes.",
+   "voFile": "audio/vo/S01.mp3",
+   "voSeconds": 6.18
+  },
+  {
+   "id": "S02",
+   "title": "Still shipped",
+   "start": 431,
+   "frames": 759,
+   "target": 720,
+   "scale": 1.0542,
+   "vo": "But Debian 13 and Ubuntu 24.04 still ship it. Since then, Django has published 19 security advisories… and not one official patch for 4.2.",
+   "voFile": "audio/vo/S02.mp3",
+   "voSeconds": 11.65
+  },
+  {
+   "id": "S03",
+   "title": "The finding",
+   "start": 1190,
+   "frames": 1157,
+   "target": 1200,
+   "scale": 0.9642,
+   "vo": "On October 1, Ubuntu shipped a backport for one of them. Five days later, Django said its original fix was incomplete. We took Ubuntu's source package, ran a test calibrated on Django's own fix commits… and the code path Django closed is still reachable in Ubuntu's build.",
+   "voFile": "audio/vo/S03.mp3",
+   "voSeconds": 18.29
+  },
+  {
+   "id": "S04",
+   "title": "Heirloom",
+   "start": 2347,
+   "frames": 573,
+   "target": 660,
+   "scale": 0.8682,
+   "vo": "That test was run by Heirloom. An agent that keeps end-of-life software patched… and proves which old versions are actually vulnerable.",
+   "voFile": "audio/vo/S04.mp3",
+   "voSeconds": 8.55
+  },
+  {
+   "id": "S05",
+   "title": "The method",
+   "start": 2920,
+   "frames": 1080,
+   "target": 1140,
+   "scale": 0.9474,
+   "vo": "Its first rule: never trust a test that hasn't failed. For each advisory, Heirloom writes its own test, proves it fails on Django's vulnerable code and passes on the fix… and only then asks the real question: is the old version affected?",
+   "voFile": "audio/vo/S05.mp3",
+   "voSeconds": 17
+  },
+  {
+   "id": "S06",
+   "title": "The campaign",
+   "start": 4000,
+   "frames": 1498,
+   "target": 1680,
+   "scale": 0.8917,
+   "vo": "Then we let it run the whole campaign. 19 advisories, replayed in the order Django published them. 13 candidate backports, each proven by a test that fails before the fix and passes after. Where it couldn't prove something, it filed the evidence instead of guessing. And when a new fix amended one it had already backported, it stacked the follow-up on its own pull request.",
+   "voFile": "audio/vo/S06.mp3",
+   "voSeconds": 23.96
+  },
+  {
+   "id": "S07",
+   "title": "One question",
+   "start": 5498,
+   "frames": 926,
+   "target": 1020,
+   "scale": 0.9078,
+   "vo": "Across the whole campaign, it asked me one question. A real judgement call, about changing Django's behaviour. I answered once. It sealed the answer as a precedent… and the next case reused it, without asking.",
+   "voFile": "audio/vo/S07.mp3",
+   "voSeconds": 14.44
+  },
+  {
+   "id": "S08",
+   "title": "Proof",
+   "start": 6424,
+   "frames": 1103,
+   "target": 1380,
+   "scale": 0.7993,
+   "vo": "We tested the method on cases with known answers. A naive pipeline once called a vulnerable version safe. Heirloom? Zero times. Every claim in every pull request links to its neatlogs trace, and every backport links the Entire session of the agent that wrote it.",
+   "voFile": "audio/vo/S08.mp3",
+   "voSeconds": 17.39
+  },
+  {
+   "id": "S09",
+   "title": "Economics",
+   "start": 7527,
+   "frames": 666,
+   "target": 660,
+   "scale": 1.0091,
+   "vo": "Each advisory cost about 20 cents of model time. We modelled the business in cfo.ai: what that's worth to the teams who keep old software alive.",
+   "voFile": "audio/vo/S09.mp3",
+   "voSeconds": 10.1
+  },
+  {
+   "id": "S10",
+   "title": "Kept honest",
+   "start": 8193,
+   "frames": 624,
+   "target": 900,
+   "scale": 0.6933,
+   "vo": "Heirloom. Old software, kept honest. Every verdict is a test run you can open.",
+   "voFile": "audio/vo/S10.mp3",
+   "voSeconds": 6.004059
+  }
+ ],
+ "captions": [
+  {
+   "scene": "S01",
+   "text": "On 7 April, Django 4.2\nreached end of life.",
+   "from": 20,
+   "to": 287
+  },
+  {
+   "scene": "S01",
+   "text": "No more security fixes.",
+   "from": 289,
+   "to": 381
+  },
+  {
+   "scene": "S02",
+   "text": "But Debian 13 and Ubuntu\n24.04 still ship it.",
+   "from": 479,
+   "to": 739
+  },
+  {
+   "scene": "S02",
+   "text": "Since then, Django has published\n19 security advisories…",
+   "from": 741,
+   "to": 975
+  },
+  {
+   "scene": "S02",
+   "text": "and not one official patch for 4.2.",
+   "from": 977,
+   "to": 1148
+  },
+  {
+   "scene": "S03",
+   "text": "On October 1, Ubuntu shipped\na backport for one of them.",
+   "from": 1230,
+   "to": 1459
+  },
+  {
+   "scene": "S03",
+   "text": "Five days later, Django said\nits original fix was incomplete.",
+   "from": 1461,
+   "to": 1710
+  },
+  {
+   "scene": "S03",
+   "text": "We took Ubuntu's source package,",
+   "from": 1712,
+   "to": 1818
+  },
+  {
+   "scene": "S03",
+   "text": "ran a test calibrated on\nDjango's own fix commits…",
+   "from": 1820,
+   "to": 2031
+  },
+  {
+   "scene": "S03",
+   "text": "and the code path Django closed is\nstill reachable in Ubuntu's build.",
+   "from": 2061,
+   "to": 2305
+  },
+  {
+   "scene": "S04",
+   "text": "That test was run by Heirloom.",
+   "from": 2387,
+   "to": 2521
+  },
+  {
+   "scene": "S04",
+   "text": "An agent that keeps\nend-of-life software patched…",
+   "from": 2523,
+   "to": 2675
+  },
+  {
+   "scene": "S04",
+   "text": "and proves which old versions\nare actually vulnerable.",
+   "from": 2677,
+   "to": 2881
+  },
+  {
+   "scene": "S05",
+   "text": "Its first rule: never trust\na test that hasn't failed.",
+   "from": 2957,
+   "to": 3200
+  },
+  {
+   "scene": "S05",
+   "text": "For each advisory,\nHeirloom writes its own test,",
+   "from": 3202,
+   "to": 3423
+  },
+  {
+   "scene": "S05",
+   "text": "proves it fails on Django's\nvulnerable code and passes on the fix…",
+   "from": 3425,
+   "to": 3685
+  },
+  {
+   "scene": "S05",
+   "text": "and only then asks the real question:\nis the old version affected?",
+   "from": 3687,
+   "to": 3957
+  },
+  {
+   "scene": "S06",
+   "text": "Then we let it run the whole campaign.",
+   "from": 4041,
+   "to": 4162
+  },
+  {
+   "scene": "S06",
+   "text": "19 advisories, replayed in the\norder Django published them.",
+   "from": 4193,
+   "to": 4435
+  },
+  {
+   "scene": "S06",
+   "text": "13 candidate backports,",
+   "from": 4437,
+   "to": 4551
+  },
+  {
+   "scene": "S06",
+   "text": "each proven by a test that fails\nbefore the fix and passes after.",
+   "from": 4553,
+   "to": 4826
+  },
+  {
+   "scene": "S06",
+   "text": "Where it couldn't prove something,\nit filed the evidence instead of guessing.",
+   "from": 4828,
+   "to": 5079
+  },
+  {
+   "scene": "S06",
+   "text": "And when a new fix amended\none it had already backported,",
+   "from": 5081,
+   "to": 5282
+  },
+  {
+   "scene": "S06",
+   "text": "it stacked the follow-up\non its own pull request.",
+   "from": 5284,
+   "to": 5456
+  },
+  {
+   "scene": "S07",
+   "text": "Across the whole campaign,\nit asked me one question.",
+   "from": 5538,
+   "to": 5747
+  },
+  {
+   "scene": "S07",
+   "text": "A real judgement call,\nabout changing Django's behaviour.",
+   "from": 5749,
+   "to": 5955
+  },
+  {
+   "scene": "S07",
+   "text": "I answered once.",
+   "from": 5997,
+   "to": 6072
+  },
+  {
+   "scene": "S07",
+   "text": "It sealed the answer as a precedent…",
+   "from": 6074,
+   "to": 6203
+  },
+  {
+   "scene": "S07",
+   "text": "and the next case reused it,\nwithout asking.",
+   "from": 6205,
+   "to": 6386
+  },
+  {
+   "scene": "S08",
+   "text": "We tested the method on\ncases with known answers.",
+   "from": 6460,
+   "to": 6638
+  },
+  {
+   "scene": "S08",
+   "text": "A naive pipeline once called\na vulnerable version safe.",
+   "from": 6640,
+   "to": 6863
+  },
+  {
+   "scene": "S08",
+   "text": "Heirloom?",
+   "from": 6865,
+   "to": 6908
+  },
+  {
+   "scene": "S08",
+   "text": "Zero times.",
+   "from": 6910,
+   "to": 6999
+  },
+  {
+   "scene": "S08",
+   "text": "Every claim in every pull request\nlinks to its neatlogs trace,",
+   "from": 7001,
+   "to": 7231
+  },
+  {
+   "scene": "S08",
+   "text": "and every backport links the Entire\nsession of the agent that wrote it.",
+   "from": 7233,
+   "to": 7493
+  },
+  {
+   "scene": "S09",
+   "text": "Each advisory cost about\n20 cents of model time.",
+   "from": 7559,
+   "to": 7765
+  },
+  {
+   "scene": "S09",
+   "text": "We modelled the business in cfo.ai:",
+   "from": 7767,
+   "to": 7948
+  },
+  {
+   "scene": "S09",
+   "text": "what that's worth to the teams\nwho keep old software alive.",
+   "from": 7950,
+   "to": 8152
+  },
+  {
+   "scene": "S10",
+   "text": "Heirloom.",
+   "from": 8232,
+   "to": 8285
+  },
+  {
+   "scene": "S10",
+   "text": "Old software, kept honest.",
+   "from": 8287,
+   "to": 8429
+  },
+  {
+   "scene": "S10",
+   "text": "Every verdict is a test run you can open.",
+   "from": 8431,
+   "to": 8575
+  }
+ ],
+ "sfx": [],
+ "words": {
+  "S01": [
+   [
+    "On",
+    24,
+    34
+   ],
+   [
+    "7",
+    41,
+    66
+   ],
+   [
+    "April,",
+    72,
+    91
+   ],
+   [
+    "Django",
+    130,
+    134
+   ],
+   [
+    "4.2",
+    134,
+    192
+   ],
+   [
+    "reached",
+    192,
+    211
+   ],
+   [
+    "end",
+    211,
+    228
+   ],
+   [
+    "of",
+    228,
+    238
+   ],
+   [
+    "life.",
+    238,
+    251
+   ],
+   [
+    "No",
+    293,
+    306
+   ],
+   [
+    "more",
+    306,
+    318
+   ],
+   [
+    "security",
+    318,
+    341
+   ],
+   [
+    "fixes.",
+    341,
+    367
+   ]
+  ],
+  "S02": [
+   [
+    "But",
+    52,
+    59
+   ],
+   [
+    "Debian",
+    59,
+    77
+   ],
+   [
+    "13",
+    77,
+    110
+   ],
+   [
+    "and",
+    110,
+    138
+   ],
+   [
+    "Ubuntu",
+    138,
+    156
+   ],
+   [
+    "24.04",
+    156,
+    220
+   ],
+   [
+    "still",
+    220,
+    247
+   ],
+   [
+    "ship",
+    247,
+    262
+   ],
+   [
+    "it.",
+    262,
+    274
+   ],
+   [
+    "Since",
+    314,
+    324
+   ],
+   [
+    "then,",
+    324,
+    349
+   ],
+   [
+    "Django",
+    380,
+    389
+   ],
+   [
+    "has",
+    389,
+    406
+   ],
+   [
+    "published",
+    406,
+    430
+   ],
+   [
+    "19",
+    430,
+    461
+   ],
+   [
+    "security",
+    461,
+    492
+   ],
+   [
+    "advisories…",
+    492,
+    527
+   ],
+   [
+    "and",
+    550,
+    569
+   ],
+   [
+    "not",
+    569,
+    582
+   ],
+   [
+    "one",
+    582,
+    605
+   ],
+   [
+    "official",
+    605,
+    624
+   ],
+   [
+    "patch",
+    624,
+    644
+   ],
+   [
+    "for",
+    644,
+    658
+   ],
+   [
+    "4.2.",
+    658,
+    703
+   ]
+  ],
+  "S03": [
+   [
+    "On",
+    44,
+    53
+   ],
+   [
+    "October",
+    53,
+    74
+   ],
+   [
+    "1,",
+    74,
+    121
+   ],
+   [
+    "Ubuntu",
+    127,
+    145
+   ],
+   [
+    "shipped",
+    145,
+    169
+   ],
+   [
+    "a",
+    169,
+    179
+   ],
+   [
+    "backport",
+    179,
+    205
+   ],
+   [
+    "for",
+    205,
+    217
+   ],
+   [
+    "one",
+    217,
+    227
+   ],
+   [
+    "of",
+    227,
+    236
+   ],
+   [
+    "them.",
+    236,
+    245
+   ],
+   [
+    "Five",
+    275,
+    291
+   ],
+   [
+    "days",
+    291,
+    302
+   ],
+   [
+    "later,",
+    302,
+    329
+   ],
+   [
+    "Django",
+    361,
+    373
+   ],
+   [
+    "said",
+    373,
+    391
+   ],
+   [
+    "its",
+    391,
+    400
+   ],
+   [
+    "original",
+    400,
+    425
+   ],
+   [
+    "fix",
+    425,
+    442
+   ],
+   [
+    "was",
+    442,
+    455
+   ],
+   [
+    "incomplete.",
+    455,
+    489
+   ],
+   [
+    "We",
+    526,
+    538
+   ],
+   [
+    "took",
+    538,
+    550
+   ],
+   [
+    "Ubuntu's",
+    550,
+    587
+   ],
+   [
+    "source",
+    587,
+    601
+   ],
+   [
+    "package,",
+    601,
+    634
+   ],
+   [
+    "ran",
+    634,
+    668
+   ],
+   [
+    "a",
+    668,
+    679
+   ],
+   [
+    "test",
+    679,
+    695
+   ],
+   [
+    "calibrated",
+    695,
+    731
+   ],
+   [
+    "on",
+    731,
+    748
+   ],
+   [
+    "Django's",
+    748,
+    776
+   ],
+   [
+    "own",
+    776,
+    791
+   ],
+   [
+    "fix",
+    791,
+    806
+   ],
+   [
+    "commits…",
+    806,
+    827
+   ],
+   [
+    "and",
+    875,
+    884
+   ],
+   [
+    "the",
+    884,
+    891
+   ],
+   [
+    "code",
+    891,
+    905
+   ],
+   [
+    "path",
+    905,
+    922
+   ],
+   [
+    "Django",
+    922,
+    946
+   ],
+   [
+    "closed",
+    946,
+    973
+   ],
+   [
+    "is",
+    973,
+    993
+   ],
+   [
+    "still",
+    993,
+    1011
+   ],
+   [
+    "reachable",
+    1011,
+    1042
+   ],
+   [
+    "in",
+    1042,
+    1055
+   ],
+   [
+    "Ubuntu's",
+    1055,
+    1087
+   ],
+   [
+    "build.",
+    1087,
+    1101
+   ]
+  ],
+  "S04": [
+   [
+    "That",
+    44,
+    58
+   ],
+   [
+    "test",
+    58,
+    76
+   ],
+   [
+    "was",
+    76,
+    89
+   ],
+   [
+    "run",
+    89,
+    102
+   ],
+   [
+    "by",
+    102,
+    119
+   ],
+   [
+    "Heirloom.",
+    119,
+    140
+   ],
+   [
+    "An",
+    180,
+    186
+   ],
+   [
+    "agent",
+    186,
+    209
+   ],
+   [
+    "that",
+    209,
+    223
+   ],
+   [
+    "keeps",
+    223,
+    239
+   ],
+   [
+    "end-of-life",
+    239,
+    276
+   ],
+   [
+    "software",
+    276,
+    305
+   ],
+   [
+    "patched…",
+    305,
+    334
+   ],
+   [
+    "and",
+    334,
+    370
+   ],
+   [
+    "proves",
+    370,
+    394
+   ],
+   [
+    "which",
+    394,
+    409
+   ],
+   [
+    "old",
+    409,
+    427
+   ],
+   [
+    "versions",
+    427,
+    449
+   ],
+   [
+    "are",
+    449,
+    463
+   ],
+   [
+    "actually",
+    463,
+    492
+   ],
+   [
+    "vulnerable.",
+    492,
+    520
+   ]
+  ],
+  "S05": [
+   [
+    "Its",
+    41,
+    53
+   ],
+   [
+    "first",
+    53,
+    70
+   ],
+   [
+    "rule:",
+    70,
+    94
+   ],
+   [
+    "never",
+    145,
+    154
+   ],
+   [
+    "trust",
+    154,
+    175
+   ],
+   [
+    "a",
+    175,
+    188
+   ],
+   [
+    "test",
+    188,
+    203
+   ],
+   [
+    "that",
+    203,
+    215
+   ],
+   [
+    "hasn't",
+    215,
+    233
+   ],
+   [
+    "failed.",
+    233,
+    257
+   ],
+   [
+    "For",
+    286,
+    302
+   ],
+   [
+    "each",
+    302,
+    319
+   ],
+   [
+    "advisory,",
+    319,
+    359
+   ],
+   [
+    "Heirloom",
+    392,
+    407
+   ],
+   [
+    "writes",
+    407,
+    423
+   ],
+   [
+    "its",
+    423,
+    436
+   ],
+   [
+    "own",
+    436,
+    453
+   ],
+   [
+    "test,",
+    453,
+    483
+   ],
+   [
+    "proves",
+    509,
+    531
+   ],
+   [
+    "it",
+    531,
+    541
+   ],
+   [
+    "fails",
+    541,
+    560
+   ],
+   [
+    "on",
+    560,
+    575
+   ],
+   [
+    "Django's",
+    575,
+    605
+   ],
+   [
+    "vulnerable",
+    605,
+    626
+   ],
+   [
+    "code",
+    626,
+    653
+   ],
+   [
+    "and",
+    653,
+    685
+   ],
+   [
+    "passes",
+    685,
+    705
+   ],
+   [
+    "on",
+    705,
+    719
+   ],
+   [
+    "the",
+    719,
+    727
+   ],
+   [
+    "fix…",
+    727,
+    741
+   ],
+   [
+    "and",
+    771,
+    790
+   ],
+   [
+    "only",
+    790,
+    812
+   ],
+   [
+    "then",
+    812,
+    836
+   ],
+   [
+    "asks",
+    836,
+    856
+   ],
+   [
+    "the",
+    856,
+    867
+   ],
+   [
+    "real",
+    867,
+    879
+   ],
+   [
+    "question:",
+    879,
+    904
+   ],
+   [
+    "is",
+    945,
+    950
+   ],
+   [
+    "the",
+    950,
+    961
+   ],
+   [
+    "old",
+    961,
+    980
+   ],
+   [
+    "version",
+    980,
+    1000
+   ],
+   [
+    "affected?",
+    1000,
+    1023
+   ]
+  ],
+  "S06": [
+   [
+    "Then",
+    45,
+    58
+   ],
+   [
+    "we",
+    58,
+    68
+   ],
+   [
+    "let",
+    68,
+    76
+   ],
+   [
+    "it",
+    76,
+    85
+   ],
+   [
+    "run",
+    85,
+    93
+   ],
+   [
+    "the",
+    93,
+    103
+   ],
+   [
+    "whole",
+    103,
+    116
+   ],
+   [
+    "campaign.",
+    116,
+    148
+   ],
+   [
+    "19",
+    197,
+    217
+   ],
+   [
+    "advisories,",
+    217,
+    262
+   ],
+   [
+    "replayed",
+    278,
+    308
+   ],
+   [
+    "in",
+    308,
+    319
+   ],
+   [
+    "the",
+    319,
+    323
+   ],
+   [
+    "order",
+    323,
+    338
+   ],
+   [
+    "Django",
+    338,
+    359
+   ],
+   [
+    "published",
+    359,
+    382
+   ],
+   [
+    "them.",
+    382,
+    403
+   ],
+   [
+    "13",
+    441,
+    464
+   ],
+   [
+    "candidate",
+    464,
+    495
+   ],
+   [
+    "backports,",
+    495,
+    532
+   ],
+   [
+    "each",
+    557,
+    574
+   ],
+   [
+    "proven",
+    574,
+    596
+   ],
+   [
+    "by",
+    596,
+    614
+   ],
+   [
+    "a",
+    614,
+    623
+   ],
+   [
+    "test",
+    623,
+    638
+   ],
+   [
+    "that",
+    638,
+    652
+   ],
+   [
+    "fails",
+    652,
+    671
+   ],
+   [
+    "before",
+    671,
+    693
+   ],
+   [
+    "the",
+    693,
+    703
+   ],
+   [
+    "fix",
+    703,
+    718
+   ],
+   [
+    "and",
+    718,
+    749
+   ],
+   [
+    "passes",
+    749,
+    772
+   ],
+   [
+    "after.",
+    772,
+    797
+   ],
+   [
+    "Where",
+    832,
+    850
+   ],
+   [
+    "it",
+    850,
+    859
+   ],
+   [
+    "couldn't",
+    859,
+    875
+   ],
+   [
+    "prove",
+    875,
+    889
+   ],
+   [
+    "something,",
+    889,
+    914
+   ],
+   [
+    "it",
+    934,
+    947
+   ],
+   [
+    "filed",
+    947,
+    967
+   ],
+   [
+    "the",
+    967,
+    979
+   ],
+   [
+    "evidence",
+    979,
+    1000
+   ],
+   [
+    "instead",
+    1000,
+    1023
+   ],
+   [
+    "of",
+    1023,
+    1031
+   ],
+   [
+    "guessing.",
+    1031,
+    1047
+   ],
+   [
+    "And",
+    1085,
+    1097
+   ],
+   [
+    "when",
+    1097,
+    1106
+   ],
+   [
+    "a",
+    1106,
+    1115
+   ],
+   [
+    "new",
+    1115,
+    1129
+   ],
+   [
+    "fix",
+    1129,
+    1143
+   ],
+   [
+    "amended",
+    1143,
+    1167
+   ],
+   [
+    "one",
+    1167,
+    1187
+   ],
+   [
+    "it",
+    1187,
+    1197
+   ],
+   [
+    "had",
+    1197,
+    1208
+   ],
+   [
+    "already",
+    1208,
+    1231
+   ],
+   [
+    "backported,",
+    1231,
+    1263
+   ],
+   [
+    "it",
+    1288,
+    1304
+   ],
+   [
+    "stacked",
+    1304,
+    1325
+   ],
+   [
+    "the",
+    1325,
+    1339
+   ],
+   [
+    "follow-up",
+    1339,
+    1366
+   ],
+   [
+    "on",
+    1366,
+    1379
+   ],
+   [
+    "its",
+    1379,
+    1389
+   ],
+   [
+    "own",
+    1389,
+    1405
+   ],
+   [
+    "pull",
+    1405,
+    1420
+   ],
+   [
+    "request.",
+    1420,
+    1442
+   ]
+  ],
+  "S07": [
+   [
+    "Across",
+    44,
+    63
+   ],
+   [
+    "the",
+    63,
+    77
+   ],
+   [
+    "whole",
+    77,
+    93
+   ],
+   [
+    "campaign,",
+    93,
+    125
+   ],
+   [
+    "it",
+    146,
+    148
+   ],
+   [
+    "asked",
+    148,
+    159
+   ],
+   [
+    "me",
+    159,
+    173
+   ],
+   [
+    "one",
+    173,
+    188
+   ],
+   [
+    "question.",
+    188,
+    215
+   ],
+   [
+    "A",
+    255,
+    261
+   ],
+   [
+    "real",
+    261,
+    280
+   ],
+   [
+    "judgement",
+    280,
+    303
+   ],
+   [
+    "call,",
+    303,
+    327
+   ],
+   [
+    "about",
+    327,
+    361
+   ],
+   [
+    "changing",
+    361,
+    393
+   ],
+   [
+    "Django's",
+    393,
+    425
+   ],
+   [
+    "behaviour.",
+    425,
+    443
+   ],
+   [
+    "I",
+    503,
+    503
+   ],
+   [
+    "answered",
+    503,
+    523
+   ],
+   [
+    "once.",
+    523,
+    548
+   ],
+   [
+    "It",
+    580,
+    590
+   ],
+   [
+    "sealed",
+    590,
+    611
+   ],
+   [
+    "the",
+    611,
+    625
+   ],
+   [
+    "answer",
+    625,
+    641
+   ],
+   [
+    "as",
+    641,
+    653
+   ],
+   [
+    "a",
+    653,
+    662
+   ],
+   [
+    "precedent…",
+    662,
+    685
+   ],
+   [
+    "and",
+    711,
+    727
+   ],
+   [
+    "the",
+    727,
+    734
+   ],
+   [
+    "next",
+    734,
+    749
+   ],
+   [
+    "case",
+    749,
+    764
+   ],
+   [
+    "reused",
+    764,
+    794
+   ],
+   [
+    "it,",
+    794,
+    825
+   ],
+   [
+    "without",
+    825,
+    847
+   ],
+   [
+    "asking.",
+    847,
+    874
+   ]
+  ],
+  "S08": [
+   [
+    "We",
+    40,
+    51
+   ],
+   [
+    "tested",
+    51,
+    69
+   ],
+   [
+    "the",
+    69,
+    83
+   ],
+   [
+    "method",
+    83,
+    98
+   ],
+   [
+    "on",
+    98,
+    113
+   ],
+   [
+    "cases",
+    113,
+    131
+   ],
+   [
+    "with",
+    131,
+    149
+   ],
+   [
+    "known",
+    149,
+    164
+   ],
+   [
+    "answers.",
+    164,
+    191
+   ],
+   [
+    "A",
+    220,
+    232
+   ],
+   [
+    "naive",
+    232,
+    254
+   ],
+   [
+    "pipeline",
+    254,
+    289
+   ],
+   [
+    "once",
+    289,
+    305
+   ],
+   [
+    "called",
+    305,
+    321
+   ],
+   [
+    "a",
+    321,
+    329
+   ],
+   [
+    "vulnerable",
+    329,
+    346
+   ],
+   [
+    "version",
+    346,
+    375
+   ],
+   [
+    "safe.",
+    375,
+    398
+   ],
+   [
+    "Heirloom?",
+    445,
+    464
+   ],
+   [
+    "Zero",
+    490,
+    512
+   ],
+   [
+    "times.",
+    512,
+    541
+   ],
+   [
+    "Every",
+    581,
+    598
+   ],
+   [
+    "claim",
+    598,
+    617
+   ],
+   [
+    "in",
+    617,
+    631
+   ],
+   [
+    "every",
+    631,
+    652
+   ],
+   [
+    "pull",
+    652,
+    665
+   ],
+   [
+    "request",
+    665,
+    692
+   ],
+   [
+    "links",
+    692,
+    716
+   ],
+   [
+    "to",
+    716,
+    730
+   ],
+   [
+    "its",
+    730,
+    739
+   ],
+   [
+    "neatlogs",
+    753,
+    770
+   ],
+   [
+    "trace,",
+    770,
+    791
+   ],
+   [
+    "and",
+    813,
+    830
+   ],
+   [
+    "every",
+    830,
+    855
+   ],
+   [
+    "backport",
+    855,
+    889
+   ],
+   [
+    "links",
+    889,
+    907
+   ],
+   [
+    "the",
+    907,
+    921
+   ],
+   [
+    "Entire",
+    921,
+    947
+   ],
+   [
+    "session",
+    947,
+    971
+   ],
+   [
+    "of",
+    971,
+    986
+   ],
+   [
+    "the",
+    986,
+    992
+   ],
+   [
+    "agent",
+    992,
+    1009
+   ],
+   [
+    "that",
+    1009,
+    1021
+   ],
+   [
+    "wrote",
+    1021,
+    1034
+   ],
+   [
+    "it.",
+    1034,
+    1055
+   ]
+  ],
+  "S09": [
+   [
+    "Each",
+    36,
+    46
+   ],
+   [
+    "advisory",
+    46,
+    78
+   ],
+   [
+    "cost",
+    78,
+    101
+   ],
+   [
+    "about",
+    101,
+    119
+   ],
+   [
+    "20",
+    119,
+    143
+   ],
+   [
+    "cents",
+    143,
+    157
+   ],
+   [
+    "of",
+    157,
+    169
+   ],
+   [
+    "model",
+    169,
+    184
+   ],
+   [
+    "time.",
+    184,
+    205
+   ],
+   [
+    "We",
+    244,
+    250
+   ],
+   [
+    "modelled",
+    250,
+    268
+   ],
+   [
+    "the",
+    268,
+    281
+   ],
+   [
+    "business",
+    281,
+    300
+   ],
+   [
+    "in",
+    300,
+    316
+   ],
+   [
+    "cfo.ai:",
+    316,
+    385
+   ],
+   [
+    "what",
+    427,
+    444
+   ],
+   [
+    "that's",
+    444,
+    462
+   ],
+   [
+    "worth",
+    462,
+    474
+   ],
+   [
+    "to",
+    474,
+    487
+   ],
+   [
+    "the",
+    487,
+    496
+   ],
+   [
+    "teams",
+    496,
+    512
+   ],
+   [
+    "who",
+    512,
+    528
+   ],
+   [
+    "keep",
+    528,
+    541
+   ],
+   [
+    "old",
+    541,
+    558
+   ],
+   [
+    "software",
+    558,
+    584
+   ],
+   [
+    "alive.",
+    584,
+    611
+   ]
+  ],
+  "S10": [
+   [
+    "Heirloom.",
+    43,
+    66
+   ],
+   [
+    "Old",
+    98,
+    109
+   ],
+   [
+    "software,",
+    109,
+    144
+   ],
+   [
+    "kept",
+    163,
+    179
+   ],
+   [
+    "honest.",
+    179,
+    205
+   ],
+   [
+    "Every",
+    242,
+    258
+   ],
+   [
+    "verdict",
+    258,
+    280
+   ],
+   [
+    "is",
+    280,
+    296
+   ],
+   [
+    "a",
+    296,
+    307
+   ],
+   [
+    "test",
+    307,
+    318
+   ],
+   [
+    "run",
+    318,
+    334
+   ],
+   [
+    "you",
+    334,
+    343
+   ],
+   [
+    "can",
+    343,
+    352
+   ],
+   [
+    "open.",
+    352,
+    368
+   ]
+  ]
+ }
+}
