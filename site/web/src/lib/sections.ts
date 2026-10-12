@@ -1,8 +1,5 @@
 export const SECTIONS = [
-  ['register', 'Register'],
+  ['watch', 'Watch it work'],
   ['finding', 'Finding'],
-  ['method', 'Method'],
-  ['query', 'Query'],
-  ['results', 'Results'],
-  ['verify', 'Verify'],
+  ['register', 'Register'],
 ] as const;

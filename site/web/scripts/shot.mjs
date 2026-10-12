@@ -7,7 +7,7 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: +w, height: +h }, colorScheme: scheme, deviceScaleFactor: 1 });
 const p = await ctx.newPage();
 p.on('console', (m) => (m.type() === 'error' || m.type() === 'warning') && console.log('console:', m.type(), m.text()));
-await p.goto('http://localhost:4173/heirloom/' + (process.env.HASH ?? ''), { waitUntil: 'networkidle' });
+await p.goto('http://localhost:4173/' + (process.env.HASH ?? ''), { waitUntil: 'networkidle' });
 await p.evaluate(() => document.fonts.ready);
 if (scroll) {
   if (/^\d+$/.test(scroll)) await p.evaluate((y) => window.scrollTo(0, y), +scroll);

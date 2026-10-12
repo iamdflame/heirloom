@@ -88,7 +88,7 @@ export function Replay({
   const status = `${shortDate(cur.date)} · ${cur.kind === 'advisories' ? '' : cur.label + ' · '}${count} of ${site.rows.length} advisories`;
 
   return (
-    <div className="mt-8 rounded-[2px] border border-rule bg-surface px-4 py-4 md:px-5">
+    <div className="mt-10 rounded-[14px] border border-brass/25 bg-surface px-4 py-4 md:px-6">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         <button
           type="button"
@@ -110,7 +110,7 @@ export function Replay({
         <div className="relative">
           {band && (
             <div aria-hidden className="pointer-events-none absolute inset-y-0 hidden md:block" style={span(band.from, band.to)}>
-              <span className="absolute inset-x-0 top-[13px] h-[18px] bg-ink/[0.08]" />
+              <span className="absolute inset-x-0 top-[13px] h-[18px] bg-brass/15" />
               <span className="absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap font-mono text-[0.62rem] leading-none text-muted">
                 {band.days} days
               </span>

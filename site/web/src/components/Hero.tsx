@@ -1,65 +1,57 @@
-import { site, longDate, prNum } from '@/lib/site';
-import { CatalogueCard } from './CatalogueCard';
+import { ArrowDown, ArrowRight } from 'lucide-react';
+import { site, longDate } from '@/lib/site';
+import { CountUp, Magnetic, WordReveal } from './fx';
+import { HeroVisual } from './HeroVisual';
+
+const FIGURES = [
+  { n: site.summary.prs, label: 'candidate backports', sub: 'probe fails before, passes after' },
+  { n: site.backtest.v2.false_not_affected, label: 'false “not affected”', sub: `on the ${site.backtest.v2.cases}-case backtest` },
+  { n: site.summary.questions, label: site.summary.questions === 1 ? 'question asked' : 'questions asked', sub: 'its answer became precedent' },
+];
 
 export function Hero() {
-  const s = site.summary;
-  const v = s.verdicts;
-  const read = site.links.prs.find((u) => u.endsWith('/pull/13')) ?? site.links.prs[0];
-  const q = site.query;
   return (
-    <section
-      id="top"
-      aria-labelledby="headline"
-      className="grid gap-x-10 gap-y-10 pb-16 pt-12 md:grid-cols-12 md:pt-16 lg:items-start lg:pt-14 xl:gap-x-14"
-    >
-      <div className="grid gap-y-8 md:col-span-11 lg:col-span-7">
-        <h1
-          id="headline"
-          className="text-[2.35rem] leading-[1.06] tracking-[-0.02em] sm:text-5xl lg:text-[3.35rem] xl:text-[3.9rem]"
-        >
-          Django stopped patching 4.2 on {longDate(site.eol)}. Debian 13 and Ubuntu 24.04 still ship it.
-        </h1>
-        <p className="max-w-[44ch] text-xl leading-snug text-ink md:text-2xl">
-          Heirloom is an agent that keeps end-of-life software patched — and proves which old versions are actually
-          vulnerable.
-        </p>
-        <div className="max-w-measure">
-          <p className="text-[1.0625rem] leading-relaxed">
-            Django published {s.cves} security advisories for its supported versions after 4.2&rsquo;s end of life.
-            Heirloom wrote an independent probe for each, calibrated it on Django&rsquo;s own fix, and ran it on the 4.2
-            lines people still run. <strong className="font-medium">{s.prs} are fix ready</strong>: candidate backport
-            pull requests whose probe fails ×{s.probe_before} before the fix and passes ×{s.probe_after} after it.{' '}
-            <strong className="font-medium">{v.NOT_AFFECTED_PROVEN ?? 0} is proven not affected.</strong>{' '}
-            <strong className="font-medium">{v.UNPROVEN ?? 0} are unproven</strong>, and for each it filed the evidence
-            instead of guessing. It asked {s.questions === 1 ? 'one question' : `${s.questions} questions`} (
-            <a className="link" href={q.issue}>
-              {prNum(q.issue)}
-            </a>
-            ); the answer became precedent {q.precedent.id}, which a later backport reused without asking.
+    <section id="top" aria-labelledby="headline" className="relative isolate flex min-h-[100svh] items-end overflow-hidden pb-14 pt-28 md:pb-20">
+      <HeroVisual />
+      <div className="relative z-10 mx-auto w-full max-w-[90rem] px-5 md:px-10">
+        <div className="max-w-[46rem]">
+          <p className="eyebrow rise" style={{ animationDelay: '60ms' }}>
+            Record {site.record} · {site.object} · end of life {longDate(site.eol)}
           </p>
-          <p className="mt-6 font-mono text-xs leading-relaxed tracking-wide text-muted">
-            Record {site.record} · {s.cves} advisories · {site.lines.length} release lines · data generated{' '}
-            <time dateTime={site.generated_at}>{site.generated_at}</time> · built during neatHack, Oct 10–12 2026
+          <WordReveal
+            id="headline"
+            className="display mt-6 text-[clamp(3.6rem,10.5vw,9.5rem)] leading-[0.9]"
+            parts={[{ text: 'Old software,' }, { text: 'kept honest.', em: true }]}
+            delay={160}
+          />
+          <p className="rise mt-7 max-w-[34rem] text-lg leading-relaxed text-ink/85 md:text-xl" style={{ animationDelay: '620ms' }}>
+            Heirloom is an agent that keeps end-of-life software patched, and proves which old versions are actually
+            vulnerable. Every verdict is a test run you can open.
           </p>
-          <div className="mt-6 flex flex-wrap gap-x-8 gap-y-2">
-            <a
-              href="#register"
-              className="press inline-flex min-h-11 items-center text-lg underline decoration-ink/40 underline-offset-[0.2em] hover-underline"
-            >
-              Open the register
-            </a>
-            {read && (
-              <a
-                href={read}
-                className="press inline-flex min-h-11 items-center text-lg underline decoration-ink/40 underline-offset-[0.2em] hover-underline"
-              >
-                Read a backport ({prNum(read)})
-              </a>
-            )}
+          <dl className="rise mt-10 grid max-w-[40rem] grid-cols-3 gap-4 border-t border-brass/25 pt-6" style={{ animationDelay: '820ms' }}>
+            {FIGURES.map((f, i) => (
+              <div key={f.label}>
+                <dt className="sr-only">{f.label}</dt>
+                <dd className="m-0">
+                  <CountUp value={f.n} start={900 + i * 180} className="display block text-[clamp(2.6rem,6vw,4.2rem)] leading-none text-brass-hi" />
+                  <span aria-hidden className="mt-2 block text-[0.95rem] leading-snug text-ink">
+                    {f.label}
+                  </span>
+                  <span className="mt-0.5 hidden font-mono text-[0.7rem] leading-snug text-muted sm:block">{f.sub}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <div className="rise mt-10 flex flex-wrap gap-3" style={{ animationDelay: '1100ms' }}>
+            <Magnetic href="#watch" className="btn btn-brass press">
+              Watch it work <ArrowDown className="h-4 w-4" aria-hidden />
+            </Magnetic>
+            <Magnetic href="#finding" className="btn btn-ghost press">
+              Open the proof <ArrowRight className="h-4 w-4" aria-hidden />
+            </Magnetic>
           </div>
         </div>
       </div>
-      <CatalogueCard className="md:col-span-9 lg:col-span-5 lg:mt-2" />
     </section>
   );
 }

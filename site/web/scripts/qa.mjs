@@ -11,8 +11,8 @@ const WEB = new URL('..', import.meta.url).pathname;
 const cycle = process.argv[2] ?? 'c1';
 const OUT = join(WEB, 'qa', cycle);
 mkdirSync(OUT, { recursive: true });
-const PORT = 4173;
-const URL_ = `http://localhost:${PORT}/heirloom/`;
+const PORT = +(process.env.PORT ?? 4175);
+const URL_ = `http://localhost:${PORT}/`;
 const report = { cycle, at: new Date().toISOString(), screenshots: [], axe: [], console: [], keyboard: null, lighthouse: null, budgets: null };
 
 // ---------- serve dist ----------
@@ -197,7 +197,7 @@ await browser.close();
 // ---------- budgets ----------
 {
   const html = readFileSync(join(WEB, 'dist/index.html'), 'utf8');
-  const js = [...html.matchAll(/(?:src|href)="\/heirloom\/(assets\/[^"]+\.js)"/g)].map((m) => m[1]);
+  const js = [...html.matchAll(/(?:src|href)="\/(assets\/[^"]+\.js)"/g)].map((m) => m[1]);
   const gz = (f) => gzipSync(readFileSync(join(WEB, 'dist', f))).length;
   const jsGz = js.reduce((a, f) => a + gz(f), 0);
   const fonts = readdirSync(join(WEB, 'dist/fonts')).filter((f) => f.endsWith('.woff2'));

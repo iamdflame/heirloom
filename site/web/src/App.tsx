@@ -6,11 +6,10 @@ import { Footer } from './components/Footer';
 import { Hero } from './components/Hero';
 import { Register } from './components/Register';
 import { Finding } from './components/Finding';
-import { Method } from './components/Method';
-import { Query } from './components/Query';
-import { Backtest, Economics, Limits } from './components/Results';
-import { Verify } from './components/Verify';
-import { Asterism } from './components/Section';
+import { Examines } from './components/Examines';
+import { Campaign } from './components/Campaign';
+import { useSmoothScroll } from './components/fx';
+// Beats 7–12 (B8b): Method, Query, Results (Backtest, Limits, Economics) and Verify are restyled next.
 import { rowByAnchor, site } from './lib/site';
 import { MAIN_CLASS } from './lib/layout';
 
@@ -28,6 +27,7 @@ export default function App() {
   const [line, setLine] = useState<LineId>(DEFAULT_LINE);
   const [everOpened, setEverOpened] = useState(Boolean(anchor));
   const trigger = useRef<HTMLElement | null>(null);
+  useSmoothScroll();
 
   useEffect(() => {
     const sync = () => {
@@ -70,24 +70,17 @@ export default function App() {
       <LazyMotion features={motionFeatures} strict>
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:bg-surface focus:px-3 focus:py-2"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-brass focus:px-4 focus:py-2 focus:text-paper"
         >
           Skip to the record
         </a>
         <Nav />
         <main id="main" className={MAIN_CLASS}>
           <Hero />
-          <Register onOpen={open} />
-          <Asterism />
+          <Examines />
+          <Campaign />
           <Finding />
-          <Method />
-          <Query />
-          <Asterism />
-          <Backtest />
-          <Limits />
-          <Economics />
-          <Asterism />
-          <Verify />
+          <Register onOpen={open} />
         </main>
         <Footer generatedAt={site.generated_at} />
         {everOpened && (

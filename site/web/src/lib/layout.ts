@@ -1,2 +1,3 @@
-/** The report column; shared by App and the prerendered first screen so they line up exactly. */
-export const MAIN_CLASS = 'mx-auto max-w-[84rem] px-5 md:px-10';
+export const MAIN_CLASS = 'relative';
+/** The content column for v2 sections. */
+export const WRAP = 'mx-auto w-full max-w-[90rem] px-5 md:px-10';

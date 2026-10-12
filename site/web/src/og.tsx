@@ -39,7 +39,7 @@ function Og() {
               </li>
             ))}
           </ul>
-          <p className="mt-5 font-mono text-[16px] text-muted">iamdflame.github.io/heirloom</p>
+          <p className="mt-5 font-mono text-[16px] text-muted">heirloom-proof.vercel.app</p>
         </div>
       </div>
       <div className="flex flex-1 items-center justify-center gap-8 border-l border-ledger-rule bg-ledger">

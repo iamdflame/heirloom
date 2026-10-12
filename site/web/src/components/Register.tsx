@@ -8,6 +8,9 @@ import { Replay } from './Replay';
 import { onGoto, type Goto } from '@/lib/goto';
 import { useMedia } from '@/lib/useMedia';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
+import { useSpotlight } from './fx';
+import { WaveBand } from './Guilloche';
+import { WRAP } from '@/lib/layout';
 
 export type OpenReceipt = (anchor: string, line: LineId, trigger: HTMLElement | null) => void;
 type Filter = ChipT | 'ALL';
@@ -120,6 +123,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
 
   // ---- the 87890 → 15307 connector, drawn in the right margin ----
   const sheetRef = useRef<HTMLDivElement>(null);
+  const spotRef = useSpotlight<HTMLDivElement>('tr[data-row]');
   const rowRefs = useRef(new Map<string, HTMLTableRowElement>());
   const [geo, setGeo] = useState<{ y1: number; y2: number; x: number } | null>(null);
   const conn = site.connector;
@@ -154,13 +158,16 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
       : `${shown.length} of ${arrived.length} advisories have a ${CHIP_META[filter].word.toUpperCase()} cell`;
 
   return (
-    <section id="register" aria-labelledby="fig1" className="border-t border-rule pt-10">
-      <figure className="m-0">
+    <section id="register" aria-labelledby="fig1" className="relative py-28 md:py-36">
+      <figure className={`m-0 ${WRAP}`}>
         <figcaption className="grid gap-2 md:grid-cols-12">
-          <h2 id="fig1" className="text-3xl leading-tight md:col-span-8 md:text-4xl">
-            Fig. 1 — The register.
+          <p className="eyebrow md:col-span-12">The register · certificate {site.record}</p>
+          <h2 id="fig1" className="display mt-3 text-[clamp(2.6rem,6vw,5.5rem)] md:col-span-10">
+            Every cell is <em className="italic text-brass-hi">a test run you can open.</em>
           </h2>
-          <p className="text-lg text-muted md:col-span-8">Every cell is a test run you can open.</p>
+          <p className="mt-2 max-w-[40rem] text-lg text-muted md:col-span-8">
+            {site.rows.length} advisories × {site.lines.length} release lines. Click a verdict for its receipt.
+          </p>
         </figcaption>
 
         <Replay stop={stop} count={arrived.length} onStop={(i) => setStop(i)} onReplayStart={() => setAnimate(true)} />
@@ -193,7 +200,8 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
         {/* desktop/tablet: the ledger sheet */}
         {wide && (
           <div ref={sheetRef} className="relative mt-5 xl:pr-44">
-            <div className="overflow-x-auto rounded-[2px] border border-ledger-rule bg-ledger lg:overflow-visible">
+            <div ref={spotRef} className="overflow-x-auto rounded-[14px] border border-brass/30 bg-surface shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)] lg:overflow-visible">
+              <WaveBand className="h-5 rounded-t-[14px] opacity-40" />
               <p id="register-help" className="sr-only">
                 Each verdict cell is a button. Use the arrow keys to move between cells, Home and End for the start or
                 end of a row, and Enter to open the receipt.
@@ -208,22 +216,22 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                   <col className="hidden w-[11rem] lg:table-column" />
                 </colgroup>
                 <thead>
-                  <tr className="border-b-2 border-ledger-rule align-bottom lg:border-b-0">
-                    <th scope="col" className="ledger-acc sticky left-0 z-10 bg-ledger px-3 py-3 label">
+                  <tr className="border-b border-brass/40 align-bottom lg:border-b-0">
+                    <th scope="col" className="ledger-acc sticky left-0 z-10 bg-surface px-3 py-3 label !text-brass">
                       Accession
                     </th>
-                    <th scope="col" className="px-4 py-3 label">
+                    <th scope="col" className="px-4 py-3 label !text-brass">
                       Advisory
                     </th>
                     {site.lines.map((l) => (
                       <th key={l.id} scope="col" className="px-2 py-3 font-normal">
-                        <span className="block text-[0.95rem] leading-tight">{l.label}</span>
+                        <span className="block text-[0.9rem] font-medium leading-tight text-brass-hi">{l.label}</span>
                         <span className="mt-0.5 block font-mono text-[0.7rem] text-muted [overflow-wrap:anywhere]">
                           {l.kind === 'eval' ? 'tag ' + l.version : l.version}
                         </span>
                       </th>
                     ))}
-                    <th scope="col" className="hidden whitespace-nowrap px-3 py-3 label lg:table-cell">
+                    <th scope="col" className="hidden whitespace-nowrap px-3 py-3 label !text-brass lg:table-cell">
                       Lines affected
                     </th>
                   </tr>
@@ -249,14 +257,14 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                           if (el) rowRefs.current.set(r.anchor, el);
                           else rowRefs.current.delete(r.anchor);
                         }}
-                        className="border-b border-ledger-rule"
+                        className="spotlight border-b border-rule/80 transition-colors duration-200 last:border-b-0"
                         data-row={r.anchor}
                         data-hit={hit === r.anchor ? '' : undefined}
                         aria-hidden={isArrived ? undefined : true}
                       >
                         <th
                           scope="row"
-                          className="ledger-acc sticky left-0 z-10 bg-ledger px-3 py-2 text-left align-middle font-mono text-[0.8rem] font-normal"
+                          className="ledger-acc sticky left-0 z-10 bg-surface px-3 py-2 text-left align-middle font-mono text-[0.78rem] font-normal text-brass"
                         >
                           <span className={isArrived ? 'whitespace-nowrap' : 'whitespace-nowrap text-muted'}>
                             {r.acc}
@@ -266,13 +274,13 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                           <>
                             <td className="px-4 py-2 align-middle [overflow-wrap:break-word]">
                               <m.div {...ink}>
-                                <span className="whitespace-nowrap font-mono text-[0.8rem]">{r.cve}</span>
+                                <span className="whitespace-nowrap font-mono text-[0.78rem] text-ink">{r.cve}</span>
                                 {site.query_marker.cve === r.cve && (
-                                  <span className="ml-2 rounded-chip border border-ink/30 px-1 py-px font-mono text-[0.65rem] uppercase tracking-wide">
+                                  <span className="ml-2 rounded-chip border border-unp-fg/50 px-1 py-px font-mono text-[0.62rem] uppercase tracking-wide text-unp-fg">
                                     query #{site.query_marker.number}
                                   </span>
                                 )}
-                                <span className="block text-[0.95rem] leading-snug">
+                                <span className="block text-[0.92rem] leading-snug text-ink/80">
                                   <RstTitle text={r.title} />
                                 </span>
                                 <span className="mt-0.5 block font-mono text-[0.7rem] text-muted lg:hidden">
@@ -351,16 +359,16 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                 key={r.anchor}
                 data-row={r.anchor}
                 data-hit={hit === r.anchor ? '' : undefined}
-                className="min-w-0 rounded-[2px] border border-ledger-rule bg-ledger p-4"
+                className="min-w-0 rounded-[12px] border border-brass/25 bg-surface p-4"
               >
                 <p className="flex items-baseline justify-between gap-3 font-mono text-[0.75rem] text-muted">
-                  <span>{r.acc}</span>
+                  <span className="text-brass">{r.acc}</span>
                   <span>{shortDate(r.date)}</span>
                 </p>
                 <p className="mt-1 font-mono text-sm">
                   {r.cve}
                   {site.query_marker.cve === r.cve && (
-                    <span className="ml-2 rounded-chip border border-ink/30 px-1 py-px text-[0.65rem] uppercase">
+                    <span className="ml-2 rounded-chip border border-unp-fg/50 px-1 py-px text-[0.62rem] uppercase text-unp-fg">
                       query #{site.query_marker.number}
                     </span>
                   )}
@@ -373,7 +381,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
                     stacked on our own backport · PR #{conn.pr} on #{conn.on}
                   </p>
                 )}
-                <ul className="mt-3 divide-y divide-ledger-rule border-t border-ledger-rule">
+                <ul className="mt-3 divide-y divide-rule border-t border-rule">
                   {r.cells.map((cell, ci) => {
                     const line = lineById[cell.line];
                     return (
@@ -401,7 +409,7 @@ export function Register({ onOpen }: { onOpen: OpenReceipt }) {
           </ol>
         )}
 
-        <div className="mt-6 border-t border-rule pt-4">
+        <div className="mt-8 border-t border-rule pt-5">
           <ChipLegend />
         </div>
       </figure>
@@ -420,10 +428,10 @@ function Connector({ geo, label }: { geo: { y1: number; y2: number; x: number };
       aria-hidden
       className="pointer-events-none absolute left-0 top-0 hidden h-full w-full overflow-visible xl:block"
     >
-      <path d={d} fill="none" stroke="rgb(var(--ink))" strokeWidth="1" />
-      <path d={`M${x0} ${y2} l7 -4 v8 z`} fill="rgb(var(--ink))" />
-      <circle cx={x0} cy={y1} r="2.5" fill="rgb(var(--ink))" />
-      <text x={x0 + bend + 10} y={top + Math.abs(y1 - y2) / 2 - 4} className="fill-ink font-mono text-[11px]">
+      <path d={d} fill="none" stroke="rgb(var(--brass-hi))" strokeWidth="1.2" />
+      <path d={`M${x0} ${y2} l7 -4 v8 z`} fill="rgb(var(--brass-hi))" />
+      <circle cx={x0} cy={y1} r="2.5" fill="rgb(var(--brass-hi))" />
+      <text x={x0 + bend + 10} y={top + Math.abs(y1 - y2) / 2 - 4} className="fill-brass-hi font-mono text-[11px]">
         {label[0]}
       </text>
       <text x={x0 + bend + 10} y={top + Math.abs(y1 - y2) / 2 + 12} className="fill-muted font-mono text-[11px]">

@@ -1,46 +1,65 @@
-import { Seal } from './Seal';
+import { Hallmark } from './Hallmark';
 import { site } from '@/lib/site';
+import { WRAP } from '@/lib/layout';
 
-/** Colophon. */
+const PHOTOS: [string, string][] = [
+  ['Олександр К', 'https://unsplash.com/photos/a-close-up-view-of-a-watch-movement-HmIwomthlWw'],
+  ['Min Square_97', 'https://unsplash.com/photos/a-close-up-of-a-clock-with-gold-gears-snk-X32c8tE'],
+  ['Ahmed Rajgoli Shoaib Shakeel', 'https://unsplash.com/photos/macro-shot-of-chronograph-watch-FCsA8Adcgr4'],
+  ['Laura Ockel', 'https://unsplash.com/photos/gold-and-silver-round-accessory-UQ2Fw_9oApU'],
+  ['Daniel Forsman', 'https://unsplash.com/photos/a-hand-pulls-a-card-from-the-librarys-card-catalog-Ph4ZJrwf4x8'],
+  ['Igor bispo', 'https://unsplash.com/photos/close-up-of-a-luxury-watch-face-LaFLlEKx1c0'],
+];
+
+/** Colophon (B8b extends it into the finale). */
 export function Footer({ generatedAt }: { generatedAt?: string }) {
   return (
-    <footer className="mt-24 border-t border-rule">
-      <div className="mx-auto grid max-w-[84rem] gap-8 px-5 py-12 md:grid-cols-12 md:px-10">
-        <div className="flex items-start gap-3 md:col-span-5">
-          <Seal size={44} />
+    <footer className="border-t border-rule bg-surface/40">
+      <div className={`${WRAP} grid gap-10 py-16 md:grid-cols-12`}>
+        <div className="flex items-start gap-4 md:col-span-5">
+          <Hallmark size={52} />
           <div>
-            <p className="text-lg leading-snug">Heirloom — keeps end-of-life software patched</p>
-            <p className="mt-1 font-mono text-[0.75rem] text-muted">
+            <p className="display text-3xl">Heirloom</p>
+            <p className="mt-1 text-muted">Old software, kept honest.</p>
+            <p className="mt-2 font-mono text-[0.72rem] text-muted">
               Record {site.record} · {site.object}
             </p>
           </div>
         </div>
-        <dl className="grid gap-x-6 gap-y-2 text-sm text-muted md:col-span-7 md:grid-cols-[auto_1fr]">
-          <dt className="label">Type</dt>
-          <dd>Newsreader and IBM Plex Mono, self-hosted</dd>
-          {generatedAt && (
-            <>
-              <dt className="label">Data</dt>
-              <dd>
-                Generated <span className="font-mono text-[0.85em]">{generatedAt}</span> from evals/*.json and the
-                campaign ledger
-              </dd>
-            </>
-          )}
+        <dl className="grid gap-x-6 gap-y-3 text-sm text-muted md:col-span-7 md:grid-cols-[7rem_1fr]">
           <dt className="label">Built</dt>
           <dd>
             With neatlogs · Entire · cfo.ai during neatHack, <span className="whitespace-nowrap">Oct 10–12 2026</span>
           </dd>
-          <dt className="label">Page</dt>
+          {generatedAt && (
+            <>
+              <dt className="label">Data</dt>
+              <dd>
+                Generated <span className="font-mono text-[0.85em]">{generatedAt}</span> from evals/*.json and the campaign ledger
+              </dd>
+            </>
+          )}
+          <dt className="label">Photographs</dt>
           <dd>
-            Vite, React, Tailwind CSS and Radix;{' '}
-            <a className="link" href={`${site.repo}/tree/main/site/web`}>
-              source in site/web
-            </a>
+            Unsplash, by{' '}
+            {PHOTOS.map(([who, url], i) => (
+              <span key={url}>
+                <a className="link" href={url}>
+                  {who}
+                </a>
+                {i < PHOTOS.length - 2 ? ', ' : i === PHOTOS.length - 2 ? ' and ' : ''}
+              </span>
+            ))}
+            . Graded for this page.
           </dd>
-          <dt className="label">Licence</dt>
+          <dt className="label">Type</dt>
+          <dd>Instrument Serif, Geist and Geist Mono (SIL OFL), self-hosted</dd>
+          <dt className="label">Source</dt>
           <dd>
-            MIT ·{' '}
+            <a className="link" href={`${site.repo}/tree/main/site/web`}>
+              site/web
+            </a>{' '}
+            · MIT ·{' '}
             <a className="link" href={site.repo}>
               github.com/iamdflame/heirloom
             </a>
