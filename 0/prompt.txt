@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>b77qmdypo</task-id>
+<tool-use-id>toolu_01RwvcW1J1CTiYau1YHKUWKF</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/1c8b3479-cda9-4b38-b4b5-9367583d1fc4/tasks/b77qmdypo.output</output-file>
+<status>completed</status>
+<summary>Background command "sleep 10; id=$(gh run list -w pages -L 1 --json databaseId --jq '.[0].databaseId'); gh run watch $id --exit-status &gt;/tmp/run2.log 2&gt;&amp;1; echo "exit $?"; gh run list -w pages -L 1 --json headSha,conclusion --jq '.[0]'" completed (exit code 0)</summary>
+</task-notification>
