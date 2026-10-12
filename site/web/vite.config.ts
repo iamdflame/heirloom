@@ -2,6 +2,9 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
+// Base path: '/' on Vercel, '/heirloom/' for GitHub Pages (set VITE_BASE in the Pages workflow).
+const BASE = process.env.VITE_BASE || '/';
+
 // Inline the (small, ~7 kB gz) stylesheet into index.html so first paint waits on no CSS request.
 function inlineCss(): Plugin {
   return {
@@ -13,7 +16,7 @@ function inlineCss(): Plugin {
       handler(html, ctx) {
         if (!ctx.bundle || !ctx.filename.endsWith('index.html')) return html;
         return html.replace(
-          /<link rel="stylesheet"[^>]*href="\/heirloom\/(assets\/[^"]+\.css)"[^>]*>/g,
+          new RegExp(`<link rel="stylesheet"[^>]*href="${BASE.replace(/\//g, '\\/')}(assets\\/[^"]+\\.css)"[^>]*>`, 'g'),
           (tag, file: string) => {
             const asset = ctx.bundle![file];
             if (!asset || asset.type !== 'asset') return tag;
@@ -28,7 +31,7 @@ function inlineCss(): Plugin {
 export default defineConfig(
   ({ isSsrBuild }) =>
     ({
-      base: '/heirloom/',
+      base: BASE,
       plugins: [react(), inlineCss()],
       resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
       build: isSsrBuild

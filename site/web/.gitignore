@@ -6,3 +6,5 @@ public/site.json
 public/receipts/
 src/data/site.json
 dist-ssr
+.vercel
+.env*

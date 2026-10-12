@@ -9,6 +9,8 @@ import { FileText, GitPullRequest } from 'lucide-react';
 import { CopyButton } from './CopyButton';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from './ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Hallmark } from './Hallmark';
+import { WaveBand } from './Guilloche';
 
 const cache = new Map<string, Promise<ReceiptT>>();
 function load(cve: string) {
@@ -57,13 +59,22 @@ export default function Receipt({
             returnFocus();
           }}
         >
-          <div className="px-5 pb-10 pt-5 md:px-8 md:pt-7">
-            <header className="pr-12">
-              <p className="font-mono text-xs text-muted">
-                {row.acc} · advisory {shortDate(row.date)}
-              </p>
-              <SheetTitle className="mt-1 font-mono text-lg font-medium">{row.cve}</SheetTitle>
-              <SheetDescription className="mt-1 text-xl leading-snug text-ink">
+          <WaveBand className="h-6 shrink-0 opacity-50" />
+          <div className="px-5 pb-10 pt-5 md:px-9 md:pt-7">
+            <header className="relative pr-14">
+              <div className="flex items-center gap-3">
+                <span className="hallmark-shimmer relative inline-flex overflow-hidden rounded-full">
+                  <Hallmark size={40} />
+                </span>
+                <p className="eyebrow leading-snug">
+                  Certificate of proof
+                  <span className="block font-mono text-[0.7rem] normal-case tracking-normal text-muted">
+                    {row.acc} · advisory {shortDate(row.date)}
+                  </span>
+                </p>
+              </div>
+              <SheetTitle className="mt-5 font-mono text-xl font-medium text-brass-hi">{row.cve}</SheetTitle>
+              <SheetDescription className="display mt-2 text-[1.9rem] leading-[1.1] text-ink">
                 <RstTitle text={row.title} />
               </SheetDescription>
               {row.url && (
@@ -124,8 +135,11 @@ export default function Receipt({
 
 function Field({ name, children }: { name: string; children: React.ReactNode }) {
   return (
-    <section className="mt-7 border-t border-rule pt-4">
-      <h3 className="label mb-3">{name}</h3>
+    <section className="mt-8">
+      <h3 className="label mb-3 flex items-center gap-3 !text-brass">
+        {name}
+        <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-brass/40 to-transparent" />
+      </h3>
       {children}
     </section>
   );
@@ -152,7 +166,7 @@ function Examination({ cell, row }: { cell: ReceiptCell; row: Row }) {
   return (
     <div className="grid gap-5">
       <figure className="m-0">
-        <Triangle um={times(cell.runs.um?.outcomes)} up={times(cell.runs.up?.outcomes)} lt={times(cell.runs.lt?.outcomes)} line={line.name} chip={chip} />
+        <Triangle um={cell.runs.um?.outcomes ?? []} up={cell.runs.up?.outcomes ?? []} lt={cell.runs.lt?.outcomes ?? []} line={line.name} chip={chip} />
         <figcaption className="mt-2 text-sm text-muted">
           Calibration: the probe on upstream before the fix (U⁻), after it (U⁺), and on {line.label}.
           {cell.detail && <> Result: {cell.detail}.</>}
@@ -176,9 +190,9 @@ function Examination({ cell, row }: { cell: ReceiptCell; row: Row }) {
           <p className="label mb-1">Gates</p>
           <ul className="grid gap-2">
             {cell.gates.map((g) => (
-              <li key={g.id} className="grid grid-cols-[2.6rem_1fr] gap-x-2 text-[0.9rem] leading-snug">
-                <span className="font-mono text-[0.75rem]">
-                  <span aria-hidden>{g.ok ? '✓' : '·'}</span> {g.id.replace('C4ab', 'C4')}
+              <li key={g.id} className="grid grid-cols-[3.2rem_1fr] gap-x-3 border-b border-rule/70 pb-2 text-[0.9rem] leading-snug last:border-b-0">
+                <span className={cn('font-mono text-[0.75rem]', g.ok ? 'text-fix-fg' : 'text-muted')}>
+                  <span aria-hidden className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-current text-[0.6rem]">{g.ok ? '✓' : '·'}</span>{g.id.replace('C4ab', 'C4')}
                   <span className="sr-only">{g.ok ? ' holds' : ' does not hold'}</span>
                 </span>
                 <span>
@@ -205,17 +219,21 @@ function Examination({ cell, row }: { cell: ReceiptCell; row: Row }) {
   );
 }
 
-function Triangle({ um, up, lt, line, chip }: { um: string; up: string; lt: string; line: string; chip: Row['cells'][number]['chip'] }) {
+/** The calibration triangle as an instrument: U⁻ and U⁺ on top, this line below; connectors draw in,
+ *  FAIL lights blink red three times, PASS lights then go green. */
+function Triangle({ um, up, lt, line, chip }: { um: string[]; up: string[]; lt: string[]; line: string; chip: Row['cells'][number]['chip'] }) {
   return (
-    <div className="relative grid grid-cols-2 gap-x-6 gap-y-8 text-center">
+    <div className="relative grid grid-cols-2 gap-x-6 gap-y-10 rounded-[12px] border border-rule bg-paper/60 px-4 py-6 text-center">
       <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <path d="M25 22 L75 22 L50 80 Z" fill="none" stroke="rgb(var(--rule))" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+        {['M27 26 L73 26', 'M73 26 L50 76', 'M50 76 L27 26'].map((d, i) => (
+          <path key={d} d={d} fill="none" stroke="rgb(var(--brass))" strokeOpacity="0.6" strokeWidth="1" vectorEffect="non-scaling-stroke" pathLength={1} className="draw" style={{ animationDelay: `${i * 220}ms`, animationDuration: '700ms' }} />
+        ))}
       </svg>
-      <Node k="U⁻" sub="upstream before fix" v={um} />
-      <Node k="U⁺" sub="upstream after fix" v={up} />
+      <Node k="U⁻" sub="upstream before fix" runs={um} at={0} />
+      <Node k="U⁺" sub="upstream after fix" runs={up} at={1} />
       <div className="col-span-2 mx-auto">
-        <Node k={line} sub="this line" v={lt}>
-          <Chip chip={chip} className="mt-1" />
+        <Node k={line} sub="this line" runs={lt} at={2}>
+          <Chip chip={chip} className="mt-2" />
         </Node>
       </div>
       <span className="sr-only">{`${CHIP_META[chip].word}.`}</span>
@@ -223,12 +241,28 @@ function Triangle({ um, up, lt, line, chip }: { um: string; up: string; lt: stri
   );
 }
 
-function Node({ k, sub, v, children }: { k: string; sub: string; v: string; children?: React.ReactNode }) {
+function Node({ k, sub, runs, at, children }: { k: string; sub: string; runs: string[]; at: number; children?: React.ReactNode }) {
   return (
-    <div className="relative mx-auto min-w-[9rem] rounded-chip border border-rule bg-surface px-3 py-2">
-      <p className="font-mono text-sm">{k}</p>
-      <p className="text-[0.75rem] text-muted">{sub}</p>
-      <p className="mt-1 font-mono text-[0.8rem] font-medium">{v}</p>
+    <div className="relative mx-auto min-w-[9.5rem] rounded-[10px] border border-brass/30 bg-surface px-3 py-2.5 shadow-[inset_0_1px_0_rgb(var(--brass-hi)/0.12)]">
+      <p className="font-mono text-sm text-brass-hi">{k}</p>
+      <p className="text-[0.72rem] text-muted">{sub}</p>
+      <p className="mt-2 flex items-center justify-center gap-1.5" aria-hidden>
+        {runs.length === 0 && <span className="font-mono text-[0.75rem] text-muted">—</span>}
+        {runs.map((o, i) => (
+          <span
+            key={i}
+            className="h-2.5 w-2.5 rounded-full bg-rule"
+            style={
+              o === 'FAIL'
+                ? { animation: `blink-fail 420ms ease-in-out ${700 + at * 300 + i * 90}ms 3 both`, background: 'rgb(var(--aff-fg))' }
+                : o === 'PASS'
+                  ? { animation: `light-pass 300ms ease-out ${1900 + at * 200 + i * 90}ms both` }
+                  : undefined
+            }
+          />
+        ))}
+      </p>
+      <p className="mt-1.5 font-mono text-[0.78rem] font-medium">{times(runs)}</p>
       {children}
     </div>
   );
@@ -341,7 +375,7 @@ function Evidence({ row, matrixLogs }: { row: Row; matrixLogs?: string }) {
       </p>
       <div>
         <p className="label mb-1">Reproduce from the ledger</p>
-        <div className={cn('flex items-center justify-between gap-2 rounded-chip border border-rule bg-paper px-3')}>
+        <div className={cn('flex items-center justify-between gap-2 rounded-[8px] border border-rule bg-paper px-3')}>
           <code className="font-mono text-[0.8rem] [overflow-wrap:anywhere]">{cmd}</code>
           <CopyButton value={cmd} label="command" />
         </div>

@@ -13,7 +13,7 @@ export const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <SheetPrimitive.Overlay ref={ref} className={cn('sheet-overlay fixed inset-0 z-50 bg-ink/30', className)} {...props} />
+  <SheetPrimitive.Overlay ref={ref} className={cn('sheet-overlay fixed inset-0 z-50 bg-black/70 backdrop-blur-[2px]', className)} {...props} />
 ));
 SheetOverlay.displayName = 'SheetOverlay';
 
@@ -28,17 +28,18 @@ export const SheetContent = React.forwardRef<
     <SheetPrimitive.Content
       ref={ref}
       data-side={side}
+      data-lenis-prevent
       className={cn(
-        'sheet fixed z-50 flex flex-col bg-surface text-ink',
+        'sheet fixed z-50 flex flex-col border-brass/30 bg-surface text-ink',
         side === 'right'
-          ? 'inset-y-0 right-0 h-full w-[min(40rem,100vw)] rounded-l-sheet shadow-[0_8px_40px_rgb(0_0_0/0.18)]'
-          : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-sheet shadow-[0_-2px_12px_rgb(0_0_0/0.12)]',
+          ? 'inset-y-0 right-0 h-full w-[min(42rem,100vw)] rounded-l-sheet border-l shadow-[0_8px_80px_rgb(0_0_0/0.7)]'
+          : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-sheet border-t shadow-[0_-2px_24px_rgb(0_0_0/0.6)]',
         className,
       )}
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="press absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-chip text-muted hover-ink">
+      <SheetPrimitive.Close className="press absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full text-muted hover-ink">
         <X className="h-5 w-5" aria-hidden />
         <span className="sr-only">Close receipt</span>
       </SheetPrimitive.Close>

@@ -7,7 +7,7 @@ function NotFound() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-[40rem] flex-col items-start justify-center gap-6 px-6">
       <Seal size={64} />
-      <h1 className="text-4xl leading-tight">This accession number is not in the register.</h1>
+      <h1 className="display text-5xl">This accession number is not in the register.</h1>
       <a className="link text-lg" href={import.meta.env.BASE_URL}>
         Back to the register
       </a>
