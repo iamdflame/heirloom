@@ -15,7 +15,7 @@ export const IrisIn: React.FC<{ children: React.ReactNode; frames?: number }> = 
   const t = interpolate(frame, [0, frames], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE_IN_OUT });
   const r = t * DIAG;
   const rim = interpolate(t, [0, 0.1, 0.8, 1], [0, 1, 1, 0]);
-  const inner = interpolate(t, [0.2, 0.75], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const inner = interpolate(t, [0.72, 1], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{ clipPath: `circle(${r}px at 50% 50%)`, background: C.ink }}>

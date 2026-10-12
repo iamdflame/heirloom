@@ -4,7 +4,7 @@ import { C } from '../theme';
 import { loadFonts } from '../fonts';
 import { S01 } from '../scenes/S01';
 import { S02 } from '../scenes/S02';
-import { S04 } from '../scenes/S04';
+import { S04 } from './S04';
 import { S05 } from './S05';
 import { S09 } from '../scenes/S09';
 import { S10 } from '../scenes/S10';

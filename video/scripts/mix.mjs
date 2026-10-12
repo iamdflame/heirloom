@@ -9,7 +9,7 @@
 //   master/HeirloomDemo-mix.mp4   (clean picture + the same audio; upload with the .srt)
 // Usage: node scripts/mix.mjs [voDir-with-words.json]
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -93,6 +93,8 @@ ff([
   '-map', '[out]', '-c:a', 'pcm_s24le', mixWav,
 ]);
 log('mix.wav', measure(mixWav), `${sfx.length} SFX`);
+mkdirSync(join(OUT, 'master'), { recursive: true });
+copyFileSync(mixWav, join(OUT, 'master/HeirloomDemo-mix.wav'));
 
 // 5. YouTube loudness (two-pass loudnorm) and the muxes
 const pass1 = execFileSync('bash', ['-c', `ffmpeg -hide_banner -nostats -i '${mixWav}' -af loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json -f null - 2>&1`], { encoding: 'utf8' });
