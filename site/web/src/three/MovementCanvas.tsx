@@ -4,7 +4,7 @@ import { ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { placeTrain, wheelGeometry, type Placed } from './gears';
-import { engraveMedallion, hallmarkH } from './guilloche';
+import { engraveMedallion, hallmarkH, perlage } from './guilloche';
 import type { HeroSceneProps } from './HeroScene';
 
 const M = 0.055; // module shared by the whole train
@@ -18,7 +18,7 @@ const TRAIN = placeTrain(M, { teeth: 110, spokes: 5, thickness: 0.16, x: 0, z: 0
   { parent: 1, dir: -0.05, teeth: 64, spokes: 6, thickness: 0.14 },
   { parent: 0, dir: 0.95, teeth: 40, spokes: 4, thickness: 0.16 },
   { parent: 3, dir: 0.15, teeth: 22, spokes: 0, thickness: 0.2 },
-  { parent: 0, dir: 1.95, teeth: 48, spokes: 5, thickness: 0.14 },
+  { parent: 0, dir: 1.65, teeth: 48, spokes: 5, thickness: 0.14 },
   { parent: 0, dir: 4.55, teeth: 32, spokes: 4, thickness: 0.16 },
 ]);
 
@@ -26,7 +26,7 @@ function useBrass() {
   return useMemo(() => {
     const brass = new THREE.MeshPhysicalMaterial({ color: BRASS, metalness: 1, roughness: 0.28 });
     const deep = new THREE.MeshPhysicalMaterial({ color: BRASS_DEEP, metalness: 1, roughness: 0.34 });
-    const steel = new THREE.MeshPhysicalMaterial({ color: '#B9BCC0', metalness: 1, roughness: 0.18 });
+    const steel = new THREE.MeshPhysicalMaterial({ color: '#8F9296', metalness: 1, roughness: 0.24 });
     const ruby = new THREE.MeshPhysicalMaterial({
       color: '#7A0F1A',
       metalness: 0,
@@ -80,11 +80,11 @@ function Wheel({ w, angle, mat, steel, ruby }: { w: Placed; angle: { current: nu
       <mesh material={steel} position={[0, w.thickness / 2, 0]}>
         <cylinderGeometry args={[arbor * 0.98, arbor * 0.98, w.thickness + 0.4, 24]} />
       </mesh>
-      <mesh material={steel} position={[0, w.thickness + (w.parent >= 0 ? 0.22 : 0) + 0.06, 0]}>
+      <mesh material={steel} position={[0, w.thickness + (w.parent >= 0 ? 0.16 : 0) + 0.06, 0]}>
         <cylinderGeometry args={[arbor * 2.1, arbor * 2.4, 0.05, 32]} />
       </mesh>
       {w.parent >= 0 && <Pinion w={w} steel={steel} />}
-      <mesh material={ruby} position={[0, w.thickness + (w.parent >= 0 ? 0.22 : 0) + 0.09, 0]} scale={[1, 0.45, 1]}>
+      <mesh material={ruby} position={[0, w.thickness + (w.parent >= 0 ? 0.16 : 0) + 0.09, 0]} scale={[1, 0.45, 1]}>
         <sphereGeometry args={[arbor * 1.25, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
       </mesh>
     </group>
@@ -93,7 +93,7 @@ function Wheel({ w, angle, mat, steel, ruby }: { w: Placed; angle: { current: nu
 
 // the steel pinion that shares each wheel's arbor (10 leaves, same module)
 function Pinion({ w, steel }: { w: Placed; steel: THREE.Material }) {
-  const geo = useMemo(() => wheelGeometry({ teeth: 10, spokes: -1, thickness: 0.22 }, M), []);
+  const geo = useMemo(() => wheelGeometry({ teeth: 10, spokes: -1, thickness: 0.16 }, M), []);
   useEffect(() => () => geo.dispose(), [geo]);
   return <mesh geometry={geo} material={steel} position={[0, w.thickness, 0]} />;
 }
@@ -114,8 +114,8 @@ function Medallion({ brass, deep }: { brass: THREE.Material; deep: THREE.Materia
       roughnessMap: eng.rough,
       bumpMap: eng.bump,
       bumpScale: 3,
-      clearcoat: 0.6,
-      clearcoatRoughness: 0.12,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.3,
     });
     const disc = new THREE.Shape();
     disc.absarc(0, 0, R, 0, Math.PI * 2, false);
@@ -185,6 +185,33 @@ function Medallion({ brass, deep }: { brass: THREE.Material; deep: THREE.Materia
   );
 }
 
+// main plate under the train: dark gilt with perlage, partly out of frame
+function Plate() {
+  const parts = useMemo(() => {
+    const per = perlage(512, 6);
+    per.bump.repeat.set(1 / 1.4, 1 / 1.4);
+    const mat = new THREE.MeshPhysicalMaterial({ color: '#3A3022', metalness: 1, roughness: 0.42, bumpMap: per.bump, bumpScale: 0.6 });
+    const side = new THREE.MeshPhysicalMaterial({ color: BRASS_DEEP, metalness: 1, roughness: 0.3 });
+    const s = new THREE.Shape();
+    s.absarc(0, 0, 6.1, 0, Math.PI * 2, false);
+    const b = 0.08;
+    const geo = new THREE.ExtrudeGeometry(s, { depth: 0.3 - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelOffset: -b, bevelSegments: 4, curveSegments: 160 });
+    geo.translate(0, 0, b);
+    geo.rotateX(-Math.PI / 2);
+    return { per, mat, side, geo };
+  }, []);
+  useEffect(
+    () => () => {
+      parts.per.dispose();
+      parts.mat.dispose();
+      parts.side.dispose();
+      parts.geo.dispose();
+    },
+    [parts],
+  );
+  return <mesh geometry={parts.geo} material={[parts.mat, parts.side]} position={[2.3, -0.42, -0.5]} />;
+}
+
 function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progress' | 'variant'>> & { still: boolean }) {
   const { brass, deep, steel, ruby } = useBrass();
   const angle = useRef(still ? 1.1 : 0);
@@ -229,13 +256,13 @@ function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progre
     }
 
     const cam = camera as THREE.PerspectiveCamera;
-    const zoom = variant === 'finale' ? 1.45 - 0.1 * p : 1 - 0.12 * p;
+    const zoom = variant === 'finale' ? 1.3 - 0.08 * p : 1 - 0.12 * p;
     const dist = (wide ? 17 : 21) * zoom;
     const elev = (56 * Math.PI) / 180;
     cam.position.set(0, Math.sin(elev) * dist, Math.cos(elev) * dist);
     cam.lookAt(0, 0, 0);
     // lens shift: keep the movement in the right two thirds, perspective unchanged
-    const shift = wide && variant === 'hero' ? -0.24 : 0;
+    const shift = wide && variant === 'hero' ? -0.17 : 0;
     if (cam.filmOffset !== shift * cam.getFilmWidth()) {
       cam.filmOffset = shift * cam.getFilmWidth();
       cam.updateProjectionMatrix();
@@ -249,8 +276,9 @@ function Rig({ progress, variant, still }: Required<Pick<HeroSceneProps, 'progre
           <Wheel key={i} w={w} angle={angle} mat={i === 2 || i === 5 ? deep : brass} steel={steel} ruby={ruby} />
         ))}
         <Medallion brass={brass} deep={deep} />
+        <Plate />
       </group>
-      <ContactShadows position={[0, -0.05, 0]} opacity={0.75} scale={22} blur={2.4} far={3} resolution={512} color="#000000" frames={still ? 1 : Infinity} />
+      <ContactShadows position={[0, -0.11, 0]} opacity={0.85} scale={22} blur={2} far={1.2} resolution={512} color="#000000" frames={still ? 1 : Infinity} />
     </group>
   );
 }
@@ -293,7 +321,8 @@ export default function MovementCanvas({ progress = 0, variant = 'hero', still =
         }}
       >
         <Environment />
-        <directionalLight position={[-6, 9, 5]} intensity={3.6} color="#FFD9A6" />
+        <pointLight position={[-4.5, 6, -6]} intensity={200} decay={2} color="#FFD49A" />
+        <directionalLight position={[-6, 9, 5]} intensity={1.2} color="#FFE2B8" />
         <directionalLight position={[7, 3, -6]} intensity={0.8} color="#DCE4F0" />
         <Rig progress={progress} variant={variant} still={still} />
       </Canvas>

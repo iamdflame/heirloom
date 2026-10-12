@@ -28,3 +28,43 @@ perspective unchanged, deeper medallion colour, stronger bump.
   not the crisp moiré lattice of a rose-engine cut.
 - What works: finer teeth and steel pinions immediately read as horology; the jewel + collet + pinion
   stack gives each arbor scale.
+
+**Changes →** the key light becomes a warm point light behind and above the train (`decay 2`), so each
+flat face carries a falloff and the specular sweeps across the metal as the wheels turn and the pointer
+tilts the rig; the directional light drops to a fill. The rosette loses the radial family and becomes
+44 thinner rings with a 0.28 rad phase step per ring (a clean barleycorn moiré). A main plate is added
+under the train: dark gilt (#3A3022) with a canvas perlage bump and a deep-brass bevelled edge, with the
+ContactShadow just above it so wheels sit on something.
+
+## Iteration 3
+- **Big step up.** The plate turns floating cogs into a movement; brass now has real value range
+  (bright bevels on the centre wheel's rim, darker faces away from the key).
+- **Composition:** the plate (r 7.6) is too large; its edge runs behind "software" and "honest".
+- **Highlights:** the point light reflects in the medallion's clearcoat as a small blown-out white disc,
+  which reads as a cheap lens flare, not a studio softbox.
+- **Steel:** pinions are too white and bright, like chrome plastic toys next to the brass.
+- **Perlage:** too regular at bumpScale 1.2; reads as a woven pattern.
+
+**Changes →** plate r 6.1 moved right, perlage bump halved, steel darkened (#8F9296, roughness 0.24),
+pinions thinner, medallion clearcoat 0.35 / clearcoat roughness 0.3, key light moved further back-left.
+
+## Iteration 4
+- The hotspot is gone; the medallion reads as engraved, satin-clearcoated brass with a polished cartouche
+  and a crisp raised serif H. Pinions now read as grey steel and give scale.
+- **Composition:** the plate's edge still kisses the comma of "software,"; the upper-left wheel
+  half-overhangs the plate edge, which looks accidental.
+
+**Changes →** plate nudged right/back; that wheel moved to 1.65 rad around the centre wheel (checked
+for clearance against the 40-tooth wheel: tip circles 2.95 apart vs 2.53 needed).
+
+## Iteration 5 (shipped)
+- Hero 1600×1000: clean negative space on the left (~560 px), the movement occupies the right two thirds,
+  plate edge and wheels cropped on the right like a macro close-up. Contrast: highlights on bevels and
+  the centre-wheel rim, deep shadows in the spoke windows.
+- Mobile 900×1100: the movement is centred (no lens shift on portrait aspect), medallion upper-left of
+  centre, wheels cropped on the right; reads well as a poster.
+- Finale: zoom 1.45 showed the whole plate as a plain disc with an empty lower-right; reduced to 1.3 so
+  the plate still crops slightly and the train stays the subject.
+- Known limits: the H and rosette are bump-mapped (no parallax at grazing angles); ACES tone mapping
+  slightly desaturates the highlight end. Chunk: 226.8 kB gzip (three + fiber + drei ContactShadows;
+  fiber v8 registers the whole `three` namespace, so tree-shaking cannot trim three much further).

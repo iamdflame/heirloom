@@ -21,34 +21,19 @@ export function engraveMedallion(size = 1024): Engraving {
   b.translate(c, c);
   b.lineCap = 'round';
 
-  // rosette: 28 rings of a 24-petal wave, each phase-shifted so the crossings form a lattice
+  // rosette: 44 rings of a 24-petal wave, each phase-shifted so the crossings form a lattice
   const inner = R * 0.36;
   const outer = R * 0.74;
-  const rings = 30;
+  const rings = 44;
   b.strokeStyle = '#000';
-  b.lineWidth = size / 650;
+  b.lineWidth = size / 1000;
   for (let i = 0; i < rings; i++) {
     const base = inner + ((outer - inner) * i) / rings;
-    const amp = R * 0.035;
+    const amp = R * 0.03;
     b.beginPath();
     for (let s = 0; s <= 1440; s++) {
       const t = (s / 1440) * Math.PI * 2;
-      const r = base + amp * Math.sin(24 * t + i * 0.42) + amp * 0.35 * Math.sin(72 * t - i * 0.2);
-      const x = r * Math.cos(t);
-      const y = r * Math.sin(t);
-      if (s === 0) b.moveTo(x, y);
-      else b.lineTo(x, y);
-    }
-    b.stroke();
-  }
-  // second, counter-phased family for the moiré
-  for (let i = 0; i < 90; i++) {
-    const a0 = (i / 90) * Math.PI * 2;
-    b.beginPath();
-    for (let s = 0; s <= 120; s++) {
-      const u = s / 120;
-      const r = inner + (outer - inner) * u;
-      const t = a0 + 0.45 * Math.sin(u * Math.PI);
+      const r = base + amp * Math.sin(24 * t + i * 0.28);
       const x = r * Math.cos(t);
       const y = r * Math.sin(t);
       if (s === 0) b.moveTo(x, y);
@@ -167,4 +152,35 @@ export function hallmarkH(): THREE.Shape {
   s.quadraticCurveTo(L, bot + serif, L - sw, bot + serif);
   s.lineTo(L - sw, bot);
   return s;
+}
+
+/** Perlage (circular graining) for the main plate: overlapping spun spots in offset rows. Tileable. */
+export function perlage(size = 512, spots = 6): { bump: THREE.CanvasTexture; dispose(): void } {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = size;
+  const g = cv.getContext('2d')!;
+  g.fillStyle = '#808080';
+  g.fillRect(0, 0, size, size);
+  const step = size / spots;
+  const rad = step * 0.72;
+  for (let row = -1; row <= spots + 1; row++) {
+    for (let col = -1; col <= spots + 1; col++) {
+      const cx = col * step + (row % 2 ? step / 2 : 0);
+      const cy = row * step * 0.87;
+      // each spot: fine concentric scratches with a bright rim
+      for (let k = 0; k < 18; k++) {
+        const rr = rad * (1 - k / 18);
+        g.strokeStyle = `rgba(${k % 2 ? 255 : 0},${k % 2 ? 255 : 0},${k % 2 ? 255 : 0},0.16)`;
+        g.lineWidth = rad / 16;
+        g.beginPath();
+        g.arc(cx, cy, rr, 0, Math.PI * 2);
+        g.stroke();
+      }
+      g.fillStyle = 'rgba(0,0,0,0.0)';
+    }
+  }
+  const bump = new THREE.CanvasTexture(cv);
+  bump.wrapS = bump.wrapT = THREE.RepeatWrapping;
+  bump.anisotropy = 8;
+  return { bump, dispose: () => bump.dispose() };
 }
