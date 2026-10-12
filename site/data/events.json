@@ -1,6 +1,36 @@
 {
  "events": [
   {
+   "id": 15,
+   "at": 1791768024.5260327,
+   "run_id": "20261012T012021Z-6c89",
+   "cve": "CVE-2026-87890",
+   "line": "4.2",
+   "stage": "campaign",
+   "kind": "supersedes",
+   "message": "{\"kind\": \"supersedes\", \"of\": \"CVE-2026-15307\", \"pr\": \"https://github.com/iamdflame/django/pull/20\"}"
+  },
+  {
+   "id": 14,
+   "at": 1791765029.9251451,
+   "run_id": "20261012T002657Z-0879",
+   "cve": "CVE-2026-87890",
+   "line": "4.2",
+   "stage": "campaign",
+   "kind": "supersedes",
+   "message": "{\"kind\": \"supersedes\", \"of\": \"CVE-2026-15307\", \"pr\": \"https://github.com/iamdflame/django/pull/20\"}"
+  },
+  {
+   "id": 13,
+   "at": 1791763393.8075411,
+   "run_id": "20261012T000126Z-90e8",
+   "cve": "CVE-2026-87890",
+   "line": "4.2",
+   "stage": "campaign",
+   "kind": "supersedes",
+   "message": "{\"kind\": \"supersedes\", \"of\": \"CVE-2026-15307\", \"pr\": \"https://github.com/iamdflame/django/pull/20\"}"
+  },
+  {
    "id": 12,
    "at": 1791683606.8263462,
    "run_id": "20261011T015149Z-839b",
@@ -62,6 +92,17 @@
   }
  ],
  "detection_hits": [
+  {
+   "id": 23,
+   "run_id": "20261012T002017Z-5cb1",
+   "cve": "CVE-2026-53878",
+   "line": "4.2",
+   "stage": "publish.evidence",
+   "detection": "probe_never_reached_region",
+   "span_id": "e4bb170a7e1b91b3",
+   "trace_id": "dd4b02c81c42a0aab8968528dfeb7299",
+   "at": 1791764421.783771
+  },
   {
    "id": 22,
    "run_id": "20261011T215151Z-8f5c",
