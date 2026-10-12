@@ -253,6 +253,12 @@ function Rig({ progress, variant, still, shot }: Required<Pick<HeroSceneProps, '
     const p = prog.current;
     elapsed.current += dt;
     if (shot) {
+      // the capturer sets this on its first recorded frame so the camera path starts at t = 0
+      const w = window as { __shotRestart?: boolean };
+      if (w.__shotRestart) {
+        w.__shotRestart = false;
+        elapsed.current = 0;
+      }
       shotFrame(shot, elapsed.current, camera as THREE.PerspectiveCamera, speed, angle, dt);
       return;
     }

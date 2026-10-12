@@ -16,11 +16,8 @@ export const ramp = (a = 0.18) => {
   return (x) => (x < a ? (v * x * x) / (2 * a) : x > 1 - a ? 1 - (v * (1 - x) ** 2) / (2 * a) : v * (x - a / 2));
 };
 
-// the 3D canvases are mounted once the page is idle; wait until the poster has faded under them
-const live3d = (variant) => async (page) => {
-  await page.waitForSelector(`[data-poster="${variant}"].opacity-0`, { state: 'attached', timeout: 90_000 });
-  await sleep(1500);
-};
+// the 3D canvases are mounted once the page is idle; wait (in virtual time) until the poster has faded under them
+const live3d = (variant) => ({ virtualReady: `[data-poster="${variant}"].opacity-0`, readyHold: 3, settle: 0 });
 // the receipt is a lazy chunk: import it up front so the click opens it on the very next frame
 const preloadReceipt = async (page) => {
   const f = readdirSync(`${process.env.HOME}/heirloom/site/web/dist/assets`).find((n) => /^Receipt-.*\.js$/.test(n));
@@ -41,8 +38,8 @@ const scrollShot = (id, seconds, keys, extra = {}) => ({
 // evidence 19544 (1792), finale 22090 (1188), page 23599
 const R = ramp();
 export const SITE_SHOTS = [
-  scrollShot('SH01', 8, [[0, 0]], { prepare: live3d('hero'), notes: 'hero idle, live 3D movement turning' }),
-  scrollShot('SH02', 4, [[0.35, 0], [3.55, 2104]], { prepare: live3d('hero'), notes: 'hero → pinned "Watch it work"' }),
+  scrollShot('SH01', 8, [[0, 0]], { ...live3d('hero'), notes: 'hero idle, live 3D movement turning' }),
+  scrollShot('SH02', 4, [[0.35, 0], [3.55, 2104]], { ...live3d('hero'), notes: 'hero → pinned "Watch it work"' }),
   scrollShot('SH03', 16, [[0, 2104], [0.6, 2104], [15.2, 7094, R], [16, 7094]], { notes: 'full campaign replay: dial, stamps, Oct 6 connector' }),
   scrollShot('SH04', 9, [[0, 7620], [2.2, 8250, ease.out], [9, 8290, ease.linear]], { notes: 'finding: plates lock, terminal FAIL×3' }),
   {
@@ -72,7 +69,7 @@ export const SITE_SHOTS = [
   scrollShot('SH08', 6, [[0, 16330], [1.8, 16700, ease.out], [6, 16740, ease.linear]], { notes: 'proof numbers, count-ups' }),
   scrollShot('SH09', 6, [[0, 17800], [6, 18330, R]], { notes: 'economics cards' }),
   scrollShot('SH10', 6, [[0, 19380], [6, 20020, R]], { notes: 'evidence locker' }),
-  scrollShot('SH11', 9, [[0, 21100], [6.2, 22519, R], [9, 22519]], { prepare: live3d('finale'), notes: 'finale: the movement slows to a stop' }),
+  scrollShot('SH11', 9, [[0, 21100], [6.2, 22519, R], [9, 22519]], { ...live3d('finale'), notes: 'finale: the movement slows to a stop' }),
   scrollShot('SHM', 8, [[0, 0], [1.4, 0], [8, 3400, R]], {
     w: 390, h: 844, dsf: 3, mobile: true,
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
@@ -194,12 +191,10 @@ export const WEB_SHOTS = [
 
 // ---------------------------------------------------------------- 3D beauty renders (three-demo.html?shot=…, vite dev)
 const r3d = (id, shot, seconds, notes) => ({
-  id, url: `${DEMO}/three-demo.html?shot=${shot}`, seconds, notes, settle: 0.1,
+  id, url: `${DEMO}/three-demo.html?shot=${shot}`, seconds, notes, settle: 0,
   source: `site/web three-demo.html?shot=${shot} (vite dev)`,
-  prepare: async (page) => {
-    await page.waitForSelector('html[data-ready]', { state: 'attached', timeout: 90_000 });
-    await sleep(1200);
-  },
+  virtualReady: 'html[data-ready]',
+  readyHold: 3,
   plan: async () => ({ events: [{ t: 0, run: (p) => p.evaluate(() => (window.__shotRestart = true)) }] }),
 });
 export const R3D_SHOTS = [

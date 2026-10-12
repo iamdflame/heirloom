@@ -127,7 +127,27 @@ export async function captureShot(browser, shot, log = console.log) {
   await page.addInitScript(PAGE_INIT);
   await page.clock.install({ time: new Date() }); // real now, so relative times ("2 hours ago") read true
   if (shot.css) await page.addInitScript((css) => addEventListener('DOMContentLoaded', () => document.head.append(Object.assign(document.createElement('style'), { textContent: css }))), shot.css);
-  await page.goto(shot.url, { waitUntil: 'networkidle', timeout: 90_000 });
+  let cdp = null;
+  if (shot.virtualReady) {
+    // WebGL shots: never let the clock run free. In real time R3F queues frames far faster than SwiftShader draws
+    // them, and the first screenshot then waits minutes for that backlog. Pause at DOMContentLoaded and step the
+    // clock in 100 ms slices (draining the GPU with a throwaway capture every few) until the scene is ready.
+    await page.goto(shot.url, { waitUntil: 'domcontentloaded', timeout: 90_000 });
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+    cdp = await ctx.newCDPSession(page);
+    const deadline = Date.now() + 240_000;
+    let ready = 0;
+    for (let i = 0; Date.now() < deadline; i++) {
+      await page.clock.runFor(100);
+      if (i % 5 === 4) await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 10 });
+      if (!ready && (await page.$(shot.virtualReady))) ready = i;
+      if (ready && i - ready >= (shot.readyHold ?? 20)) break;
+      if (i % 10 === 9) log(`${shot.id} waiting for ${shot.virtualReady}… ${i / 10} s virtual`);
+    }
+    if (!ready) throw new Error(`${shot.id}: ${shot.virtualReady} never appeared`);
+  } else {
+    await page.goto(shot.url, { waitUntil: 'networkidle', timeout: 90_000 });
+  }
   await page.evaluate(() => document.fonts.ready);
   // eager-load every image so nothing pops in mid-shot
   await page.evaluate(async () => {
@@ -140,7 +160,7 @@ export async function captureShot(browser, shot, log = console.log) {
 
   // freeze time: from here on only runFor moves it
   // (under load the page clock can pass `now + margin` before pauseAt lands: retry with a wider margin)
-  for (let margin = 100; ; margin *= 2) {
+  for (let margin = 100; !shot.virtualReady; margin *= 2) {
     const now = await page.evaluate(() => Date.now());
     try {
       await page.clock.pauseAt(now + margin);
@@ -150,7 +170,7 @@ export async function captureShot(browser, shot, log = console.log) {
     }
   }
   const plan = (await shot.plan?.(page)) ?? {};
-  const cdp = await ctx.newCDPSession(page);
+  cdp ??= await ctx.newCDPSession(page);
   const step = 1000 / fps;
   const frames = Math.round(shot.seconds * fps);
   const events = [...(plan.events ?? [])].sort((a, b) => a.t - b.t);
