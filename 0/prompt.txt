@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>brj9pmp06</task-id>
+<tool-use-id>toolu_01TH32dZkkBCfkUPuCJgE3ZQ</tool-use-id>
+<output-file>/tmp/claude-1000/-home-ubuntu-heirloom/1c8b3479-cda9-4b38-b4b5-9367583d1fc4/tasks/brj9pmp06.output</output-file>
+<status>completed</status>
+<summary>Background command "sleep 8; id=$(gh run list -w pages -L 1 --json databaseId,headSha --jq '.[0].databaseId'); echo $id; gh run watch $id --exit-status &gt;/tmp/run1.log 2&gt;&amp;1; echo "exit $?" &gt;&gt; /tmp/run1.log; tail -3 /tmp/run1.log" completed (exit code 0)</summary>
+</task-notification>

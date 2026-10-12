@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4Q122VQB0K503TF9VC12RGH",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "site/web/PROGRESS.md",
+    "site/web/scripts/build-data.mjs",
+    "site/web/scripts/qa.mjs",
+    "site/web/src/App.tsx",
+    "site/web/src/components/Finding.tsx",
+    "site/web/src/components/Footer.tsx",
+    "site/web/src/components/Method.tsx",
+    "site/web/src/components/Query.tsx",
+    "site/web/src/components/Results.tsx",
+    "site/web/src/components/Section.tsx",
+    "site/web/src/components/Verify.tsx",
+    "site/web/src/data/types.ts",
+    "site/web/src/index.css"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 46,
+    "cache_creation_tokens": 51782,
+    "cache_read_tokens": 4352904,
+    "output_tokens": 33148,
+    "api_call_count": 23
+  }
+}
