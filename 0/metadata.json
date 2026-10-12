@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4PW2BSE00EQ9HTQ47JYK59W",
+  "session_id": "0a27285b-bb1e-45d1-b409-e7373f0d9d5c",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-12T01:36:40.306481956Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/outreach/debian-cve-2026-53878.md",
+    "docs/outreach/neatlogs-pii-dlq.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "cc019a696474",
+  "checkpoint_transcript_start": 232,
+  "transcript_lines_at_start": 232,
+  "compact_transcript_start": 46,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 8775,
+    "cache_read_tokens": 211720,
+    "output_tokens": 1718,
+    "api_call_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-12T01:36:40.26823763Z",
+    "agent_lines": 4,
+    "agent_removed": 4,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 4,
+    "total_lines_changed": 8,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
