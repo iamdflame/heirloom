@@ -374,3 +374,17 @@ Session `225b7a56-c495-4dd8-b388-71381b6416ff`, started headless at 20:43 UTC. `
 - **Housekeeping:** install `gettext` (needs approval) to un-skip i18n extraction tests.
 
 ## Submission
+
+## B5b: headless continuation (2026-10-12, session 0a27285b)
+
+### 87890 outcome (step 0)
+
+- **CVE-2026-87890: AFFECTED, published as [PR #21](https://github.com/iamdflame/django/pull/21).**
+  - The PR is stacked: base `heirloom/cve-2026-15307-4.2` (the branch of PR #20, CVE-2026-15307), head `heirloom/cve-2026-87890-4.2`, one commit `5cf157ce31`.
+  - Its body carries the note "Stacked on …/pull/20 … Merge that PR first." (blame: `115ffd0463`).
+  - Gates C1 C2 C3 passed; 0 claims without evidence; escalations 0; checkpoint `01M4PR917WADTM34J6J3AY17Z9`.
+  - The PR was created 2026-10-12 00:30:28Z, from run `20261012T002657Z-0879` ($0.45), i.e. in the `--continue` run after #6 was answered.
+- **What the `--requeue` re-run (log `campaign-87890-20261012T012019Z.log`) actually did:** it finished in 4 s with cost $0.00 and kept status `published` with the same PR. It was a no-op on an already-published record, so the reach retry was not exercised on 87890 and nothing new was published.
+- Campaign totals after the re-run (`work/campaign/b4-replay.json`): 19 CVEs; 13 AFFECTED, 5 UNPROVEN, 1 NOT_AFFECTED_PROVEN; 12 published, 6 evidence, 1 skipped; ledger $3.91 against the $18 cap.
+- **"Asked once" trace:** CVE-2026-15307 opened question [#6](https://github.com/iamdflame/heirloom/issues/6) (`UPSTREAM_TEST_CHANGE`, django/4.2) at 2026-10-11 21:20:17Z, asking trace `2976b1584b28`. The owner answered `adopt-upstream-tests` at 23:56:11Z and Heirloom recorded precedent P001 at 00:00:19Z. [PR #20](https://github.com/iamdflame/django/pull/20) (15307) was re-rendered with the question and trace cited.
+- **"Reused without asking" trace:** CVE-2026-84429 ([PR #19](https://github.com/iamdflame/django/pull/19), created 2026-10-12 00:00:39Z) applied P001 directly: its D1 claim reads "Decision publish-fix by stored precedent P001", ledger `runs/20261012T000021Z-ae48/CVE-2026-84429-4.2/ledger.json`, and its note cites #6 and the asking trace. It opened no new question; #6 recorded only a comment "CVE-2026-84429 also waits on this answer (same kind, same scope; asked once)".
