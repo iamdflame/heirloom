@@ -52,12 +52,17 @@ export const BacktestSplit: React.FC<{ at: number; heirloomDelay?: number; v1: {
   const frame = useCurrentFrame();
   const split = io(frame, at, 50, EASE_IN_OUT);
   const side = (label: string, sub: string, n: number, col: string, delay: number, dir: number) => {
-    const s = springUI(frame, at + delay);
+    // label and caption arrive with the split; the number lands on its own VO beat
+    const s = springUI(frame, at + 6 + (dir > 0 ? 14 : 0));
+    const num = springUI(frame, at + delay);
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, opacity: s, transform: `translateX(${(1 - s) * 60 * dir}px)` }}>
         <div style={{ fontFamily: FONT.mono, fontSize: 24, letterSpacing: '0.18em', color: C.muted }}>{label}</div>
-        <div style={{ fontFamily: FONT.serif, fontSize: 300, lineHeight: 0.9, color: col, textShadow: `0 0 60px ${col}55` }}>
-          <Counter from={0} to={n} at={at + delay + 6} dur={40} />
+        <div style={{ position: 'relative', fontFamily: FONT.serif, fontSize: 300, lineHeight: 0.9, height: 270, color: col, textShadow: `0 0 60px ${col}55` }}>
+          <span style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: C.line, textShadow: 'none', opacity: 1 - num }}>·</span>
+          <span style={{ display: 'inline-block', opacity: num, transform: `scale(${1.25 - 0.25 * num})` }}>
+            <Counter from={0} to={n} at={at + delay} dur={30} />
+          </span>
         </div>
         <div style={{ fontFamily: FONT.sans, fontSize: 34, color: C.bone, textAlign: 'center', lineHeight: 1.3 }}>{sub}</div>
       </div>

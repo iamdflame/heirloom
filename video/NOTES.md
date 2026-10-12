@@ -42,3 +42,15 @@ Renders live in `video/out/` and `~/video-out/` and are never committed.
 | S09 CFO01 | The first take had a sign-up modal and a Cloudflare box over the right side; the light page also turned grey in the vignette corners. | 1.3× crop anchored top-left (the "Model cost per CVE USD 0.217" row stays in frame, matching the $0.22 count-up); vignette 0.12 on this light page. V-CAP's re-take has no modal. |
 | Pipeline | A clip being rewritten by V-CAP broke a still render (hard links share the inode). | `link-captures.mjs` now takes snapshot copies, probes them, and skips files still being written. |
 | Speed | 5.4 fps with V-CAP's Chrome on the same 8 cores; the rotating 1500 px rosette was re-rasterised every frame. | The ground watermark is a pre-engraved SVG image (`scripts/make-rosette.mjs`); captions render as a transparent layer overlaid by ffmpeg; the mix is an audio-only render muxed onto the master. |
+
+## Pass 4: the encoded scenes (frames pulled from `~/video-out/scenes/*.mp4`)
+
+| Scene | What I saw | Fix |
+|---|---|---|
+| S01 | Encodes as H.264 High, yuv420p, BT.709, 60 fps, 540 frames. Black → tick → date → "end of life" in order; no dead frames after 0.4 s. | Kept. |
+| S02 / S03 | Plates → cascade → counter; date lock → the real noble log (FAIL ×3) → AFFECTED → the claim. All legible at 1080p. | Kept. |
+| S05 | Triangle and gates read; the SH05 receipt panel text is small inside the window. | A slow 12% push toward the receipt (origin 88% 42%). |
+| S07 | SH07 → issue #6 → P001 seal → PR #19 with its "Per precedent P001" note visible above the lower third. | Kept (re-rendered with V-CAP's SH07 re-take). |
+| S08 | The Heirloom half of the backtest sat empty for 4 s waiting for its number. | Labels and captions arrive with the split; a dim dot holds the place; the "0" lands on "Heirloom: zero times". |
+| S08 render | Chrome crashed at frame 7470 during the first batch and the render hung (memory/CPU contention with V-CAP's SwiftShader capture). A still at that frame renders fine. | Re-rendered S08 alone at concurrency 6: clean in 150 s. `CONC` env sets render concurrency. |
+| S04 / S10 | SH01 (hero) and SH11 (finale) are 3D captures that V-CAP renders at ~1–3 s per frame. | S04 holds the logo reveal if SH01 is under 3 s; S10 uses BR03 (slowed) if SH11 is missing. |

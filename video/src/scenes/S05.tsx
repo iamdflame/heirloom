@@ -62,7 +62,7 @@ export const S05: React.FC<SceneProps> = ({ scale, frames }) => {
       </Seq>
       <Seq from={cut} to={frames}>
         <Ground ringOpacity={0.04} />
-        <CaptureClip id="SH05" label={`Register → ${EXAMPLE.cve} × ${UPSTREAM.name} → receipt certificate`} url={`${SITE_URL} · register`} />
+        <CaptureClip id="SH05" push={0.12} origin="88% 42%" label={`Register → ${EXAMPLE.cve} × ${UPSTREAM.name} → receipt certificate`} url={`${SITE_URL} · register`} />
       </Seq>
     </AbsoluteFill>
   );

@@ -3,7 +3,7 @@ import { AbsoluteFill } from 'remotion';
 import { C, FONT, VERDICT } from '../theme';
 import { beats } from '../lib/anim';
 import { LowerThird } from '../components/Overlays';
-import { CaptureClip, hasCapture } from '../components/Capture';
+import { CaptureClip, captureSeconds } from '../components/Capture';
 import { Ground } from '../components/Engraving';
 import { CONNECTOR, shortDate, SITE_URL, SUMMARY, UNPROVEN_N } from '../data';
 import { SceneProps, Seq } from './common';
@@ -34,7 +34,7 @@ export const S06: React.FC<SceneProps> = ({ scale, frames }) => {
         />
       </Seq>
       <Seq from={t2} to={t3}>
-        {hasCapture('SH10') ? (
+        {captureSeconds('SH10') >= 5 ? (
           <CaptureClip id="SH10" label="The evidence locker" url={`${SITE_URL} · evidence`} enter={false} />
         ) : (
           <CaptureClip id="SH03" startFrom={10.4} label="“Watch it work”: UNPROVEN tiles file evidence" url={`${SITE_URL} · watch it work`} enter={false} />

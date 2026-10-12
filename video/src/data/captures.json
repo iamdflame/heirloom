@@ -39,9 +39,19 @@
   "seconds": 5,
   "source": "captures"
  },
+ "R3D01": {
+  "file": "captures/R3D01.mp4",
+  "seconds": 0.017,
+  "source": "captures"
+ },
  "SH01": {
   "file": "captures/SH01.mp4",
   "seconds": 0.7,
+  "source": "captures"
+ },
+ "SH02": {
+  "file": "captures/SH02.mp4",
+  "seconds": 4,
   "source": "captures"
  },
  "SH03": {
@@ -57,6 +67,11 @@
  "SH05": {
   "file": "captures/SH05.mp4",
   "seconds": 10,
+  "source": "captures"
+ },
+ "SH06": {
+  "file": "captures/SH06.mp4",
+  "seconds": 8,
   "source": "captures"
  },
  "SH07": {

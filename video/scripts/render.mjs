@@ -24,7 +24,7 @@ const log = (...a) => console.log(`[${((Date.now() - t0) / 1000).toFixed(0).padS
 
 const serveUrl = await bundle({ entryPoint: join(root, 'src/index.ts'), publicDir: join(root, 'public') });
 log('bundled');
-const common = { codec: 'h264', crf: 14, x264Preset: 'slow', pixelFormat: 'yuv420p', colorSpace: 'bt709', concurrency: 8, imageFormat: 'jpeg', jpegQuality: 95 };
+const common = { codec: 'h264', crf: 14, x264Preset: 'slow', pixelFormat: 'yuv420p', colorSpace: 'bt709', concurrency: Number(process.env.CONC ?? 8), imageFormat: 'jpeg', jpegQuality: 95 };
 const comp = async (inputProps) => selectComposition({ serveUrl, id: 'HeirloomDemo', inputProps });
 
 const silentProps = { captions: false, audio: false };
