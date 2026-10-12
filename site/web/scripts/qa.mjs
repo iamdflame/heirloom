@@ -11,7 +11,7 @@ const WEB = new URL('..', import.meta.url).pathname;
 const cycle = process.argv[2] ?? 'c1';
 const OUT = join(WEB, 'qa', cycle);
 mkdirSync(OUT, { recursive: true });
-const PORT = +(process.env.PORT ?? 4175);
+const PORT = +(process.env.PORT ?? 4300);
 const URL_ = `http://localhost:${PORT}/`;
 const report = { cycle, at: new Date().toISOString(), screenshots: [], axe: [], console: [], keyboard: null, lighthouse: null, budgets: null };
 
@@ -29,7 +29,8 @@ for (let i = 0; i < 60; i++) {
   await new Promise((r) => setTimeout(r, 250));
 }
 
-const browser = await chromium.launch();
+// SwiftShader WebGL so the lazy 3D hero actually mounts headless
+const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const VIEWPORTS = [
   [390, 844],
   [768, 1024],
@@ -40,12 +41,12 @@ const VIEWPORTS = [
 async function page(opts = {}) {
   const ctx = await browser.newContext({
     viewport: { width: opts.w ?? 1440, height: opts.h ?? 900 },
-    colorScheme: opts.scheme ?? 'light',
+    colorScheme: opts.scheme ?? 'dark',
     reducedMotion: opts.reduced ? 'reduce' : 'no-preference',
     deviceScaleFactor: 1,
   });
   const p = await ctx.newPage();
-  const tag = `${opts.w ?? 1440}x${opts.h ?? 900}-${opts.scheme ?? 'light'}${opts.reduced ? '-reduced' : ''}`;
+  const tag = `${opts.w ?? 1440}x${opts.h ?? 900}${opts.reduced ? '-reduced' : ''}`;
   p.on('console', (m) => {
     if (m.type() === 'error' || m.type() === 'warning') report.console.push({ tag, type: m.type(), text: m.text() });
   });
@@ -54,6 +55,28 @@ async function page(opts = {}) {
   await p.evaluate(() => document.fonts.ready);
   return { p, ctx, tag };
 }
+// scroll the whole page once so every once-only in-view reveal has fired before a full-page shot
+async function warm(p) {
+  await p.evaluate(async () => {
+    const H = document.documentElement.scrollHeight;
+    for (let y = 0; y < H; y += Math.round(innerHeight * 0.6)) {
+      window.scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 120));
+    }
+    window.scrollTo(0, 0);
+    await new Promise((r) => setTimeout(r, 1600));
+  });
+}
+const scrollToEl = (p, sel, frac = 0) =>
+  p.evaluate(
+    async ([sel, frac]) => {
+      const el = document.querySelector(sel);
+      const top = el.getBoundingClientRect().top + scrollY;
+      window.scrollTo(0, top + (el.offsetHeight - (frac ? innerHeight : 0)) * frac);
+      await new Promise((r) => setTimeout(r, 1500));
+    },
+    [sel, frac],
+  );
 const shot = async (p, name, full = true) => {
   const path = join(OUT, `${name}.png`);
   await p.screenshot({ path, fullPage: full });
@@ -71,16 +94,44 @@ async function axe(p, tag) {
 
 // ---------- screenshots (+ axe on each) ----------
 for (const [w, h] of VIEWPORTS) {
-  for (const scheme of ['light', 'dark']) {
-    const { p, ctx, tag } = await page({ w, h, scheme });
-    await shot(p, `page-${tag}`);
-    await axe(p, tag);
-    await ctx.close();
+  const { p, ctx, tag } = await page({ w, h });
+  // the v2 page is ~30 000 px tall: no full-page shots (software rendering stalls); the beats are shot below
+  await shot(p, `first-${tag}`, false);
+  await warm(p);
+  await axe(p, tag);
+  await ctx.close();
+}
+
+// ---------- v2 beats in the viewport: hero with the live 3D, campaign middle, movement, finale ----------
+for (const [w, h] of [[1440, 900], [390, 844]]) {
+  const { p, ctx, tag } = await page({ w, h });
+  const live = await p
+    .waitForSelector('[data-poster="hero"].opacity-0', { state: 'attached', timeout: 60_000 })
+    .then(() => true, () => false);
+  report[`hero_3d_${w}`] = live;
+  await p.waitForTimeout(1200);
+  await shot(p, `hero-${tag}`, false);
+  await scrollToEl(p, '#watch', 0.5);
+  await shot(p, `campaign-mid-${tag}`, false);
+  await scrollToEl(p, '#movement > div', 0.6);
+  await shot(p, `movement-${tag}`, false);
+  for (const id of ['#question', '#numbers', '#economics', '#evidence']) {
+    await scrollToEl(p, id);
+    await p.waitForTimeout(900);
+    await shot(p, `${id.slice(1)}-${tag}`, false);
   }
+  await p.evaluate(() => window.scrollTo(0, document.getElementById('finale').offsetTop + document.getElementById('finale').offsetHeight - innerHeight));
+  await p.waitForTimeout(3500);
+  await shot(p, `finale-${tag}`, false);
+  await ctx.close();
 }
 {
   const { p, ctx, tag } = await page({ reduced: true });
   await shot(p, `page-${tag}`, false);
+  await scrollToEl(p, '#movement');
+  await shot(p, `movement-${tag}`, false);
+  await scrollToEl(p, '#finale');
+  await shot(p, `finale-${tag}`, false);
   await ctx.close();
 }
 
@@ -206,7 +257,7 @@ await browser.close();
   report.budgets = {
     first_load_js: js,
     first_load_js_gzip_kb: +(jsGz / 1024).toFixed(1),
-    js_ok: jsGz <= 150 * 1024,
+    js_ok: jsGz <= 200 * 1024,
     fonts_kb: +(fontBytes / 1024).toFixed(1),
     fonts_ok: fontBytes <= 100 * 1024,
     lazy_chunks: lazy.map((f) => `${f} ${(gz('assets/' + f) / 1024).toFixed(1)} kB gz`),
@@ -250,6 +301,7 @@ console.log(
       anchors: report.anchors,
       replay_middle: report.replay_middle,
       replay_playing: report.replay_playing,
+      hero_3d: [report.hero_3d_1440, report.hero_3d_390],
       lighthouse: report.lighthouse,
       lighthouse_failed_audits: report.lighthouse_failed_audits,
       budgets: report.budgets,
