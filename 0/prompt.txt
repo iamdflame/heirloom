@@ -1,0 +1,31 @@
+You are running HEADLESS. Never wait for input and never end your turn to wait for a notification: poll in loops instead. Hard time box: 25 minutes. Small, careful edits only.
+
+First run `entire session current` and stop if no session is shown or the id is f5117257-5211-42ae-823c-32aa228a28d9.
+
+The owner has submitted. Wire the submission links into the repo and the site:
+- **Demo video (YouTube):** https://youtu.be/L4Zw555RuMs (2:27; produced from `video/` in this repo).
+- **Submission post on X** (quote of the official neatlogs launch post, tagging @neatlogs, @EntireHQ, @arithecfo): https://x.com/i_am_dflame/status/2109675581776314381
+
+Do this, committing and pushing after each step (`git pull --rebase` first):
+1. **README.md:** next to the existing "Live:" line at the very top (outside the render markers, so `evals/render_readme.py` keeps it), add `**Demo video (2:27):** https://youtu.be/L4Zw555RuMs` and `**Submission post:** https://x.com/i_am_dflame/status/2109675581776314381`. Re-run the README render and confirm both lines survive and the README test or CI is still green.
+2. **EVIDENCE.md:**
+   - fill the build-in-public placeholder with the X submission post;
+   - add the demo video to the relevant evidence items;
+   - keep a short line saying earlier #neatHack posts can be added by the owner.
+3. **hackathon.md:** a dated entry (2026-10-12) on the demo video and the submission:
+   - how the video was made, from `video/NOTES.md`, `video/capture/NOTES.md` and `~/video-out/EDIT-GUIDE.md`: frame-perfect virtual-time captures of the real site and GitHub, Remotion motion design, the owner's ElevenLabs voiceover split by word timestamps, word-accurate captions, music ducked under VO, −14 LUFS;
+   - the YouTube and X links;
+   - the stock-footage credits.
+   Only things that happened.
+4. **The live site:**
+   - add a "Watch the demo (2:27)" link to https://youtu.be/L4Zw555RuMs as a secondary CTA in the hero and in the Evidence/Verify section (opens in a new tab, `rel="noopener"`), styled like the existing links;
+   - `npm run build` (the tests must pass);
+   - deploy to Vercel production from site/web: `vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod`;
+   - verify that https://heirloom-proof.vercel.app returns 200 and that its HTML or JS contains `L4Zw555RuMs`.
+5. Run `python3 ~/brief/secretscan.py`; every surface must be clean. Push.
+
+Never print .env values.
+
+Finish with:
+- `git log -5 --format='%h %s | %(trailers:key=Entire-Checkpoint,valueonly)'`;
+- the live check result.
