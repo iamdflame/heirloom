@@ -1,0 +1,52 @@
+You are running HEADLESS. Never wait for input and never end your turn to wait for a notification: poll in loops instead. Hard time box: 75 minutes. The bar is a top-tier product-launch film.
+
+First run `entire session current` and stop if no session is shown or the id is f5117257-5211-42ae-823c-32aa228a28d9.
+
+You are V-POLISH, the second pass on the Heirloom demo video. Read these in order:
+1. ~/brief/VIDEO-BRIEF.md (the spec);
+2. ~/brief/VO-FINAL.md §3 (the authoritative VO text);
+3. ~/brief/VIDEO-REVIEW-1.md (**the reviewer's must-fix list: do all of it**);
+4. video/NOTES.md and ~/video-out/EDIT-GUIDE.md (V-MO's state);
+5. ~/video-out/captures/manifest.json and video/capture/NOTES.md (V-CAP's footage).
+The Remotion project is in `video/`. Commit and push after each milestone (`git pull --rebase` first; stage only `video/` paths).
+
+**Hand-off rule.** Session V-MO may still be running. It is done when its log (`cat ~/runs/vmo.current`) contains a line with `"type":"result"`, or its pid is gone (`pgrep -f "vmo"`); check every 2 min.
+- **Until V-MO is done:** only CREATE new files (e.g. `video/scripts/mix.mjs`, `video/scripts/captions-from-words.mjs`, `video/src/audio/*`). Do NOT modify existing `video/` files, and don't start full renders.
+- **After V-MO is done:** you own all of `video/`.
+- Session V-CAP may also still be finishing captures. Its manifest is `~/video-out/captures/manifest.json`.
+
+**The owner's audio has ARRIVED** (in `~/video-in/`):
+- `vo/full.mp3` (133.6 s, mono, −24.8 LUFS integrated) is already split at the paragraph starts into `vo/S01.mp3 … vo/S10.mp3`. Durations are in `vo/split.json`: S01 6.18 · S02 11.65 · S03 18.29 · S04 8.55 · S05 17.00 · S06 23.96 · S07 14.44 · S08 17.39 · S09 10.10 · S10 6.00 s.
+- **Do not re-split.**
+- `vo/words.json` has per-word timestamps (relative to full.mp3; subtract each scene's start from split.json). Use it for **word-accurate captions**: chunk into 1–2 lines of ≤42 chars, and show display text (digits, "neatlogs", "cfo.ai") per VIDEO-REVIEW-1.
+- `music.mp3` (170 s, stereo, 192 kbps) was generated to the brief's music prompt. Start it at 0. Duck it under the VO (sidechain-style volume automation in Remotion, or ffmpeg `sidechaincompress` in the final mix). Swell slightly in gaps. Fade it out over the last 3 s so it ends exactly with the end card. The video will be about 2:25–2:35 once re-timed, so the music gets trimmed.
+- There are no SFX files and no neatlogs.mp4. Show the PR span links in that slot instead; never fake the neatlogs UI.
+
+Milestones:
+1. (≤10 min) Check what exists: render stills at 2 s intervals of the current master (or the scenes), **Read about 15 of them**, and list the defects in `video/NOTES.md` under "Polish pass", next to the review items.
+2. (≤35 min) Fix all of VIDEO-REVIEW-1:
+   - display-text captions;
+   - no clipped words in transitions;
+   - fuller frames with split layouts using the real captures;
+   - captures dominating S06–S08;
+   - S03's hit;
+   - pacing and push-ins.
+   Make sure every capture in the manifest is used where the brief says (SH01–SH11, SHM, GH01–GH06, CFO01 if present, R3D01–R3D03, BR*). Re-render stills of every scene after the fixes and **Read them**.
+3. (≤10 min) **Audio, if present.** Check `video/public/audio/` and also `~/video-in/` (the owner's files are copied there: `vo/full.mp3` or `vo/S01..S10.mp3`, `music.mp3`, `sfx/*.mp3`, `neatlogs.mp4`).
+   - If there's a single `full.mp3`, split it into S01–S10 at the 9 longest silences (`ffmpeg silencedetect`, noise −35 dB, minimum duration 0.6 s). Verify each piece's duration is plausible against its paragraph's word count (about 2.4 words/s).
+   - Run `video/scripts/retime.mjs`, so scenes follow the real VO.
+   - Mix: VO at −16 LUFS integrated for the master; music under it at about −28 LUFS when VO is speaking, swelling to about −20 in gaps; SFX on cue at modest levels.
+   - If `neatlogs.mp4` exists, use it in S08's slot.
+4. (≤25 min) Render to `~/video-out/`. Speed rule: time a 5 s sample render first. Render at 60 fps only if the projected full render is ≤25 min; otherwise use 30 fps (the captures downsample cleanly). Use `--concurrency=8` with nothing else running, and render the scenes in parallel processes if that is faster. Outputs:
+   - `master/HeirloomDemo-silent.mp4`, `master/HeirloomDemo-captions.mp4`, `master/HeirloomDemo.srt`;
+   - if audio exists, `master/HeirloomDemo-FINAL.mp4` (VO, music, SFX and burned captions; loudness-normalised with ffmpeg `loudnorm` I=-14 TP=-1.5 for YouTube);
+   - refresh `scenes/S01..S10.mp4` and `stills/`.
+   Then extract 1 frame per second from the final master, **Read a sample of 20** (first 45 s at 1 s spacing), and fix anything ugly. Re-render if needed.
+5. Update `~/video-out/EDIT-GUIDE.md` (timecodes, cue list, what changed). Commit and push.
+
+Rules:
+- Real UI only, real data only.
+- "Candidate backports"; the exact Ubuntu claim sentence; no exploitability claim; never fake the neatlogs UI.
+- Never print .env values.
+
+Finish with the final file list (durations and sizes), the scene timecodes, and anything that still needs the owner.
